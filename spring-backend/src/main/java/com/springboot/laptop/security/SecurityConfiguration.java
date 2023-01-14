@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +17,12 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +38,12 @@ public class SecurityConfiguration {
 
     };
 
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .build();
+    }
 
     @Autowired
     void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -55,14 +69,14 @@ public class SecurityConfiguration {
                 .antMatchers("/admin/users/**").hasRole("ADMIN")
                 .antMatchers("/admin/**").hasAnyRole("ADMIN", "EDITOR")
                 .anyRequest().permitAll()
-                .and()
-                .formLogin()
+//                .and()
+//                .formLogin()
 //                .loginPage("/login")
 //                .defaultSuccessUrl("/index")
 //                .failureUrl("/login?error=true")
 //                .successHandler(myAuthenticationSuccessHandler)
 //                .failureHandler(authenticationFailureHandler)
-                .permitAll()
+//                .permitAll()
                 .and()
                 // logout setup and its logoutSuccessUrl
                 .logout()
@@ -80,4 +94,15 @@ public class SecurityConfiguration {
     public SessionRegistry sessionRegistry() {
         return new SessionRegistryImpl();
     }
+
+
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+//        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 }

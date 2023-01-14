@@ -5,6 +5,7 @@ import com.springboot.laptop.model.UserRoleEntity;
 import com.springboot.laptop.model.dto.AppClientSignUpDto;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.repository.UserRepository;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRoleService userRoleService;
-
-
 
 
     @Autowired
@@ -44,6 +43,12 @@ public class UserService {
         Optional<UserEntity> byUsername = this.userRepository.findByUsername(username);
         Optional<UserEntity> byEmail = this.userRepository.findByEmail(email);
         return byUsername.isPresent() || byEmail.isPresent();
+    }
+
+    public UserEntity findUserByUserName(String username) throws Exception {
+        Optional<UserEntity> user = this.userRepository.findByUsername(username);
+        if (user != null) return user.get();
+        else throw new Exception("No user found");
     }
 
 }

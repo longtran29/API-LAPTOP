@@ -13,6 +13,7 @@ import javax.persistence.Table;
 
 @Table(name="role")
 @Entity
+@Data
 public class UserRoleEntity extends BaseEntity {
 
     private UserRoleEnum role;
