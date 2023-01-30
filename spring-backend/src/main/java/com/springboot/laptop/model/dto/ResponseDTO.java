@@ -9,10 +9,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppClientSignUpDto {
-    private String username;
-    private String email;
-    private String password;
+public class ResponseDTO {
 
+    private ErrorCode errorCode;
+    private Object data;
+    private SuccessCode successCode;
 
 }

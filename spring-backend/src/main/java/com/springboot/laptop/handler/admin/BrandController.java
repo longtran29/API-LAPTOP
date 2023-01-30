@@ -14,7 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/brands")
-
 @CrossOrigin(origins = "http://localhost:3000")
 public class BrandController {
 
@@ -28,9 +27,7 @@ public class BrandController {
 
     @GetMapping
     public ResponseEntity<?> getAllBrands() {
-        System.out.println("In getAllBrand");
         List<BrandEntity> listBrands = brandService.getAll();
-        System.out.println("Danh sach brand " + listBrands);
         return new ResponseEntity<List<BrandEntity>>(brandService.getAll(), HttpStatus.OK );
     }
 

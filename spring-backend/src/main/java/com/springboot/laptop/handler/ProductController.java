@@ -1,9 +1,9 @@
 package com.springboot.laptop.handler;
 
 
+import com.springboot.laptop.exception.DeleteDataFail;
 import com.springboot.laptop.model.ProductEntity;
-import com.springboot.laptop.model.dto.ProductDto;
-import com.springboot.laptop.model.dto.ProductResponseDto;
+import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.service.CloudinaryService;
 import com.springboot.laptop.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +51,21 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
         return new ResponseEntity<List<ProductResponseDto>>(productService.getAll(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            boolean delProduct = productService.deleteProduct(productId);
+            responseDTO.setData(delProduct);
+            responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
+        } catch (Exception e){
+            throw new DeleteDataFail(""+ ErrorCode.DELETE_PRODUCT_ERROR);
+        }
+
+        return ResponseEntity.ok(responseDTO);
+
     }
 
 

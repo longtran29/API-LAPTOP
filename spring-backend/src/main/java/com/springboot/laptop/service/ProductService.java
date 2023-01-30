@@ -1,7 +1,9 @@
 package com.springboot.laptop.service;
 
+import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.ProductEntity;
+import com.springboot.laptop.model.dto.ErrorCode;
 import com.springboot.laptop.model.dto.ProductDto;
 import com.springboot.laptop.model.dto.ProductResponseDto;
 import com.springboot.laptop.repository.BrandRepository;
@@ -44,6 +46,12 @@ public class ProductService {
     public List<ProductResponseDto> getAll() {
         List<ProductEntity> products =  productRepository.findAll() ;
         return new ProductResponseDto().convertProdDto(products);
+    }
+
+    public boolean deleteProduct(Long productId) throws ResourceNotFoundException {
+        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(""+ ErrorCode.FIND_PRODUCT_ERROR));
+        this.productRepository.delete(product);
+        return true;
     }
 }
 
