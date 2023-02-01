@@ -6,24 +6,21 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Table(name="role")
 @Entity
 @Data
 public class UserRoleEntity extends BaseEntity {
+    @Column(length= 40, nullable = false, unique = true)
+    private String name; // ROLE_USER, ROLE_ADMIN
 
-    private UserRoleEnum role;
+    private String description;
 
-    @Enumerated(EnumType.STRING)
-    public UserRoleEnum getName() {
-        return role;
-    }
-
-    public void setName(UserRoleEnum name) {
-        this.role = role;
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

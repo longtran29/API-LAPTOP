@@ -32,10 +32,12 @@ public class UserDetailServiceImpl implements UserDetailsService {
         return mapToUserDetails(userEntity);
     }
 
+    // note: SimpleGrantedAuthority
+
     private UserDetails mapToUserDetails(UserEntity userEntity) {
 
         List<GrantedAuthority> authorities = userEntity.getRoles().stream()
-                .map(ur -> new SimpleGrantedAuthority("ROLE_" + ur.getRole().name())).collect(Collectors.toList());
+                .map(ur -> new SimpleGrantedAuthority(ur.getName())).collect(Collectors.toList());
         return new User(
                 userEntity.getUsername(),
                 userEntity.getPassword(),

@@ -41,7 +41,7 @@ public class UserController {
     @PostMapping("/auth/register")
     public ResponseEntity<?> signup(@RequestBody AppClientSignUpDto user) throws Exception {
 
-        System.out.println(user);
+        System.out.println("User register is " + user);
         if (this.userService.userExists(user.getUsername(), user.getEmail())) {
             throw new RuntimeException("Username or email address already in use.");
         }
@@ -78,7 +78,7 @@ public class UserController {
     public String logInUser(@RequestParam String username) throws Exception {
         System.out.println("Da vao logInUser");
         UserEntity user = userService.findUserByUserName(username);
-        if(user.getRoles().stream().anyMatch(role -> role.getRole().equals(UserRoleEnum.ROLE_USER))) {
+        if(user.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
             System.out.println("USER ROLE NHA");
             return "USER";
         }

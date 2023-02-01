@@ -30,7 +30,7 @@ public class UserService {
     }
 
     public UserEntity register(AppClientSignUpDto user) throws Exception {
-        UserRoleEntity userRole = this.userRoleService.getUserRoleByEnumName(UserRoleEnum.ROLE_USER);
+        UserRoleEntity userRole = this.userRoleService.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
         UserEntity appClient = new UserEntity();
         appClient.setRoles(List.of(userRole));
         appClient.setUsername(user.getUsername());

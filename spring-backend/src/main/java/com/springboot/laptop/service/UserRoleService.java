@@ -18,8 +18,8 @@ public class UserRoleService {
         this.userRoleRepository = userRoleRepository;
     }
 
-    public UserRoleEntity getUserRoleByEnumName(UserRoleEnum roleEnum) throws Exception {
-        Optional<UserRoleEntity> role = userRoleRepository.findByRole(roleEnum);
+    public UserRoleEntity getUserRoleByEnumName(String name) throws Exception {
+        Optional<UserRoleEntity> role = userRoleRepository.findByName(name);
         if(role != null) {
             return role.get();
         }
