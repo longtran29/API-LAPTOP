@@ -13,6 +13,8 @@ import java.util.Set;
 @Table(name="role")
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserRoleEntity extends BaseEntity {
     @Column(length= 40, nullable = false, unique = true)
     private String name; // ROLE_USER, ROLE_ADMIN

@@ -1,4 +1,4 @@
-package com.springboot.laptop.handler.admin;
+package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.model.BrandEntity;
@@ -6,10 +6,9 @@ import com.springboot.laptop.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -32,6 +31,7 @@ public class BrandController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createBrand(@RequestBody BrandEntity brand) {
         System.out.println("Brand requestbody is " + brand.getName());
         BrandEntity newBrand = brandService.createOne(brand);
@@ -39,12 +39,14 @@ public class BrandController {
     }
 
     @DeleteMapping("/{brandId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deleteBrand(@PathVariable Long brandId) {
         brandService.deleteOne(brandId);
         return new ResponseEntity<String>("Delete successfully",HttpStatus.NO_CONTENT );
     }
 
     @PutMapping("/{brandId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<BrandEntity> updateBrand(@PathVariable Long brandId, @RequestBody BrandEntity brand ) throws Exception {
         System.out.println("Brand requestbody is " + brand.getName());
         String name = brand.getName();

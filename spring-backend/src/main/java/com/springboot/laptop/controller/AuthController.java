@@ -1,64 +1,79 @@
-package com.springboot.laptop.handler;
+package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.AppClientSignUpDto;
+import com.springboot.laptop.model.dto.MessageResponse;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
+import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.UserService;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
 @RequestMapping("/api/v1")
-public class UserController {
+public class AuthController {
     private final UserService userService;
 
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtility jwtUtility;
     private final UserDetailServiceImpl userDetailService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserController(UserService userService, JwtUtility jwtUtility, UserDetailServiceImpl userDetailService, AuthenticationManager authenticationManager) {
+    public AuthController(UserService userService, UserRepository userRepository, JwtUtility jwtUtility, UserDetailServiceImpl userDetailService, AuthenticationManager authenticationManager) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtility = jwtUtility;
         this.userDetailService = userDetailService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/auth/register")
     public ResponseEntity<?> signup(@RequestBody AppClientSignUpDto user) throws Exception {
 
         System.out.println("User register is " + user);
-        if (this.userService.userExists(user.getUsername(), user.getEmail())) {
-            throw new RuntimeException("Username or email address already in use.");
+        if (userRepository.existsByUsername(user.getUsername())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Username is exist"));
+        }
+        if (userRepository.existsByEmail(user.getEmail())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error : Email is exist"));
         }
         UserEntity client = this.userService.register(user);
-        return new ResponseEntity<UserEntity>(client, HttpStatus.CREATED);
+        return ResponseEntity.ok(new MessageResponse("User CREATED"));
     }
 
     @PostMapping("/authenticate")
     public JwtResponse authenticate(@RequestBody JwtRequest jwtRequest) throws Exception {
         try {
             System.out.println("Da vao authenticate roi ne username " + jwtRequest.getUsername() + " password " + jwtRequest.getPassword());
-            authenticationManager.authenticate(
+            Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             jwtRequest.getUsername(),
                             jwtRequest.getPassword()
                     )
             );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println("auth.getAuthorities() = " + authentication.getAuthorities());
             System.out.printf("Info are " + jwtRequest.getUsername() + jwtRequest.getPassword());
         } catch (BadCredentialsException e) {
             throw new Exception("INVALID_CREDENTIALS", e);
@@ -87,5 +102,33 @@ public class UserController {
         }
     }
 
+//    @PostMapping("/logout")
+//    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+//        if(StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")){
+//            String token =request.getHeader("Authorization").substring(7);
+//
+//            System.out.println("token = " + token);
+//            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//            if (auth != null){
+//                new SecurityContextLogoutHandler().logout(request, response, auth);
+//            }
+//            return ResponseEntity.ok(usersService.invalidToken(token));
+//        }
+//        else
+//            return ResponseEntity.ok("không có token");
+//    }
+
+
+//    @PostMapping("/newpassword/{email}")
+//    public ResponseEntity<?> newPassword(@PathVariable("email") String email,@Valid @RequestBody NewPasswordRequest newPasswordRequest) {
+//        return ResponseEntity.ok(signinService.newPassword(email, newPasswordRequest.getPassword(), newPasswordRequest.getPasswordConfirm()));
+//    }
+//    @PostMapping("/forgetpassword/{email}")
+//    public ResponseEntity<?> forgetPasword(@PathVariable("email") String email, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException {
+//        String verifyURL = request.getRequestURL().toString()
+//                .replace(request.getServletPath(), "") + "/signin/newpassword/"+email;
+//        registerService.sendVerificationEmail(email,verifyURL);
+//        return ResponseEntity.ok("Đã gửi mail");
+//    }
 
 }

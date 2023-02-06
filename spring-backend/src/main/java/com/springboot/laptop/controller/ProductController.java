@@ -1,4 +1,4 @@
-package com.springboot.laptop.handler;
+package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.exception.DeleteDataFail;
@@ -9,6 +9,7 @@ import com.springboot.laptop.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +55,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
         ResponseDTO responseDTO = new ResponseDTO();
         try {

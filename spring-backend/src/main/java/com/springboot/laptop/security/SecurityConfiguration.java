@@ -1,6 +1,7 @@
 package com.springboot.laptop.security;
 
 
+import com.springboot.laptop.config.JwtAuthenticationFilter;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,13 +28,17 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class SecurityConfiguration {
 
 
     @Autowired
     private UserDetailServiceImpl userDetailsService;
 
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(){
+        return new JwtAuthenticationFilter();
+    }
 
     private static String[] resources = new String[] {
 
@@ -47,7 +53,7 @@ public class SecurityConfiguration {
 
     @Autowired
     void configure(AuthenticationManagerBuilder auth) throws Exception {
-        System.out.println("Vao authentication");
+        System.out.println("Vao authentication" + auth);
         auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 
@@ -82,6 +88,7 @@ public class SecurityConfiguration {
                 .logout()
                 .logoutUrl("/logout");
         http.headers().frameOptions().sameOrigin();
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

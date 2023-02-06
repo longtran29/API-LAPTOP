@@ -1,4 +1,5 @@
 package com.springboot.laptop.utils;
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -9,9 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JwtUtility implements Serializable {
     public static final long JWT_TOKEN_VALIDITY = 2*60*60;
@@ -59,6 +57,7 @@ public class JwtUtility implements Serializable {
                 userDetails.getUsername());
     }
 
+    // HS512 method
     private String doGenerateToken(Map<String, Object>
                                            claims, String subject) {
 
@@ -74,9 +73,29 @@ public class JwtUtility implements Serializable {
         return (!isTokenExpired(token) || ignoreTokenExpiration(token));
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) &&
-                !isTokenExpired(token));
+    public Boolean validateToken(String token
+//            , UserDetails userDetails
+    ) {
+//        final String username = getUsernameFromToken(token);
+//        return (username.equals(userDetails.getUsername()) &&
+//                !isTokenExpired(token));
+//        try{
+//            Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token);
+//            return true;
+//        }catch (SignatureException exc){
+//            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Invalid jwt signature");
+//        }catch (MalformedJwtException exc){
+//            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Invalid jwt token");
+//        }catch (ExpiredJwtException exc){
+//            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Expired jwt token");
+//        }catch (UnsupportedJwtException exc){
+//            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "Unsupported jwt token");
+//        }catch (IllegalArgumentException exc){
+//            throw new BlogAPIException(HttpStatus.BAD_REQUEST, "jwt claims string is empty");
+//        }
+
+        Jwts.parser().setSigningKey(this.secret).parseClaimsJws(token);
+        return true;
     }
+
 }

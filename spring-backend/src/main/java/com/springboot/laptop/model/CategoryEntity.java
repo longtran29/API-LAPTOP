@@ -23,8 +23,9 @@ public class CategoryEntity extends BaseEntity {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<ProductEntity> products;
 
-
-
-
+    public CategoryEntity(String name, Boolean enabled) {
+        this.name = name;
+        this.enabled = enabled;
+    }
 
 }
