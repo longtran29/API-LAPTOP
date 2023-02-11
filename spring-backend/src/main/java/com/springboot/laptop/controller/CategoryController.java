@@ -2,6 +2,7 @@ package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.exception.DeleteDataFail;
+import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.CategoryRequestDto;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +27,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/categories")
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -41,7 +43,7 @@ public class CategoryController {
                     content = @Content(mediaType = "application/json",schema = @Schema(implementation = CategoryEntity.class))),
 //            @ApiResponse(description = "User not found",responseCode = "409",content = @Content)
     })
-    @PostMapping
+    @PostMapping("/new")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createCategory(@RequestBody CategoryRequestDto categoryDto) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
@@ -62,10 +64,12 @@ public class CategoryController {
     }
 
 
+//    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @PreAuthorize("permitAll")
     @Operation(
             summary = "Get all category")
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> getAllCategories() {
         List<CategoryEntity> listCates = categoryService.getAll();
         return new ResponseEntity<List<CategoryEntity>>(listCates, HttpStatus.OK );
@@ -80,6 +84,7 @@ public class CategoryController {
     })
     @PutMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PostAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<CategoryEntity> updateStatus(@PathVariable Long cateId, @RequestBody CategoryEntity cate ) throws Exception {
         System.out.println("Category name " + cate.getName() + cate.getId());
         CategoryEntity cateUpdated = categoryService.updateOne(cateId, cate);
@@ -92,6 +97,7 @@ public class CategoryController {
     )
     @DeleteMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PostAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO> deleteBrand(@PathVariable Long cateId) throws ResourceNotFoundException, DeleteDataFail {
         ResponseDTO responseDTO = new ResponseDTO();
         try {

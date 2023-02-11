@@ -1,5 +1,6 @@
 package com.springboot.laptop.service;
 
+import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.ErrorCode;
@@ -23,6 +24,9 @@ public class CategoryService {
     }
 
     public CategoryEntity createOne(CategoryEntity category) {
+//        CategoryEntity foundCate = categoryRepository.findByName(category.getName()).get();
+//        System.out.println("foundCate " + foundCate);
+//        if (foundCate != null) throw new DuplicatedDataException("Duplicated data");
         return this.categoryRepository.save(category);
     }
 

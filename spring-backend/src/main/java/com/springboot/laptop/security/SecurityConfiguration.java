@@ -6,7 +6,6 @@ import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -14,17 +13,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.cors.reactive.CorsWebFilter;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -44,6 +35,8 @@ public class SecurityConfiguration {
 
     };
 
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
@@ -65,42 +58,36 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-        http.csrf().disable();
-
-
-        http.authorizeRequests()
-                .antMatchers("/index", "/home", "/").authenticated()
-                .antMatchers("/change-password*","/forgot-password*","/changePassword*").permitAll()
-                .antMatchers("/admin/orders/**").hasRole("ADMIN")
-                .antMatchers("/admin/users/**").hasRole("ADMIN")
-                .antMatchers("/admin/**").hasAnyRole("ADMIN", "EDITOR")
-                .anyRequest().permitAll()
-//                .and()
-//                .formLogin()
-//                .loginPage("/login")
-//                .defaultSuccessUrl("/index")
-//                .failureUrl("/login?error=true")
-//                .successHandler(myAuthenticationSuccessHandler)
-//                .failureHandler(authenticationFailureHandler)
-//                .permitAll()
-                .and()
-                // logout setup and its logoutSuccessUrl
-                .logout()
-                .logoutUrl("/logout");
+        http
+                .csrf()
+                .disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .and().authorizeRequests()
+//                        .anyRequest().authenticated();
+                .anyRequest().permitAll();
+        http.httpBasic(Customizer.withDefaults());
         http.headers().frameOptions().sameOrigin();
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomize() throws Exception {
-        return (web) -> web.ignoring().antMatchers(HttpMethod.GET, resources);
-    }
-    @Bean
-    public SessionRegistry sessionRegistry() {
-        return new SessionRegistryImpl();
-    }
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        // swager documentation and home page can be reached from outside
+//        return (web) -> web.ignoring().antMatchers("/api/v1/categories", "/api/v1/signin");
+//    }
+
+
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomize() throws Exception {
+//        return (web) -> web.ignoring().antMatchers(HttpMethod.GET, resources);
+//    }
+//    @Bean
+//    public SessionRegistry sessionRegistry() {
+//        return new SessionRegistryImpl();
+//    }
 
 
 //    @Bean

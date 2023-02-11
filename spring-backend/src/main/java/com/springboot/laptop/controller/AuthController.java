@@ -4,6 +4,7 @@ package com.springboot.laptop.controller;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.AppClientSignUpDto;
 import com.springboot.laptop.model.dto.MessageResponse;
+import com.springboot.laptop.model.dto.NewPasswordRequest;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
@@ -14,6 +15,7 @@ import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,14 +23,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.UnsupportedEncodingException;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
 @RequestMapping("/api/v1")
 public class AuthController {
     private final UserService userService;
-
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtility jwtUtility;
@@ -102,33 +111,36 @@ public class AuthController {
         }
     }
 
-//    @PostMapping("/logout")
-//    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-//        if(StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")){
-//            String token =request.getHeader("Authorization").substring(7);
-//
-//            System.out.println("token = " + token);
-//            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//            if (auth != null){
-//                new SecurityContextLogoutHandler().logout(request, response, auth);
-//            }
-//            return ResponseEntity.ok(usersService.invalidToken(token));
-//        }
-//        else
-//            return ResponseEntity.ok("không có token");
-//    }
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        if(StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")){
+            String token =request.getHeader("Authorization").substring(7);
+
+            System.out.println("token = " + token);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null){
+                System.out.println("Da vao trong nay " + auth );
+                new SecurityContextLogoutHandler().logout(request, response, auth);
+            }
+            return ResponseEntity.ok("Logout success");
+        }
+        else
+            return ResponseEntity.ok("không có token");
+    }
 
 
-//    @PostMapping("/newpassword/{email}")
-//    public ResponseEntity<?> newPassword(@PathVariable("email") String email,@Valid @RequestBody NewPasswordRequest newPasswordRequest) {
-//        return ResponseEntity.ok(signinService.newPassword(email, newPasswordRequest.getPassword(), newPasswordRequest.getPasswordConfirm()));
-//    }
-//    @PostMapping("/forgetpassword/{email}")
-//    public ResponseEntity<?> forgetPasword(@PathVariable("email") String email, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException {
-//        String verifyURL = request.getRequestURL().toString()
-//                .replace(request.getServletPath(), "") + "/signin/newpassword/"+email;
-//        registerService.sendVerificationEmail(email,verifyURL);
-//        return ResponseEntity.ok("Đã gửi mail");
-//    }
+    @PostMapping("/newpassword/{email}")
+    public ResponseEntity<?> newPassword(@PathVariable("email") String email,@Valid @RequestBody NewPasswordRequest newPasswordRequest) {
+        return ResponseEntity.ok(userService.newPassword(email, newPasswordRequest.getPassword(), newPasswordRequest.getPasswordConfirm()));
+    }
+    @PostMapping("/forgetpassword/{email}")
+    public ResponseEntity<?> forgetPasword(@PathVariable("email") String email, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException, MessagingException, UnsupportedEncodingException {
+        String verifyURL = request.getRequestURL().toString()
+                .replace(request.getServletPath(), "") + "/signin/newpassword/"+email;
+        userService.sendVerificationEmail(email,verifyURL);
+        return ResponseEntity.ok("Đã gửi mail");
+    }
+
+
 
 }
