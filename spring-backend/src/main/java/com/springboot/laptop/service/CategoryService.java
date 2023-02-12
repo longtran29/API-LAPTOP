@@ -23,11 +23,14 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public CategoryEntity createOne(CategoryEntity category) {
-//        CategoryEntity foundCate = categoryRepository.findByName(category.getName()).get();
-//        System.out.println("foundCate " + foundCate);
-//        if (foundCate != null) throw new DuplicatedDataException("Duplicated data");
-        return this.categoryRepository.save(category);
+    public CategoryEntity createOne(CategoryEntity category) throws DuplicatedDataException {
+        CategoryEntity foundCate = null;
+        if(categoryRepository.findByName(category.getName()).isPresent()) {
+            foundCate = categoryRepository.findByName(category.getName()).get();
+        }
+        if (foundCate != null) throw new DuplicatedDataException("Duplicated data");
+        else
+            return this.categoryRepository.save(category);
     }
 
     public List<CategoryEntity> getAll() {
@@ -44,6 +47,13 @@ public class CategoryService {
         return cateUpdate;
     }
 
+    public void updateStatus(Long cateId, Boolean cate_status) {
+//        CategoryEntity cateUpdate = categoryRepository.findById(cateId).get();
+//        if(cateUpdate.getEnabled() != cateUpdate.getEnabled()){
+//            categoryRepository.updateProductStatus(cateId, !cateUpdate.getEnabled());
+//        }
+        categoryRepository.updateProductStatus(cateId, cate_status);
+    }
     public CategoryEntity deleteOne(Long cateId) throws ResourceNotFoundException {
         CategoryEntity foundCategory = categoryRepository.findById(cateId).orElseThrow(() -> new ResourceNotFoundException(""+ ErrorCode.FIND_CATEGORY_ERROR));
         categoryRepository.delete(foundCategory);

@@ -39,7 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException
     {
-        System.out.println("Dang ben trong do Filter Internal");
+
+        // get Token from request sent
         String token = getJwtToken(request);
         // validate token
         if(StringUtils.hasText(token) && this.jwtTokenProvider.validateToken(token)){
