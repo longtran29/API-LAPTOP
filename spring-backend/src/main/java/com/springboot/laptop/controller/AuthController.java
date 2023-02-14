@@ -2,9 +2,7 @@ package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.AppClientSignUpDto;
-import com.springboot.laptop.model.dto.MessageResponse;
-import com.springboot.laptop.model.dto.NewPasswordRequest;
+import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
@@ -13,6 +11,7 @@ import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.UserService;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.mail.javamail.JavaMailSender;
@@ -72,7 +71,7 @@ public class AuthController {
     }
 
     @PostMapping("/authenticate")
-    public JwtResponse authenticate(@RequestBody JwtRequest jwtRequest) throws Exception {
+    public ResponseEntity<?> authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
         try {
             System.out.println("Da vao authenticate roi ne username " + jwtRequest.getUsername() + " password " + jwtRequest.getPassword());
             Authentication authentication = authenticationManager.authenticate(
@@ -90,13 +89,25 @@ public class AuthController {
         final UserDetails userDetails
                 = userDetailService.loadUserByUsername(jwtRequest.getUsername());
 
-        final String token = jwtUtility.generateToken(userDetails);
+        UserEntity loggedUser = userService.findUserByUserName(userDetails.getUsername());
 
-        System.out.println("Token is " + token);
-        return new JwtResponse(token);
+        final TokenDto tokenDto = jwtUtility.doGenerateToken(loggedUser);
 
+//        tokenToHeaders(tokenDto, response);
+        jwtUtility.setHeaderAccessToken(response, tokenDto.getAccessToken());
+        jwtUtility.setHeaderRefreshToken(response, tokenDto.getRefreshToken());
+        return new ResponseEntity<>(ResponseDTO.success("Login successfully"), HttpStatus.OK);
     }
 
+//    public void tokenToHeaders(TokenDto tokenDto, HttpServletResponse response) {
+////        response.addHeader("Access-Control-Expose-Headers", "Authorization");
+////        response.addHeader("Access-Control-Expose-Headers", "Refresh-Token");
+//        // exposure the response headers all fields
+//        response.addHeader("Access-Control-Expose-Headers", "*");
+//        response.addHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
+//        response.addHeader("Refresh-Token", tokenDto.getRefreshToken());
+//        response.addHeader("Access-Token-Expire-Time", tokenDto.getAccessTokenExpiresIn().toString());
+//    }
 //    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "Requestor-Type", exposedHeaders = "X-Get-Header")
     @PostMapping("/login")
     public String logInUser(@RequestParam String username) throws Exception {

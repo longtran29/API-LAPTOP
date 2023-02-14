@@ -4,6 +4,7 @@ import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,7 +26,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailServiceImpl customUserDetailService;
 
-    private static List<String> skipFilterUrls = Arrays.asList("/api/v1/categories");
+    @Autowired private JwtUtility jwtUtility;
+
+    private static List<String> skipFilterUrls = Arrays.asList("/api/v1/categories", "/api/v1/authenticate", "/api/v1/login");
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
@@ -40,21 +43,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException
     {
 
-        // get Token from request sent
-        String token = getJwtToken(request);
-        // validate token
-        if(StringUtils.hasText(token) && this.jwtTokenProvider.validateToken(token)){
-            // get username from token
-            String username = this.jwtTokenProvider.getUsernameFromToken(token);
-            // load user associated with token
-            UserDetails userDetails = this.customUserDetailService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities()
-            );
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // set spring security
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        String accessToken = jwtUtility.resolveAccessToken(request);
+//        String accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2NzYyOTE4ODgsImV4cCI6MTY3NjI5MzY4OCwic3ViIjoiYWRtaW4ifQ.QMV7ewBDKBkz62ji3-crRs4GZ4cHgYMoGnFt0yLyxJM";
+        String refreshToken = jwtUtility.resolveRefreshToken(request);
+
+
+        System.out.println("Token i doFilter is " + accessToken + " and " + refreshToken);
+
+        if (accessToken != null) {
+            System.out.println("Da vao accessToken");
+            // AccessToken 이 유효하면?
+            if (jwtTokenProvider.validateToken(accessToken)) {
+                this.setAuthentication(accessToken);
+            }
+            // AccessToken 은 만료, RefreshToken 은 존재
+            else if(!jwtTokenProvider.validateToken(accessToken) && refreshToken != null) {
+
+                //RefreshToken 유효?
+                boolean validRefreshToken = jwtUtility.validateToken(refreshToken);
+
+                //RefreshToken DB에 존재?
+                boolean isRefreshToken = jwtUtility.existsRefreshToken(refreshToken);
+
+                //RefreshToken이 유효기간 남았고 DB에 남아있다면 AccessToken 새로 발급
+                if (validRefreshToken && isRefreshToken) {
+                    String userName = jwtUtility.getUsernameFromToken(refreshToken);
+                    String newAccessToken = jwtUtility.createToken(userName);
+                    jwtUtility.setHeaderAccessToken(response, newAccessToken);
+                    this.setAuthentication(newAccessToken);
+                }
+            }
         }
+        System.out.println("Truoc filter in Filter Jwer");
         filterChain.doFilter(request, response);
     }
     private String getJwtToken(HttpServletRequest request){
@@ -63,5 +83,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return bearerToken.substring(7, bearerToken.length());
         }
         return null;
+    }
+
+    public void setAuthentication(String token) {
+        System.out.println("Da vao setAuthenticate");
+        Authentication authentication = jwtUtility.getAuthentication(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

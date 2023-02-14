@@ -59,8 +59,9 @@ public class UserService {
 
     public UserEntity findUserByUserName(String username) throws Exception {
         Optional<UserEntity> user = this.userRepository.findByUsername(username);
-        if (user != null) return user.get();
-        else throw new Exception("No user found");
+//        if (user != null) return user.get();
+//        else throw new Exception("No user found");
+        return user.orElse(null);
     }
 
     public void sendVerificationEmail(String email, String siteURL) throws UnsupportedEncodingException, MessagingException, MessagingException, UnsupportedEncodingException {

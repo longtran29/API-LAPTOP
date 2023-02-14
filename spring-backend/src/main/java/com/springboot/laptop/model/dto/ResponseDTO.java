@@ -15,4 +15,10 @@ public class ResponseDTO {
     private Object data;
     private SuccessCode successCode;
 
+
+    //public static khong cần initialize object
+    public static ResponseDTO success(Object data){
+        return new ResponseDTO(null,data,null);
+    }
+
 }

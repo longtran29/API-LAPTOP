@@ -36,14 +36,19 @@ public class CategoryService {
     public List<CategoryEntity> getAll() {
         return categoryRepository.findAll();
     }
-    public CategoryEntity updateOne(Long cateId, CategoryEntity updateCategory) {
+    public CategoryEntity updateOne(Long cateId, CategoryEntity updateCategory) throws DuplicatedDataException {
+        CategoryEntity foundCate;
+        if(categoryRepository.findByName(updateCategory.getName()).isPresent()) {
+            foundCate = categoryRepository.findByName(updateCategory.getName()).get();
+            if(foundCate.getId() != cateId) {
+                throw new DuplicatedDataException("Duplicated data");
+            }
+        }
         CategoryEntity cateUpdate = categoryRepository.findById(cateId).get();
         cateUpdate.setName(updateCategory.getName());
-        System.out.println("Cate update status "+cateUpdate.getEnabled());
         if(updateCategory.getEnabled() != cateUpdate.getEnabled()){
             categoryRepository.updateProductStatus(cateId, !cateUpdate.getEnabled());
         }
-        System.out.println("Status update is " + cateUpdate.getEnabled());
         return cateUpdate;
     }
 

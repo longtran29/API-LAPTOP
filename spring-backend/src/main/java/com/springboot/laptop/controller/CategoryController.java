@@ -106,9 +106,18 @@ public class CategoryController {
     @PutMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
 //    @PostAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<CategoryEntity> updateCate(@PathVariable Long cateId, @RequestBody CategoryEntity cate ) throws Exception {
-        System.out.println("Category name " + cate.getName() + cate.getId());
-        CategoryEntity cateUpdated = categoryService.updateOne(cateId, cate);
+    public ResponseEntity<?> updateCate(@PathVariable Long cateId, @RequestBody CategoryEntity cate )  {
+        ResponseDTO responseDTO = new ResponseDTO();
+        CategoryEntity cateUpdated;
+        try {
+            cateUpdated = categoryService.updateOne(cateId, cate);
+            responseDTO.setData(cateUpdated);
+            responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
+        } catch (DuplicatedDataException e) {
+            log.error("Error while creating a new category: ", e);
+            responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
         return new ResponseEntity<CategoryEntity>(cateUpdated, HttpStatus.CREATED);
     }
 
