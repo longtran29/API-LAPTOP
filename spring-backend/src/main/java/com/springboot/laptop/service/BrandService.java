@@ -1,13 +1,18 @@
 package com.springboot.laptop.service;
 
 
+import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
+import com.springboot.laptop.model.CategoryEntity;
+import com.springboot.laptop.model.dto.BrandRequestDto;
 import com.springboot.laptop.repository.BrandRepository;
+import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -16,38 +21,69 @@ import java.util.Optional;
 public class BrandService {
     private final BrandRepository brandRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
     @Autowired
-    public BrandService(BrandRepository brandRepository, UserRepository userRepository) {
+    public BrandService(BrandRepository brandRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
         this.brandRepository = brandRepository;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     public List<BrandEntity> getAll() {
         return brandRepository.findAll();
     }
 
-    public BrandEntity createOne(BrandEntity brand) {
-        brand.setCreationDate(new Date());
-        brand.setModifiedDate(new Date());
-//        brand.setAddedBy(userRepository.findByUsername(principal.getName()).get());
-        return brandRepository.save(brand);
+    public BrandEntity createOne(BrandRequestDto newbrand) throws DuplicatedDataException {
+        BrandEntity foundBrand = null;
+        if(brandRepository.findByName(newbrand.getBrandName()).isPresent()) {
+            foundBrand = brandRepository.findByName(newbrand.getBrandName()).get();
+        }
+        if (foundBrand != null) throw new DuplicatedDataException("Duplicated data");
+        else {
+            BrandEntity brand = new BrandEntity();
+            brand.setName(newbrand.getBrandName());
+            for(Long i : newbrand.getCateIds()) {
+                CategoryEntity setCategory = categoryRepository.findById(i).get();
+                brand.getCategories().add(setCategory);
+            }
+            brand.setCreationDate(new Date());
+            brand.setModifiedDate(new Date());
+            return brandRepository.save(brand);
+        }
     }
 
     public void deleteOne(Long brandId) {
         brandRepository.delete(brandRepository.findById(brandId).get());
     }
 
-    public BrandEntity updateOne(Long brandId, String name) throws Exception {
-        Optional<BrandEntity> brand = brandRepository.findById(brandId);
-        if(brand.isEmpty()) {
-            throw  new Exception("No brand name with id "+ brandId + " found! ");
+    public BrandEntity updateOne(Long brandId, BrandRequestDto updateBrand) throws DuplicatedDataException {
+        BrandEntity brand = brandRepository.findById(brandId).get();
+
+        BrandEntity foundBrand;
+        if(brandRepository.findByName(updateBrand.getBrandName()).isPresent()) {
+            foundBrand = brandRepository.findByName(updateBrand.getBrandName()).get();
+            if(foundBrand.getId() != brandId) {
+                throw new DuplicatedDataException("Duplicated data");
+            }
         }
-        BrandEntity brandData = brand.get();
-        brandData.setName(name);
-        brandData.setModifiedDate(new Date());
-        brandRepository.saveAndFlush(brandData);
-        return brandData;
+        List<CategoryEntity> listCate = new ArrayList<>();
+
+        for(Long i : updateBrand.getCateIds()) {
+            CategoryEntity refCate = categoryRepository.findById(i).get();
+            listCate.add(refCate);
+        }
+        brand.setCategories(listCate);
+        System.out.println("Brand name update " + updateBrand.getBrandName());
+        brand.setName(updateBrand.getBrandName());
+        brand.setModifiedDate(new Date());
+        brandRepository.saveAndFlush(brand);
+
+//        reference to exist list Categories
+//        List<CategoryEntity> listCate = brand.getCategories();
+
+
+        return brand;
     }
 
 }

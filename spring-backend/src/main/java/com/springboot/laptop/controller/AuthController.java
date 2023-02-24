@@ -5,21 +5,17 @@ import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
-import com.springboot.laptop.model.jwt.JwtResponse;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.UserService;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -33,7 +29,8 @@ import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
+//@CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/api/v1")
 public class AuthController {
     private final UserService userService;
@@ -54,8 +51,7 @@ public class AuthController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<?> signup(@RequestBody AppClientSignUpDto user) throws Exception {
-
-        System.out.println("User register is " + user);
+        ResponseDTO responseDTO = new ResponseDTO();
         if (userRepository.existsByUsername(user.getUsername())) {
             return ResponseEntity
                     .badRequest()
@@ -67,11 +63,13 @@ public class AuthController {
                     .body(new MessageResponse("Error : Email is exist"));
         }
         UserEntity client = this.userService.register(user);
-        return ResponseEntity.ok(new MessageResponse("User CREATED"));
+        responseDTO.setData(client);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
+    public ResponseEntity authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
+        ResponseDTO responseDTO = new ResponseDTO();
         try {
             System.out.println("Da vao authenticate roi ne username " + jwtRequest.getUsername() + " password " + jwtRequest.getPassword());
             Authentication authentication = authenticationManager.authenticate(
@@ -96,7 +94,10 @@ public class AuthController {
 //        tokenToHeaders(tokenDto, response);
         jwtUtility.setHeaderAccessToken(response, tokenDto.getAccessToken());
         jwtUtility.setHeaderRefreshToken(response, tokenDto.getRefreshToken());
-        return new ResponseEntity<>(ResponseDTO.success("Login successfully"), HttpStatus.OK);
+        responseDTO.setData(tokenDto.getAccessToken());
+        MessageResponse messageResponse  = new MessageResponse();
+        messageResponse.setMessage(tokenDto.getAccessToken());
+        return ResponseEntity.ok(messageResponse);
     }
 
 //    public void tokenToHeaders(TokenDto tokenDto, HttpServletResponse response) {

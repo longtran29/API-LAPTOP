@@ -6,9 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "brands")
@@ -29,7 +27,7 @@ public class BrandEntity extends BaseEntity {
             joinColumns = @JoinColumn(name="brand_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name="category_id", referencedColumnName = "id")
     )
-    private Set<CategoryEntity> categories = new HashSet<>();
+    private List<CategoryEntity> categories = new ArrayList<>();
 
 
 

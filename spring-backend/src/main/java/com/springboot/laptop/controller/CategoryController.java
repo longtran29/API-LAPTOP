@@ -108,17 +108,17 @@ public class CategoryController {
 //    @PostAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateCate(@PathVariable Long cateId, @RequestBody CategoryEntity cate )  {
         ResponseDTO responseDTO = new ResponseDTO();
-        CategoryEntity cateUpdated;
+        CategoryEntity updatedCate;
         try {
-            cateUpdated = categoryService.updateOne(cateId, cate);
-            responseDTO.setData(cateUpdated);
+            updatedCate = categoryService.updateOne(cateId, cate);
+            responseDTO.setData(updatedCate);
             responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
         } catch (DuplicatedDataException e) {
             log.error("Error while creating a new category: ", e);
             responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
             return ResponseEntity.badRequest().body(responseDTO);
         }
-        return new ResponseEntity<CategoryEntity>(cateUpdated, HttpStatus.CREATED);
+        return new ResponseEntity<CategoryEntity>(updatedCate, HttpStatus.CREATED);
     }
 
 

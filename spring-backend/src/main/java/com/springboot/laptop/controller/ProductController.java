@@ -7,6 +7,7 @@ import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.service.CloudinaryService;
 import com.springboot.laptop.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,17 +44,15 @@ public class ProductController {
 //    }
 
     @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
+    public String uploadFile(@Param("file") MultipartFile file) {
+        System.out.println("Da vao uploadFile");
         String url = cloudinaryService.uploadFile(file);
         return url;
     }
-
-
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
         return new ResponseEntity<List<ProductResponseDto>>(productService.getAll(), HttpStatus.OK);
     }
-
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
