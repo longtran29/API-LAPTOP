@@ -36,6 +36,16 @@ public class BrandController {
         this.categoryRepository = categoryRepository;
     }
 
+    @GetMapping("/{brandId}")
+    public ResponseEntity<?> getBrandById(@PathVariable Long brandId) {
+        BrandEntity brand = brandService.findById(brandId);
+        if (brand == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(brand);
+        }
+    }
+
     @GetMapping
     public ResponseEntity<?> getAllBrands() {
         List<BrandEntity> listBrands = brandService.getAll();

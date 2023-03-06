@@ -54,6 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             System.out.println("Da vao accessToken");
             // AccessToken 이 유효하면?
             if (jwtTokenProvider.validateToken(accessToken)) {
+                System.out.println("Validated");
                 this.setAuthentication(accessToken);
             }
             // AccessToken 은 만료, RefreshToken 은 존재
@@ -80,13 +81,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String getJwtToken(HttpServletRequest request){
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")){
+            System.out.println("Token is " + bearerToken.substring(7, bearerToken.length()));
             return bearerToken.substring(7, bearerToken.length());
         }
         return null;
     }
 
     public void setAuthentication(String token) {
-        System.out.println("Da vao setAuthenticate");
         Authentication authentication = jwtUtility.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

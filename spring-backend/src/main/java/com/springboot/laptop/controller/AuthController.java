@@ -5,6 +5,7 @@ import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
+import com.springboot.laptop.model.jwt.JwtResponse;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.UserService;
@@ -69,7 +70,6 @@ public class AuthController {
 
     @PostMapping("/authenticate")
     public ResponseEntity authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
-        ResponseDTO responseDTO = new ResponseDTO();
         try {
             System.out.println("Da vao authenticate roi ne username " + jwtRequest.getUsername() + " password " + jwtRequest.getPassword());
             Authentication authentication = authenticationManager.authenticate(
@@ -90,39 +90,18 @@ public class AuthController {
         UserEntity loggedUser = userService.findUserByUserName(userDetails.getUsername());
 
         final TokenDto tokenDto = jwtUtility.doGenerateToken(loggedUser);
-
-//        tokenToHeaders(tokenDto, response);
         jwtUtility.setHeaderAccessToken(response, tokenDto.getAccessToken());
         jwtUtility.setHeaderRefreshToken(response, tokenDto.getRefreshToken());
-        responseDTO.setData(tokenDto.getAccessToken());
-        MessageResponse messageResponse  = new MessageResponse();
-        messageResponse.setMessage(tokenDto.getAccessToken());
-        return ResponseEntity.ok(messageResponse);
-    }
-
-//    public void tokenToHeaders(TokenDto tokenDto, HttpServletResponse response) {
-////        response.addHeader("Access-Control-Expose-Headers", "Authorization");
-////        response.addHeader("Access-Control-Expose-Headers", "Refresh-Token");
-//        // exposure the response headers all fields
-//        response.addHeader("Access-Control-Expose-Headers", "*");
-//        response.addHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
-//        response.addHeader("Refresh-Token", tokenDto.getRefreshToken());
-//        response.addHeader("Access-Token-Expire-Time", tokenDto.getAccessTokenExpiresIn().toString());
-//    }
-//    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "Requestor-Type", exposedHeaders = "X-Get-Header")
-    @PostMapping("/login")
-    public String logInUser(@RequestParam String username) throws Exception {
-        System.out.println("Da vao logInUser");
-        UserEntity user = userService.findUserByUserName(username);
-        if(user.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
-            System.out.println("USER ROLE NHA");
-            return "USER";
+        JwtResponse jwtResponse  = new JwtResponse();
+        jwtResponse.setJwtToken(tokenDto.getAccessToken());
+        if(loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
+            jwtResponse.setRole("USER");
         }
         else {
-            return "ADMIN";
+            jwtResponse.setRole("ADMIN");
         }
+        return ResponseEntity.ok(jwtResponse);
     }
-
     @GetMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         if(StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")){
@@ -152,7 +131,4 @@ public class AuthController {
         userService.sendVerificationEmail(email,verifyURL);
         return ResponseEntity.ok("Đã gửi mail");
     }
-
-
-
 }

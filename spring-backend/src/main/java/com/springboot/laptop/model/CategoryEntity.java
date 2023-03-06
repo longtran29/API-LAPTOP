@@ -1,5 +1,7 @@
 package com.springboot.laptop.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +22,9 @@ public class CategoryEntity extends BaseEntity {
     @Column(name="enabled")
     private Boolean enabled;
 
+
+//    resolve error jackson - arraylist, collection
+    @JsonBackReference
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<ProductEntity> products;
 

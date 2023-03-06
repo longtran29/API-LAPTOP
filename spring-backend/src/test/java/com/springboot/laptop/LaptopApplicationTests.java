@@ -1,8 +1,10 @@
 package com.springboot.laptop;
 
+import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.UserRoleEntity;
 import com.springboot.laptop.model.enums.UserRoleEnum;
+import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.repository.UserRoleRepository;
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,9 @@ class LaptopApplicationTests {
 	@Autowired
 	UserRoleRepository userRoleRepository;
 
+	@Autowired
+	CategoryRepository categoryRepository;
+
 
 
 	BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -63,6 +68,14 @@ class LaptopApplicationTests {
 		appClient.setEmail("admin2001@gmail.com");
 		appClient.setPassword(passwordEncoder.encode("123456"));
 		userRepository.save(appClient);
+	}
+
+	@Test
+	public void addNewCate() {
+		CategoryEntity category = new CategoryEntity();
+		category.setEnabled(true);
+		category.setName("iphone xsmax");
+		categoryRepository.save(category);
 	}
 
 }

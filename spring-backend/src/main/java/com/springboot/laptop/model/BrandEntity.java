@@ -1,6 +1,8 @@
 package com.springboot.laptop.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +23,8 @@ public class BrandEntity extends BaseEntity {
     private Date creationDate;
     private Date modifiedDate;
 
+
+
     @ManyToMany
     @JoinTable(
             name="brands_categories",
@@ -29,6 +33,11 @@ public class BrandEntity extends BaseEntity {
     )
     private List<CategoryEntity> categories = new ArrayList<>();
 
+
+    //    resolve error jackson - arraylist, collection
+    @JsonBackReference
+    @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductEntity> products = new ArrayList<>();
 
 
 }

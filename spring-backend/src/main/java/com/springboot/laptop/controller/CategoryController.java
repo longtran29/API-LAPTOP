@@ -42,6 +42,16 @@ public class CategoryController {
     }
 
 
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<?> getCategoryById(@PathVariable Long categoryId) {
+        CategoryEntity category = categoryService.findById(categoryId);
+        if (category == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(category);
+        }
+    }
+
     @Operation(summary = "Create a new category", responses = {
             @ApiResponse(description = "Create new category success", responseCode = "200",
                     content = @Content(mediaType = "application/json",schema = @Schema(implementation = CategoryEntity.class))),
@@ -52,17 +62,6 @@ public class CategoryController {
     public ResponseEntity<?> createCategory(@RequestBody CategoryRequestDto categoryDto) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         System.out.println("User principal in post cate " + SecurityContextHolder.getContext().getAuthentication().getName());
-//        try {
-//            CategoryEntity newOne = new CategoryEntity(categoryDto.getName(), categoryDto.getEnabled());
-//            CategoryEntity newCate = categoryService.createOne(newOne);
-//            responseDTO.setData(newCate);
-//            responseDTO.setSuccessCode(SuccessCode.ADD_CATEGORY_SUCCESS);
-//        } catch (Exception e){
-//            throw new Exception(" " + ErrorCode.ADD_CATEGORY_ERROR);
-//        }
-//
-//        return ResponseEntity.ok(responseDTO);
-
         try {
             CategoryEntity newOne = new CategoryEntity(categoryDto.getName(), categoryDto.getEnabled());
             CategoryEntity newCate = categoryService.createOne(newOne);
@@ -86,7 +85,7 @@ public class CategoryController {
 
 
 //    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    @PreAuthorize("permitAll")
+//    @PreAuthorize("permitAll")
     @Operation(
             summary = "Get all category")
     @GetMapping
@@ -142,9 +141,9 @@ public class CategoryController {
             description = "Provide an category id to delete"
     )
     @DeleteMapping("/{cateId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
 //    @PostAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ResponseDTO> deleteBrand(@PathVariable Long cateId) throws ResourceNotFoundException, DeleteDataFail {
+    public ResponseEntity<ResponseDTO> deleteCategory(@PathVariable Long cateId) throws ResourceNotFoundException, DeleteDataFail {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
             CategoryEntity delCategory = categoryService.deleteOne(cateId);

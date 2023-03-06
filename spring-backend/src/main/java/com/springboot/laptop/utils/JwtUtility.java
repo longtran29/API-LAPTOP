@@ -97,6 +97,7 @@ public class JwtUtility implements Serializable {
     }
 
     public String resolveAccessToken(HttpServletRequest request) {
+        System.out.println("Da vao resolve aceestoken");
         if(request.getHeader("Authorization") != null)
             // noting: check if authorization string starts with Bearer suffix or not
             return request.getHeader("Authorization");

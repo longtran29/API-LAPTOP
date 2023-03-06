@@ -2,10 +2,16 @@ package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.exception.DeleteDataFail;
+import com.springboot.laptop.exception.ResourceNotFoundException;
+import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.service.CloudinaryService;
 import com.springboot.laptop.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -31,18 +37,18 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductEntity> createProduct(@RequestBody ProductDto product) {
-        System.out.println("Product brand is " + product.getBrand());
-        ProductEntity createdProduct = productService.createOne(product);
-        return new ResponseEntity<ProductEntity>(createdProduct, HttpStatus.CREATED);
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> createProduct(@RequestBody ProductDto product) {
+        try {
+            ResponseDTO responseDTO = new ResponseDTO();
+            ProductEntity createdProduct = productService.createOne(product);
+            responseDTO.setData(createdProduct);
+            return ResponseEntity.ok().body(responseDTO);
+        } catch (StackOverflowError e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-
-//    @PostMapping
-//    public ResponseEntity<String> createProduct(@RequestBody ProductDto product) {
-//        System.out.println("Product brand is " + product.getBrand());
-//        return new ResponseEntity<>("Add sucesss", HttpStatus.CREATED);
-//    }
-
     @PostMapping("/upload")
     public String uploadFile(@Param("file") MultipartFile file) {
         System.out.println("Da vao uploadFile");
@@ -65,9 +71,27 @@ public class ProductController {
             throw new DeleteDataFail(""+ ErrorCode.DELETE_PRODUCT_ERROR);
         }
 
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok().body(responseDTO);
 
     }
 
+    @Operation(summary = "Update a product", responses = {
+            @ApiResponse(description = "Update product", responseCode = "200",
+                    content = @Content(mediaType = "application/json",schema = @Schema(implementation = CategoryEntity.class)))    })
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/{productId}")
+    public ResponseEntity<?> updateProduct(@PathVariable Long productId, @RequestBody ProductDto product) throws ResourceNotFoundException {
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            ProductEntity updateProduct = productService.updateProduct(productId, product);
+            responseDTO.setData(updateProduct);
+            return ResponseEntity.ok().body(responseDTO);
+
+        } catch (ResourceNotFoundException ex) {
+            responseDTO.setErrorCode(ErrorCode.NOT_FOUND_EXCEPTION);
+            responseDTO.setData(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
+        }
+    }
 
 }

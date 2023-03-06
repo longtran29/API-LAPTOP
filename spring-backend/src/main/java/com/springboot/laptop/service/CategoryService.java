@@ -33,6 +33,10 @@ public class CategoryService {
             return this.categoryRepository.save(category);
     }
 
+    public CategoryEntity findById(Long categoryId) {
+        return categoryRepository.findById(categoryId).get();
+    }
+
     public List<CategoryEntity> getAll() {
         return categoryRepository.findAll();
     }

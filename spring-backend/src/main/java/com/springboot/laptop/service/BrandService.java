@@ -30,6 +30,9 @@ public class BrandService {
         this.categoryRepository = categoryRepository;
     }
 
+    public BrandEntity findById(Long brandId) {
+        return brandRepository.findById(brandId).get();
+    }
     public List<BrandEntity> getAll() {
         return brandRepository.findAll();
     }
@@ -81,8 +84,6 @@ public class BrandService {
 
 //        reference to exist list Categories
 //        List<CategoryEntity> listCate = brand.getCategories();
-
-
         return brand;
     }
 

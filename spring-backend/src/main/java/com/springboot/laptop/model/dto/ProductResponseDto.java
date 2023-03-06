@@ -24,6 +24,10 @@ public class ProductResponseDto {
     private float original_price;
     private String brandName;
 
+    private float discount;
+
+    private String categoryName;
+
 
     public ProductResponseDto convertToDto(ProductEntity product) {
         ProductResponseDto prodResponse = new ProductResponseDto();
@@ -33,6 +37,8 @@ public class ProductResponseDto {
         prodResponse.setOriginal_price(product.getOriginal_price());
         prodResponse.setBrandName(product.getBrand().getName());
         prodResponse.setPrimaryImage(product.getPrimaryImage());
+        prodResponse.setDiscount(product.getDiscount_percent());
+        prodResponse.setCategoryName(product.getCategory().getName());
         return prodResponse;
     }
     public List<ProductResponseDto> convertProdDto(List<ProductEntity> productList) {
