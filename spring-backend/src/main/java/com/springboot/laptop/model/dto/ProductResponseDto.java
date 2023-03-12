@@ -21,12 +21,18 @@ public class ProductResponseDto {
 
     private String prodName;
     private boolean enabled;
+
+    private boolean inStock;
     private float original_price;
-    private String brandName;
+    private Long brandId;
 
     private float discount;
 
-    private String categoryName;
+    private Long categoryId;
+
+    private String description;
+
+    private Long productQty;
 
 
     public ProductResponseDto convertToDto(ProductEntity product) {
@@ -35,10 +41,14 @@ public class ProductResponseDto {
         prodResponse.setProdName(product.getName());
         prodResponse.setEnabled(product.isEnabled());
         prodResponse.setOriginal_price(product.getOriginal_price());
-        prodResponse.setBrandName(product.getBrand().getName());
+        prodResponse.setBrandId(product.getBrand().getId());
         prodResponse.setPrimaryImage(product.getPrimaryImage());
         prodResponse.setDiscount(product.getDiscount_percent());
-        prodResponse.setCategoryName(product.getCategory().getName());
+        prodResponse.setCategoryId(product.getCategory().getId());
+        prodResponse.setEnabled(product.isEnabled());
+        prodResponse.setInStock(product.isInStock());
+        prodResponse.setDescription(product.getDescription());
+        prodResponse.setProductQty(product.getProductQuantity());
         return prodResponse;
     }
     public List<ProductResponseDto> convertProdDto(List<ProductEntity> productList) {

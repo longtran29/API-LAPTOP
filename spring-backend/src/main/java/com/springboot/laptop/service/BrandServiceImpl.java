@@ -8,35 +8,38 @@ import com.springboot.laptop.model.dto.BrandRequestDto;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.UserRepository;
+import com.springboot.laptop.service.impl.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
-public class BrandService {
+public class BrandServiceImpl implements BrandService {
     private final BrandRepository brandRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
     @Autowired
-    public BrandService(BrandRepository brandRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
+    public BrandServiceImpl(BrandRepository brandRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
         this.brandRepository = brandRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
     }
 
+    @Override
     public BrandEntity findById(Long brandId) {
         return brandRepository.findById(brandId).get();
     }
+
+    @Override
     public List<BrandEntity> getAll() {
         return brandRepository.findAll();
     }
 
+    @Override
     public BrandEntity createOne(BrandRequestDto newbrand) throws DuplicatedDataException {
         BrandEntity foundBrand = null;
         if(brandRepository.findByName(newbrand.getBrandName()).isPresent()) {
@@ -56,10 +59,12 @@ public class BrandService {
         }
     }
 
+    @Override
     public void deleteOne(Long brandId) {
         brandRepository.delete(brandRepository.findById(brandId).get());
     }
 
+    @Override
     public BrandEntity updateOne(Long brandId, BrandRequestDto updateBrand) throws DuplicatedDataException {
         BrandEntity brand = brandRepository.findById(brandId).get();
 
@@ -85,6 +90,11 @@ public class BrandService {
 //        reference to exist list Categories
 //        List<CategoryEntity> listCate = brand.getCategories();
         return brand;
+    }
+
+    @Override
+    public List<CategoryEntity> getAllCateFromBrand(Long brandId) {
+        return brandRepository.findCategoriesByBrandId(brandId);
     }
 
 }

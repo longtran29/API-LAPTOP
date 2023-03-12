@@ -1,5 +1,6 @@
 package com.springboot.laptop.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,8 +21,14 @@ public class UserEntity extends BaseEntity {
     private String username;
     private String password;
     private String email;
+    private String name;
+    private String address;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private String mobileNumber;
+
+
+    @JsonBackReference
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_role",
             joinColumns = @JoinColumn(name = "user_id"),

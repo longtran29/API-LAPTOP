@@ -9,7 +9,7 @@ import com.springboot.laptop.model.dto.CategoryRequestDto;
 import com.springboot.laptop.model.dto.ErrorCode;
 import com.springboot.laptop.model.dto.ResponseDTO;
 import com.springboot.laptop.model.dto.SuccessCode;
-import com.springboot.laptop.service.CategoryService;
+import com.springboot.laptop.service.CategoryServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -30,21 +29,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/categories")
-//@CrossOrigin(origins = "http://localhost:3000")
 public class CategoryController {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
-    private final CategoryService categoryService;
+    private final CategoryServiceImpl categoryServiceImpl;
 
     @Autowired
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
+    public CategoryController(CategoryServiceImpl categoryServiceImpl) {
+        this.categoryServiceImpl = categoryServiceImpl;
     }
 
 
     @GetMapping("/{categoryId}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long categoryId) {
-        CategoryEntity category = categoryService.findById(categoryId);
+        CategoryEntity category = categoryServiceImpl.findById(categoryId);
         if (category == null) {
             return ResponseEntity.notFound().build();
         } else {
@@ -64,7 +62,7 @@ public class CategoryController {
         System.out.println("User principal in post cate " + SecurityContextHolder.getContext().getAuthentication().getName());
         try {
             CategoryEntity newOne = new CategoryEntity(categoryDto.getName(), categoryDto.getEnabled());
-            CategoryEntity newCate = categoryService.createOne(newOne);
+            CategoryEntity newCate = categoryServiceImpl.createOne(newOne);
             responseDTO.setData(newCate);
             responseDTO.setSuccessCode(SuccessCode.ADD_CATEGORY_SUCCESS);
         } catch (DuplicatedDataException e) {
@@ -85,13 +83,13 @@ public class CategoryController {
 
 
 //    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-//    @PreAuthorize("permitAll")
+    @PreAuthorize("permitAll")
     @Operation(
             summary = "Get all category")
     @GetMapping
 //    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> getAllCategories() {
-        List<CategoryEntity> listCates = categoryService.getAll();
+        List<CategoryEntity> listCates = categoryServiceImpl.getAll();
         return new ResponseEntity<List<CategoryEntity>>(listCates, HttpStatus.OK );
     }
 
@@ -109,7 +107,7 @@ public class CategoryController {
         ResponseDTO responseDTO = new ResponseDTO();
         CategoryEntity updatedCate;
         try {
-            updatedCate = categoryService.updateOne(cateId, cate);
+            updatedCate = categoryServiceImpl.updateOne(cateId, cate);
             responseDTO.setData(updatedCate);
             responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
         } catch (DuplicatedDataException e) {
@@ -133,26 +131,33 @@ public class CategoryController {
     public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
         // note : not using operator "=="
         Boolean category_status =cate_status.equalsIgnoreCase("enabled");
-        categoryService.updateStatus(cateId, category_status);
+        categoryServiceImpl.updateStatus(cateId, category_status);
         return new ResponseEntity<String>("Update status successfully",HttpStatus.OK);
     }
+
+
     @Operation(
             summary = "Delete a category",
             description = "Provide an category id to delete"
     )
     @DeleteMapping("/{cateId}")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    @PostAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO> deleteCategory(@PathVariable Long cateId) throws ResourceNotFoundException, DeleteDataFail {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            CategoryEntity delCategory = categoryService.deleteOne(cateId);
+            CategoryEntity delCategory = categoryServiceImpl.deleteOne(cateId);
             responseDTO.setData(delCategory);
             responseDTO.setSuccessCode(SuccessCode.DELETE_CATEGORY_SUCCESS);
+        } catch (DataIntegrityViolationException ex) {
+            System.err.println(ex.getMessage());
+            responseDTO.setData("Error foreign key constraint referenced by other table");
+            responseDTO.setErrorCode(ErrorCode.DATA_INTEGRITY_VIOLATION_ERROR);
         } catch (Exception ex) {
-            throw new DeleteDataFail(""+ ErrorCode.DELETE_CATEGORY_ERROR);
+            ex.printStackTrace();
+            responseDTO.setData("Lỗi trong quá trình xoá");
+            responseDTO.setErrorCode(ErrorCode.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<ResponseDTO>(responseDTO, HttpStatus.NO_CONTENT );
+        return new ResponseEntity<ResponseDTO>(responseDTO, HttpStatus.OK);
     }
 
 }

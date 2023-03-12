@@ -9,13 +9,12 @@ import com.springboot.laptop.model.dto.ErrorCode;
 import com.springboot.laptop.model.dto.ResponseDTO;
 import com.springboot.laptop.model.dto.SuccessCode;
 import com.springboot.laptop.repository.CategoryRepository;
-import com.springboot.laptop.service.BrandService;
+import com.springboot.laptop.service.BrandServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,17 +27,25 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class BrandController {
 
-    private final BrandService brandService;
+    private final BrandServiceImpl brandServiceImpl;
     private final CategoryRepository categoryRepository;
     @Autowired
-    public BrandController(BrandService brandService, CategoryRepository categoryRepository) {
-        this.brandService = brandService;
+    public BrandController(BrandServiceImpl brandServiceImpl, CategoryRepository categoryRepository) {
+        this.brandServiceImpl = brandServiceImpl;
         this.categoryRepository = categoryRepository;
+    }
+
+    @GetMapping("/{brandId}/categories")
+    public ResponseEntity<?> getCategoriesByBrandId(@PathVariable Long brandId) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        List<CategoryEntity> categories = brandServiceImpl.getAllCateFromBrand(brandId);
+        responseDTO.setData(categories);
+        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/{brandId}")
     public ResponseEntity<?> getBrandById(@PathVariable Long brandId) {
-        BrandEntity brand = brandService.findById(brandId);
+        BrandEntity brand = brandServiceImpl.findById(brandId);
         if (brand == null) {
             return ResponseEntity.notFound().build();
         } else {
@@ -48,8 +55,8 @@ public class BrandController {
 
     @GetMapping
     public ResponseEntity<?> getAllBrands() {
-        List<BrandEntity> listBrands = brandService.getAll();
-        return new ResponseEntity<List<BrandEntity>>(brandService.getAll(), HttpStatus.OK );
+        List<BrandEntity> listBrands = brandServiceImpl.getAll();
+        return new ResponseEntity<List<BrandEntity>>(brandServiceImpl.getAll(), HttpStatus.OK );
     }
 
     @Operation(summary = "Create a new brand", responses = {
@@ -61,7 +68,7 @@ public class BrandController {
     public ResponseEntity<?> createBrand(@RequestBody BrandRequestDto newBrand) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            BrandEntity brand = brandService.createOne(newBrand);
+            BrandEntity brand = brandServiceImpl.createOne(newBrand);
             responseDTO.setData(brand);
             responseDTO.setSuccessCode(SuccessCode.ADD_BRAND_SUCCESS);
 
@@ -79,7 +86,7 @@ public class BrandController {
     @DeleteMapping("/{brandId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<String> deleteBrand(@PathVariable Long brandId) {
-        brandService.deleteOne(brandId);
+        brandServiceImpl.deleteOne(brandId);
         return new ResponseEntity<String>("Delete successfully",HttpStatus.NO_CONTENT );
     }
 
@@ -89,7 +96,7 @@ public class BrandController {
         ResponseDTO responseDTO = new ResponseDTO();
         BrandEntity updatedBrand;
         try {
-            updatedBrand = brandService.updateOne(brandId, updateBrand);
+            updatedBrand = brandServiceImpl.updateOne(brandId, updateBrand);
             responseDTO.setData(updatedBrand);
             responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
         } catch (DuplicatedDataException e) {

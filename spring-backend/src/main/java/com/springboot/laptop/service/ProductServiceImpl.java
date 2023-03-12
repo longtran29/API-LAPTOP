@@ -10,26 +10,44 @@ import com.springboot.laptop.model.dto.ProductResponseDto;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.ProductRepository;
+import com.springboot.laptop.service.impl.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
 @Service
-public class ProductService {
+@Transactional
+public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final BrandRepository brandRepository;
 
     private final CategoryRepository categoryRepository;
     @Autowired
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository) {
         this.productRepository = productRepository;
         this.brandRepository = brandRepository;
         this.categoryRepository = categoryRepository;
     }
 
+    @Override
+    public ProductEntity getOneProduct(Long productId) throws ResourceNotFoundException {
+        try {
+             ProductEntity product = productRepository.findById(productId).get();
+             return product;
+        } catch (Exception ex) {
+            throw new ResourceNotFoundException("Khong tim thay san pham voi id " + productId);
+        }
+    }
+
+    @Override
+    public void updateStatus (Long productId, Boolean status) {
+        productRepository.updateStatus(productId, status);
+    }
+    @Override
     public ProductEntity createOne(ProductDto product) {
         CategoryEntity category = categoryRepository.findById(Long.valueOf(product.getCategoryId())).get();
         BrandEntity brand =  brandRepository.findById(Long.valueOf(product.getBrandId())).get();
@@ -47,15 +65,17 @@ public class ProductService {
         newProduct.setInStock(product.isInStock());
         newProduct.setCreationDate(new Date());
         newProduct.setModifiedDate(new Date());
+        newProduct.setProductQuantity(product.getProductQty());
 
         return productRepository.save(newProduct);
     }
 
+    @Override
     public List<ProductResponseDto> getAll() {
         List<ProductEntity> products =  productRepository.findAll() ;
         return new ProductResponseDto().convertProdDto(products);
     }
-
+    @Override
     public ProductEntity updateProduct(Long productId, ProductDto updateProduct) throws ResourceNotFoundException {
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("No product found with id " + productId));
 
@@ -66,11 +86,13 @@ public class ProductService {
         if(updateProduct.getCategoryId() != null) existingProduct.setCategory(categoryRepository.findById(updateProduct.getCategoryId()).get());
         if(updateProduct.getBrandId() != null) existingProduct.setBrand(brandRepository.findById(updateProduct.getBrandId()).get());
         if(updateProduct.getPrimaryImage() != null)existingProduct.setPrimaryImage(updateProduct.getPrimaryImage());
+        if(updateProduct.getProductQty() != null) existingProduct.setProductQuantity(updateProduct.getProductQty());
         productRepository.save(existingProduct);
 
         return existingProduct;
     }
 
+    @Override
     public boolean deleteProduct(Long productId) throws ResourceNotFoundException {
         ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(""+ ErrorCode.FIND_PRODUCT_ERROR));
         this.productRepository.delete(product);

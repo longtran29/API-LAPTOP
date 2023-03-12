@@ -72,31 +72,4 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//        // swager documentation and home page can be reached from outside
-//        return (web) -> web.ignoring().antMatchers("/api/v1/categories", "/api/v1/signin");
-//    }
-
-
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomize() throws Exception {
-//        return (web) -> web.ignoring().antMatchers(HttpMethod.GET, resources);
-//    }
-//    @Bean
-//    public SessionRegistry sessionRegistry() {
-//        return new SessionRegistryImpl();
-//    }
-
-
-//    @Bean
-//    CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-//        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//        return source;
-//    }
 }

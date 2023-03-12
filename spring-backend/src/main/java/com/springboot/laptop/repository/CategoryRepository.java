@@ -14,7 +14,7 @@ public interface CategoryRepository  extends JpaRepository<CategoryEntity, Long>
 
     @Query("UPDATE CategoryEntity c SET c.enabled=?2 WHERE c.id = ?1")
     @Modifying
-    public void updateProductStatus(Long id, Boolean enabled);
+    public void updateStatus(Long id, Boolean enabled);
 
     Optional<CategoryEntity> findByName(String cateName);
 

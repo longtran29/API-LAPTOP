@@ -8,7 +8,7 @@ import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
-import com.springboot.laptop.service.UserService;
+import com.springboot.laptop.service.UserServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +34,7 @@ import java.io.UnsupportedEncodingException;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/api/v1")
 public class AuthController {
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtility jwtUtility;
@@ -42,8 +42,8 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @Autowired
-    public AuthController(UserService userService, UserRepository userRepository, JwtUtility jwtUtility, UserDetailServiceImpl userDetailService, AuthenticationManager authenticationManager) {
-        this.userService = userService;
+    public AuthController(UserServiceImpl userServiceImpl, UserRepository userRepository, JwtUtility jwtUtility, UserDetailServiceImpl userDetailService, AuthenticationManager authenticationManager) {
+        this.userServiceImpl = userServiceImpl;
         this.authenticationManager = authenticationManager;
         this.jwtUtility = jwtUtility;
         this.userDetailService = userDetailService;
@@ -54,22 +54,27 @@ public class AuthController {
     public ResponseEntity<?> signup(@RequestBody AppClientSignUpDto user) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         if (userRepository.existsByUsername(user.getUsername())) {
+            responseDTO.setErrorCode(ErrorCode.EXIST_USER);
+            responseDTO.setData("Tên người dùng đã tồn tại !");
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error: Username is exist"));
+                    .body(responseDTO);
         }
         if (userRepository.existsByEmail(user.getEmail())) {
+            responseDTO.setErrorCode(ErrorCode.EXIST_USER);
+            responseDTO.setData("Gmail đã được sử dụng !");
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error : Email is exist"));
+                    .body(responseDTO);
         }
-        UserEntity client = this.userService.register(user);
+        UserEntity client = this.userServiceImpl.register(user);
         responseDTO.setData(client);
         return ResponseEntity.ok(responseDTO);
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
+    public ResponseEntity<?> authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
+        ResponseDTO responseDTO = new ResponseDTO();
         try {
             System.out.println("Da vao authenticate roi ne username " + jwtRequest.getUsername() + " password " + jwtRequest.getPassword());
             Authentication authentication = authenticationManager.authenticate(
@@ -81,26 +86,30 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             System.out.println("auth.getAuthorities() = " + authentication.getAuthorities());
             System.out.printf("Info are " + jwtRequest.getUsername() + jwtRequest.getPassword());
+
+            final UserDetails userDetails
+                    = userDetailService.loadUserByUsername(jwtRequest.getUsername());
+
+            UserEntity loggedUser = userServiceImpl.findUserByUserName(userDetails.getUsername());
+
+            final TokenDto tokenDto = jwtUtility.doGenerateToken(loggedUser);
+            jwtUtility.setHeaderAccessToken(response, tokenDto.getAccessToken());
+            jwtUtility.setHeaderRefreshToken(response, tokenDto.getRefreshToken());
+            JwtResponse jwtResponse  = new JwtResponse();
+            jwtResponse.setJwtToken(tokenDto.getAccessToken());
+            if(loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
+                jwtResponse.setRole("USER");
+            }
+            else {
+                jwtResponse.setRole("ADMIN");
+            }
+            responseDTO.setData(jwtResponse);
         } catch (BadCredentialsException e) {
-            throw new Exception("INVALID_CREDENTIALS", e);
+            responseDTO.setErrorCode(ErrorCode.FAIL_AUTHENTICATION);
+            responseDTO.setData("Tên đăng nhập hoặc mật khẩu sai !");
+            return ResponseEntity.badRequest().body(responseDTO);
         }
-        final UserDetails userDetails
-                = userDetailService.loadUserByUsername(jwtRequest.getUsername());
-
-        UserEntity loggedUser = userService.findUserByUserName(userDetails.getUsername());
-
-        final TokenDto tokenDto = jwtUtility.doGenerateToken(loggedUser);
-        jwtUtility.setHeaderAccessToken(response, tokenDto.getAccessToken());
-        jwtUtility.setHeaderRefreshToken(response, tokenDto.getRefreshToken());
-        JwtResponse jwtResponse  = new JwtResponse();
-        jwtResponse.setJwtToken(tokenDto.getAccessToken());
-        if(loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
-            jwtResponse.setRole("USER");
-        }
-        else {
-            jwtResponse.setRole("ADMIN");
-        }
-        return ResponseEntity.ok(jwtResponse);
+        return ResponseEntity.ok(responseDTO);
     }
     @GetMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
@@ -122,13 +131,13 @@ public class AuthController {
 
     @PostMapping("/newpassword/{email}")
     public ResponseEntity<?> newPassword(@PathVariable("email") String email,@Valid @RequestBody NewPasswordRequest newPasswordRequest) {
-        return ResponseEntity.ok(userService.newPassword(email, newPasswordRequest.getPassword(), newPasswordRequest.getPasswordConfirm()));
+        return ResponseEntity.ok(userServiceImpl.newPassword(email, newPasswordRequest.getPassword(), newPasswordRequest.getPasswordConfirm()));
     }
     @PostMapping("/forgetpassword/{email}")
     public ResponseEntity<?> forgetPasword(@PathVariable("email") String email, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException, MessagingException, UnsupportedEncodingException {
         String verifyURL = request.getRequestURL().toString()
                 .replace(request.getServletPath(), "") + "/signin/newpassword/"+email;
-        userService.sendVerificationEmail(email,verifyURL);
+        userServiceImpl.sendVerificationEmail(email,verifyURL);
         return ResponseEntity.ok("Đã gửi mail");
     }
 }

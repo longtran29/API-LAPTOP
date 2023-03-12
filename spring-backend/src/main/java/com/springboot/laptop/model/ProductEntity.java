@@ -1,15 +1,14 @@
 package com.springboot.laptop.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "products")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductEntity extends BaseEntity {
@@ -29,8 +28,13 @@ public class ProductEntity extends BaseEntity {
     private Date creationDate;
     private Date modifiedDate;
 
+//    many instances of ProductEntity can be associated with one instance of CategoryEntity, a product belongs to
+//    only one category
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
+
+    @Column(name ="product_qty")
+    private Long productQuantity;
 
 }

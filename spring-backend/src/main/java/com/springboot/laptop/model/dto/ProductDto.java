@@ -23,6 +23,8 @@ public class ProductDto {
 
     private Long brandId;
 
+    private Long productQty;
+
     private Long categoryId;
     private String description;
     private boolean inStock;

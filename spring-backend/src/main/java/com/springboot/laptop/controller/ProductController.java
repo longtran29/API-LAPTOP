@@ -7,7 +7,7 @@ import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.service.CloudinaryService;
-import com.springboot.laptop.service.ProductService;
+import com.springboot.laptop.service.ProductServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,21 +27,22 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
 
-    private final ProductService productService;
+    private final ProductServiceImpl productServiceImpl;
     private final CloudinaryService cloudinaryService;
 
     @Autowired
-    public ProductController(ProductService productService, CloudinaryService cloudinaryService) {
-        this.productService = productService;
+    public ProductController(ProductServiceImpl productServiceImpl, CloudinaryService cloudinaryService) {
+        this.productServiceImpl = productServiceImpl;
         this.cloudinaryService = cloudinaryService;
     }
 
+    // check authority base on SecurityContextHolder
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createProduct(@RequestBody ProductDto product) {
         try {
             ResponseDTO responseDTO = new ResponseDTO();
-            ProductEntity createdProduct = productService.createOne(product);
+            ProductEntity createdProduct = productServiceImpl.createOne(product);
             responseDTO.setData(createdProduct);
             return ResponseEntity.ok().body(responseDTO);
         } catch (StackOverflowError e) {
@@ -49,6 +50,23 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/{productId}")
+    @PreAuthorize("permitAll")
+    public ResponseEntity<?> getOneProduct(@PathVariable Long productId) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            ProductResponseDto updateProduct = new ProductResponseDto();
+            updateProduct = updateProduct.convertToDto(productServiceImpl.getOneProduct(productId));
+            responseDTO.setData(updateProduct);
+
+        }catch (Exception ex) {
+            responseDTO.setData("Khong tim thay san pham nao voi ma " + productId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
+        }
+        return ResponseEntity.ok(responseDTO);
+    }
+
     @PostMapping("/upload")
     public String uploadFile(@Param("file") MultipartFile file) {
         System.out.println("Da vao uploadFile");
@@ -57,17 +75,18 @@ public class ProductController {
     }
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
-        return new ResponseEntity<List<ProductResponseDto>>(productService.getAll(), HttpStatus.OK);
+        return new ResponseEntity<List<ProductResponseDto>>(productServiceImpl.getAll(), HttpStatus.OK);
     }
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            boolean delProduct = productService.deleteProduct(productId);
+            boolean delProduct = productServiceImpl.deleteProduct(productId);
             responseDTO.setData(delProduct);
             responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
-        } catch (Exception e){
+        }
+        catch (Exception ex){
             throw new DeleteDataFail(""+ ErrorCode.DELETE_PRODUCT_ERROR);
         }
 
@@ -83,7 +102,7 @@ public class ProductController {
     public ResponseEntity<?> updateProduct(@PathVariable Long productId, @RequestBody ProductDto product) throws ResourceNotFoundException {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            ProductEntity updateProduct = productService.updateProduct(productId, product);
+            ProductEntity updateProduct = productServiceImpl.updateProduct(productId, product);
             responseDTO.setData(updateProduct);
             return ResponseEntity.ok().body(responseDTO);
 
@@ -92,6 +111,15 @@ public class ProductController {
             responseDTO.setData(ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
         }
+    }
+
+    @PutMapping("/{cateId}/{cate_status}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
+        // note : not using operator "=="
+        Boolean category_status =cate_status.equalsIgnoreCase("enabled");
+        productServiceImpl.updateStatus(cateId, category_status);
+        return new ResponseEntity<String>("Update status successfully",HttpStatus.OK);
     }
 
 }
