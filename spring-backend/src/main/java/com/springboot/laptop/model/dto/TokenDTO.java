@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TokenDto {
+public class TokenDTO {
     private String grantType;
     private String accessToken;
     private String refreshToken;

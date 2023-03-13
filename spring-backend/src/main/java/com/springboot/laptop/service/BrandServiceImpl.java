@@ -4,7 +4,7 @@ package com.springboot.laptop.service;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.dto.BrandRequestDto;
+import com.springboot.laptop.model.dto.BrandRequestDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.UserRepository;
@@ -40,7 +40,7 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public BrandEntity createOne(BrandRequestDto newbrand) throws DuplicatedDataException {
+    public BrandEntity createOne(BrandRequestDTO newbrand) throws DuplicatedDataException {
         BrandEntity foundBrand = null;
         if(brandRepository.findByName(newbrand.getBrandName()).isPresent()) {
             foundBrand = brandRepository.findByName(newbrand.getBrandName()).get();
@@ -65,7 +65,7 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public BrandEntity updateOne(Long brandId, BrandRequestDto updateBrand) throws DuplicatedDataException {
+    public BrandEntity updateOne(Long brandId, BrandRequestDTO updateBrand) throws DuplicatedDataException {
         BrandEntity brand = brandRepository.findById(brandId).get();
 
         BrandEntity foundBrand;

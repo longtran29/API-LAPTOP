@@ -5,7 +5,7 @@ import com.springboot.laptop.exception.DeleteDataFail;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.dto.CategoryRequestDto;
+import com.springboot.laptop.model.dto.CategoryRequestDTO;
 import com.springboot.laptop.model.dto.ErrorCode;
 import com.springboot.laptop.model.dto.ResponseDTO;
 import com.springboot.laptop.model.dto.SuccessCode;
@@ -57,7 +57,7 @@ public class CategoryController {
     })
     @PostMapping("/new")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> createCategory(@RequestBody CategoryRequestDto categoryDto) throws Exception {
+    public ResponseEntity<?> createCategory(@RequestBody CategoryRequestDTO categoryDto) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         System.out.println("User principal in post cate " + SecurityContextHolder.getContext().getAuthentication().getName());
         try {

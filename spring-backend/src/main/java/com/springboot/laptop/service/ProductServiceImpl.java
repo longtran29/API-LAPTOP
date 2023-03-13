@@ -5,8 +5,8 @@ import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.dto.ErrorCode;
-import com.springboot.laptop.model.dto.ProductDto;
-import com.springboot.laptop.model.dto.ProductResponseDto;
+import com.springboot.laptop.model.dto.ProductDTO;
+import com.springboot.laptop.model.dto.ProductResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.ProductRepository;
@@ -48,7 +48,7 @@ public class ProductServiceImpl implements ProductService {
         productRepository.updateStatus(productId, status);
     }
     @Override
-    public ProductEntity createOne(ProductDto product) {
+    public ProductEntity createOne(ProductDTO product) {
         CategoryEntity category = categoryRepository.findById(Long.valueOf(product.getCategoryId())).get();
         BrandEntity brand =  brandRepository.findById(Long.valueOf(product.getBrandId())).get();
         System.out.println("Result is " + category.getName() + " " + brand.getName());
@@ -71,12 +71,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponseDto> getAll() {
+    public List<ProductResponseDTO> getAll() {
         List<ProductEntity> products =  productRepository.findAll() ;
-        return new ProductResponseDto().convertProdDto(products);
+        return new ProductResponseDTO().convertProdDto(products);
     }
     @Override
-    public ProductEntity updateProduct(Long productId, ProductDto updateProduct) throws ResourceNotFoundException {
+    public ProductEntity updateProduct(Long productId, ProductDTO updateProduct) throws ResourceNotFoundException {
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("No product found with id " + productId));
 
         if(updateProduct.getName() != null) existingProduct.setName(updateProduct.getName());

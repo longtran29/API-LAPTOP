@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductResponseDto {
+public class ProductResponseDTO {
     private Long prod_id;
     private String primaryImage;
 
@@ -35,8 +35,8 @@ public class ProductResponseDto {
     private Long productQty;
 
 
-    public ProductResponseDto convertToDto(ProductEntity product) {
-        ProductResponseDto prodResponse = new ProductResponseDto();
+    public ProductResponseDTO convertToDto(ProductEntity product) {
+        ProductResponseDTO prodResponse = new ProductResponseDTO();
         prodResponse.setProd_id(product.getId());
         prodResponse.setProdName(product.getName());
         prodResponse.setEnabled(product.isEnabled());
@@ -51,8 +51,8 @@ public class ProductResponseDto {
         prodResponse.setProductQty(product.getProductQuantity());
         return prodResponse;
     }
-    public List<ProductResponseDto> convertProdDto(List<ProductEntity> productList) {
-        List<ProductResponseDto> listProdResponse = new ArrayList<>();
+    public List<ProductResponseDTO> convertProdDto(List<ProductEntity> productList) {
+        List<ProductResponseDTO> listProdResponse = new ArrayList<>();
         productList.forEach(prod -> {
             listProdResponse.add(this.convertToDto(prod));
         });

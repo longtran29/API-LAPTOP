@@ -2,7 +2,7 @@ package com.springboot.laptop.service;
 
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.UserRoleEntity;
-import com.springboot.laptop.model.dto.AppClientSignUpDto;
+import com.springboot.laptop.model.dto.AppClientSignUpDTO;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.service.impl.UserService;
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity register(AppClientSignUpDto user) throws Exception {
+    public UserEntity register(AppClientSignUpDTO user) throws Exception {
         UserRoleEntity userRole = this.userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
         UserEntity appClient = new UserEntity();
         appClient.setRoles(List.of(userRole));
@@ -59,11 +59,10 @@ public class UserServiceImpl implements UserService {
         return byUsername.isPresent() || byEmail.isPresent();
     }
 
+
     @Override
     public UserEntity findUserByUserName(String username) throws Exception {
         Optional<UserEntity> user = this.userRepository.findByUsername(username);
-//        if (user != null) return user.get();
-//        else throw new Exception("No user found");
         return user.orElse(null);
     }
 

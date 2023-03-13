@@ -51,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<?> signup(@RequestBody AppClientSignUpDto user) throws Exception {
+    public ResponseEntity<?> signup(@RequestBody AppClientSignUpDTO user) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         if (userRepository.existsByUsername(user.getUsername())) {
             responseDTO.setErrorCode(ErrorCode.EXIST_USER);
@@ -92,7 +92,7 @@ public class AuthController {
 
             UserEntity loggedUser = userServiceImpl.findUserByUserName(userDetails.getUsername());
 
-            final TokenDto tokenDto = jwtUtility.doGenerateToken(loggedUser);
+            final TokenDTO tokenDto = jwtUtility.doGenerateToken(loggedUser);
             jwtUtility.setHeaderAccessToken(response, tokenDto.getAccessToken());
             jwtUtility.setHeaderRefreshToken(response, tokenDto.getRefreshToken());
             JwtResponse jwtResponse  = new JwtResponse();

@@ -1,7 +1,7 @@
 package com.springboot.laptop.utils;
 import com.springboot.laptop.model.RefreshToken;
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.TokenDto;
+import com.springboot.laptop.model.dto.TokenDTO;
 import com.springboot.laptop.repository.RefreshTokenRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import io.jsonwebtoken.*;
@@ -18,15 +18,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.Base64;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 @Component
 public class JwtUtility implements Serializable {
 
 //    30 minutes (30 * 60 seconds = 1800 seconds) - 1000 * 60 * 30
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60;
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;
 
     private static final String BEARER_PREFIX = "Bearer ";
@@ -44,7 +41,7 @@ public class JwtUtility implements Serializable {
     }
 
     // HS512 method
-    public TokenDto doGenerateToken(UserEntity user) {
+    public TokenDTO doGenerateToken(UserEntity user) {
         Date now = new Date();
 
 
@@ -69,7 +66,7 @@ public class JwtUtility implements Serializable {
                 .build();
 
         refreshTokenRepository.save(refreshTokenObject);
-        return TokenDto.builder()
+        return TokenDTO.builder()
                 .grantType(BEARER_PREFIX)
                 .accessToken(accessToken)
                 .accessTokenExpiresIn(accessTokenExpiresIn.getTime())

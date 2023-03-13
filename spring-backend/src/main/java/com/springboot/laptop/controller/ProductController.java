@@ -39,7 +39,7 @@ public class ProductController {
     // check authority base on SecurityContextHolder
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> createProduct(@RequestBody ProductDto product) {
+    public ResponseEntity<?> createProduct(@RequestBody ProductDTO product) {
         try {
             ResponseDTO responseDTO = new ResponseDTO();
             ProductEntity createdProduct = productServiceImpl.createOne(product);
@@ -56,7 +56,7 @@ public class ProductController {
     public ResponseEntity<?> getOneProduct(@PathVariable Long productId) {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            ProductResponseDto updateProduct = new ProductResponseDto();
+            ProductResponseDTO updateProduct = new ProductResponseDTO();
             updateProduct = updateProduct.convertToDto(productServiceImpl.getOneProduct(productId));
             responseDTO.setData(updateProduct);
 
@@ -75,7 +75,7 @@ public class ProductController {
     }
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
-        return new ResponseEntity<List<ProductResponseDto>>(productServiceImpl.getAll(), HttpStatus.OK);
+        return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getAll(), HttpStatus.OK);
     }
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -99,7 +99,7 @@ public class ProductController {
                     content = @Content(mediaType = "application/json",schema = @Schema(implementation = CategoryEntity.class)))    })
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{productId}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long productId, @RequestBody ProductDto product) throws ResourceNotFoundException {
+    public ResponseEntity<?> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ResourceNotFoundException {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
             ProductEntity updateProduct = productServiceImpl.updateProduct(productId, product);

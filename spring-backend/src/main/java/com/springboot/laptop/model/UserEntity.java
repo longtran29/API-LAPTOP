@@ -36,4 +36,7 @@ public class UserEntity extends BaseEntity {
     )
     private List<UserRoleEntity> roles = new ArrayList<>();
 
+    @OneToOne(mappedBy = "user")
+    private UserCart cart;
+
 }

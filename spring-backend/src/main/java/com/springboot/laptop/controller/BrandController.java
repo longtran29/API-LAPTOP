@@ -4,7 +4,7 @@ package com.springboot.laptop.controller;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.dto.BrandRequestDto;
+import com.springboot.laptop.model.dto.BrandRequestDTO;
 import com.springboot.laptop.model.dto.ErrorCode;
 import com.springboot.laptop.model.dto.ResponseDTO;
 import com.springboot.laptop.model.dto.SuccessCode;
@@ -65,7 +65,7 @@ public class BrandController {
     })
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> createBrand(@RequestBody BrandRequestDto newBrand) throws Exception {
+    public ResponseEntity<?> createBrand(@RequestBody BrandRequestDTO newBrand) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
             BrandEntity brand = brandServiceImpl.createOne(newBrand);
@@ -92,7 +92,7 @@ public class BrandController {
 
     @PutMapping("/{brandId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> updateBrand(@PathVariable Long brandId, @RequestBody BrandRequestDto updateBrand ){
+    public ResponseEntity<?> updateBrand(@PathVariable Long brandId, @RequestBody BrandRequestDTO updateBrand ){
         ResponseDTO responseDTO = new ResponseDTO();
         BrandEntity updatedBrand;
         try {
