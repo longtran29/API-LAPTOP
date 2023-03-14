@@ -61,9 +61,9 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserEntity findUserByUserName(String username) throws Exception {
-        Optional<UserEntity> user = this.userRepository.findByUsername(username);
-        return user.orElse(null);
+    public UserEntity findUserByUserName(String username) {
+        UserEntity user = this.userRepository.findByUsername(username).get();
+        return user;
     }
 
     @Override

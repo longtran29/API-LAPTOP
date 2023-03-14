@@ -10,15 +10,14 @@ import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.service.impl.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -41,23 +40,37 @@ public class CartServiceImpl implements CartService {
         UserEntity user = userRepository.findByUsername(username).get();
 
         UserCart userCart = user.getCart();
-        if(userCart == null) {
+
+        if (userCart != null) {
+
+            List<CartDetails> cartDetails = userCart.getCartDetails();
+            for (CartDetails cartDetail : cartDetails
+            ) {
+                if (cartDetail.getProduct().getId() == productId) {
+                    cartDetail.setQuantity(cartDetail.getQuantity() + quantity);
+                    cartDetail.setModifyDate(LocalDateTime.now());
+                }
+            }
+
+            return cartRepository.save(userCart);
+
+        } else {
             userCart = new UserCart();
             userCart.setUser(user);
+            ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new NoSuchElementException("Product not found"));
+            CartDetails cartDetails = new CartDetails();
+            cartDetails.setProduct(product);
+            cartDetails.setQuantity(quantity);
+            cartDetails.setAddDate(LocalDateTime.now());
+            cartDetails.setUserCart(userCart);
+
+            userCart.getCartDetails().add(cartDetails);
+
+            return cartRepository.save(userCart);
         }
 
-        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new NoSuchElementException("Product not found"));
-
-        CartDetails cartDetails = new CartDetails();
-        cartDetails.setProduct(product);
-        cartDetails.setQuantity(quantity);
-        cartDetails.setAddDate(LocalDateTime.now());
-        cartDetails.setUserCart(userCart);
-
-        userCart.getCartDetails().add(cartDetails);
-
-        return cartRepository.save(userCart);
     }
+
 
 
     public List<CartResponseDTO> getAllCartDetails(UserCart userCart) {
@@ -71,6 +84,23 @@ public class CartServiceImpl implements CartService {
         return listCart;
     }
 
+    public UserCart updateQuantityItem(UserEntity user, Long productId, String type) {
+        try {
+            UserCart userCart = user.getCart();
+            List<CartDetails> listCart = userCart.getCartDetails();
+            for (CartDetails cartDetail: listCart
+            ) {
+
+                if(cartDetail.getProduct().getId() == productId) {
+                    cartDetail.setQuantity(type.equals("increase") ? cartDetail.getQuantity() +1 : cartDetail.getQuantity()-1 );
+                    cartDetail.setModifyDate(LocalDateTime.now());
+                }
+            }
+            return cartRepository.save(userCart);
+        } catch(NotFoundException ex) {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
 
 
 }

@@ -1,5 +1,6 @@
 package com.springboot.laptop.controller;
 
+import com.springboot.laptop.model.CartDetails;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.CartRequestDTO;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/cart")
@@ -41,10 +43,38 @@ public class CartController {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping("/all_cart_items")
-    public ResponseEntity<?> getAllCartItem() throws Exception {
+    public ResponseEntity<?> getAllCartItem() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        System.out.println("Name is " + username);
+
+        UserEntity user = userService.findUserByUserName(username);
+        try {
+            UserCart userCart = user.getCart();
+            return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
+        }
+        catch(NullPointerException ex) {
+            return ResponseEntity.badRequest().body("Chưa có giỏ hàng nào");
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PutMapping("/update/{productId}/{type}")
+    public ResponseEntity<?> updateQuantityItem(@PathVariable Long productId, @PathVariable String type) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userService.findUserByUserName(username);
-        UserCart userCart = user.getCart();
-        return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
+
+       try {
+           UserCart userCart = cartService.updateQuantityItem(user, productId, type);
+
+           return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
+
+       } catch (Exception ex) {
+           return ResponseEntity.badRequest().body(ex.getMessage());
+       }
     }
+
+//    @DeleteMapping("/delete/{productId}")
+//    public ResponseEntity<?> removeCartItem(@PathVariable Long productId) {
+//       return ResponseEntity.ok().body(cartService.removeCartItem(productId));
+//    }
 }

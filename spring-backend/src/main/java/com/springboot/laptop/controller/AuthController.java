@@ -80,10 +80,13 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             jwtRequest.getUsername(),
+
                             jwtRequest.getPassword()
                     )
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            System.out.println("Value authenticate " + username);
             System.out.println("auth.getAuthorities() = " + authentication.getAuthorities());
             System.out.printf("Info are " + jwtRequest.getUsername() + jwtRequest.getPassword());
 

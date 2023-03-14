@@ -1,6 +1,7 @@
 package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,6 +37,8 @@ public class UserEntity extends BaseEntity {
     )
     private List<UserRoleEntity> roles = new ArrayList<>();
 
+
+    @JsonIgnore
     @OneToOne(mappedBy = "user")
     private UserCart cart;
 
