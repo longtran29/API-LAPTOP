@@ -2,10 +2,7 @@ package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,7 +11,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity extends BaseEntity {
@@ -23,9 +21,7 @@ public class UserEntity extends BaseEntity {
     private String password;
     private String email;
     private String name;
-    private String address;
-
-    private String mobileNumber;
+    private String phoneNumber;
 
 
     @JsonBackReference
@@ -41,5 +37,10 @@ public class UserEntity extends BaseEntity {
     @JsonIgnore
     @OneToOne(mappedBy = "user")
     private UserCart cart;
+
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Address> addresses = new ArrayList<>();
 
 }

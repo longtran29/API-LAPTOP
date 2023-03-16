@@ -5,6 +5,7 @@ import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.CartResponseDTO;
+import com.springboot.laptop.repository.CartDetailRepository;
 import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.repository.UserRepository;
@@ -25,12 +26,14 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final CartDetailRepository cartDetailRepository;
 
     @Autowired
-    public CartServiceImpl(UserRepository userRepository, CartRepository cartRepository, ProductRepository productRepository) {
+    public CartServiceImpl(UserRepository userRepository, CartRepository cartRepository, ProductRepository productRepository, CartDetailRepository cartDetailRepository) {
         this.userRepository = userRepository;
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
+        this.cartDetailRepository = cartDetailRepository;
     }
 
     @Override
@@ -41,35 +44,40 @@ public class CartServiceImpl implements CartService {
 
         UserCart userCart = user.getCart();
 
-        if (userCart != null) {
+        if (!userCart.getCartDetails().isEmpty()) {
+            CartDetails cartDetail = userCart.getCartDetails()
+                    .stream()
+                    .filter(cd -> cd.getProduct().getId().equals(productId))
+                    .findFirst()
+                    .orElse(null);
 
-            List<CartDetails> cartDetails = userCart.getCartDetails();
-            for (CartDetails cartDetail : cartDetails
-            ) {
-                if (cartDetail.getProduct().getId() == productId) {
-                    cartDetail.setQuantity(cartDetail.getQuantity() + quantity);
-                    cartDetail.setModifyDate(LocalDateTime.now());
-                }
+            if (cartDetail != null) {
+                cartDetail.setQuantity(cartDetail.getQuantity() + quantity);
+                cartDetail.setModifyDate(LocalDateTime.now());
+            } else {
+                ProductEntity product = productRepository.findById(productId)
+                        .orElseThrow(() -> new NoSuchElementException("Product not found"));
+
+                cartDetail = new CartDetails();
+                cartDetail.setProduct(product);
+                cartDetail.setQuantity(quantity);
+                cartDetail.setAddDate(LocalDateTime.now());
+                cartDetail.setUserCart(userCart);
+                userCart.getCartDetails().add(cartDetail);
             }
-
-            return cartRepository.save(userCart);
-
         } else {
-            userCart = new UserCart();
-            userCart.setUser(user);
-            ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new NoSuchElementException("Product not found"));
+            ProductEntity product = productRepository.findById(productId)
+                    .orElseThrow(() -> new NoSuchElementException("Product not found"));
+
             CartDetails cartDetails = new CartDetails();
             cartDetails.setProduct(product);
             cartDetails.setQuantity(quantity);
             cartDetails.setAddDate(LocalDateTime.now());
             cartDetails.setUserCart(userCart);
-
             userCart.getCartDetails().add(cartDetails);
-
-            return cartRepository.save(userCart);
         }
-
-    }
+        return cartRepository.save(userCart);
+        }
 
 
 
@@ -102,5 +110,29 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    public UserCart removeCartItem(Long productId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUsername(username).get();
+
+        System.out.println("User logged  " + user.getName());
+
+        UserCart userCart = user.getCart();
+        if(userCart != null) {
+            Optional<CartDetails> removeItem = userCart.getCartDetails().stream().filter(item -> item.getProduct().getId() == productId).findFirst();
+
+            if(removeItem.isPresent()) {
+                System.out.println("Da vao removeItem");
+                System.out.println("cart details " + userCart.getCartDetails());
+                userCart.getCartDetails().remove(removeItem.get());
+                cartDetailRepository.delete(removeItem.get());
+
+
+            }
+        }
+        else {
+            throw new NotFoundException("Không tìm thấy");
+        }
+        return cartRepository.save(userCart);
+    }
 
 }

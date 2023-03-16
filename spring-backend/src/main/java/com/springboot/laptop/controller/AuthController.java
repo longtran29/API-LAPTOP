@@ -1,6 +1,7 @@
 package com.springboot.laptop.controller;
 
 
+import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.*;
 import com.springboot.laptop.model.enums.UserRoleEnum;
@@ -11,6 +12,7 @@ import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.UserServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +30,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 //@CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
@@ -114,6 +119,24 @@ public class AuthController {
         }
         return ResponseEntity.ok(responseDTO);
     }
+
+    @PostMapping("/user/addAddress")
+    public ResponseEntity<?> addAddress(@RequestBody AddressRequestDTO requestAddress) {
+        System.out.println("Vao day trươc " + requestAddress);
+        UserEntity user = userServiceImpl.addNewAddress(requestAddress);
+        return ResponseEntity.ok((getUserAddresses()));
+    }
+
+    @GetMapping(value = "/user/information")
+    public ResponseEntity<?> getUserAddresses() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUsername(username).get();
+
+            List<Address> addresses = user.getAddresses();
+            return ResponseEntity.ok(addresses);
+
+    }
+
     @GetMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         if(StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")){

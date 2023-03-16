@@ -1,7 +1,9 @@
 package com.springboot.laptop.service;
 
+import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.UserRoleEntity;
+import com.springboot.laptop.model.dto.AddressRequestDTO;
 import com.springboot.laptop.model.dto.AppClientSignUpDTO;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.repository.UserRepository;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -57,6 +60,23 @@ public class UserServiceImpl implements UserService {
         Optional<UserEntity> byUsername = this.userRepository.findByUsername(username);
         Optional<UserEntity> byEmail = this.userRepository.findByEmail(email);
         return byUsername.isPresent() || byEmail.isPresent();
+    }
+
+    public UserEntity addNewAddress(AddressRequestDTO requestAddress) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUsername(username).get();
+
+        List<Address> userAddress = user.getAddresses();
+        Address newAddress = new Address();
+        newAddress.setAddress(requestAddress.getAddress());
+        newAddress.setCity(requestAddress.getCity());
+        newAddress.setCountry(requestAddress.getCountry());
+        newAddress.setZipcode(requestAddress.getZipcode());
+        newAddress.setPhoneNumber(requestAddress.getPhoneNumber());
+        newAddress.setUser(user);
+        userAddress.add(newAddress);
+
+        return userRepository.save(user);
     }
 
 
