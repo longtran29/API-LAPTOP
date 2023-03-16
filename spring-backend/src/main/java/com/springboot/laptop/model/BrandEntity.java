@@ -35,7 +35,7 @@ public class BrandEntity extends BaseEntity {
 
 
     //    resolve error jackson - arraylist, collection
-    @JsonBackReference
+    @JsonBackReference("brand_product")
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductEntity> products = new ArrayList<>();
 

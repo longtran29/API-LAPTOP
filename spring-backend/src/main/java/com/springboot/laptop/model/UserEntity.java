@@ -24,7 +24,7 @@ public class UserEntity extends BaseEntity {
     private String phoneNumber;
 
 
-    @JsonBackReference
+    @JsonBackReference("user_roles")
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_role",
@@ -39,7 +39,7 @@ public class UserEntity extends BaseEntity {
     private UserCart cart;
 
 
-    @JsonBackReference
+    @JsonBackReference("user_address")
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Address> addresses = new ArrayList<>();
 

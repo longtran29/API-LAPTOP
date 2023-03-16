@@ -1,4 +1,4 @@
-package com.springboot.laptop.model.dto;
+package com.springboot.laptop.model.dto.response;
 
 
 import com.springboot.laptop.model.ProductEntity;

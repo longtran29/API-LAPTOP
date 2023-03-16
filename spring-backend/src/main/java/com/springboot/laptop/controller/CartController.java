@@ -1,25 +1,15 @@
 package com.springboot.laptop.controller;
 
-import com.springboot.laptop.model.CartDetails;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.CartRequestDTO;
-import com.springboot.laptop.repository.UserRepository;
+import com.springboot.laptop.model.dto.request.CartRequestDTO;
 import com.springboot.laptop.service.CartServiceImpl;
 import com.springboot.laptop.service.UserServiceImpl;
-import com.springboot.laptop.service.impl.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/cart")

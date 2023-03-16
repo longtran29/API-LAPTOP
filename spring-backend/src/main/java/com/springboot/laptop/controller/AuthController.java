@@ -3,7 +3,13 @@ package com.springboot.laptop.controller;
 
 import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.*;
+import com.springboot.laptop.model.dto.request.AddressRequestDTO;
+import com.springboot.laptop.model.dto.request.AppClientSignUpDTO;
+import com.springboot.laptop.model.dto.request.NewPasswordRequest;
+import com.springboot.laptop.model.dto.request.TokenDTO;
+import com.springboot.laptop.model.dto.response.ErrorCode;
+import com.springboot.laptop.model.dto.response.ResponseDTO;
+import com.springboot.laptop.model.dto.response.UserInformationDTO;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
@@ -12,7 +18,6 @@ import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.UserServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,9 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 //@CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
@@ -124,16 +127,21 @@ public class AuthController {
     public ResponseEntity<?> addAddress(@RequestBody AddressRequestDTO requestAddress) {
         System.out.println("Vao day trươc " + requestAddress);
         UserEntity user = userServiceImpl.addNewAddress(requestAddress);
-        return ResponseEntity.ok((getUserAddresses()));
+        return ResponseEntity.ok((getUserInformation()));
     }
 
     @GetMapping(value = "/user/information")
-    public ResponseEntity<?> getUserAddresses() {
+    public ResponseEntity<?> getUserInformation() {
+        ResponseDTO responseDTO = new ResponseDTO();
+        UserInformationDTO userInfo = new UserInformationDTO();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
 
-            List<Address> addresses = user.getAddresses();
-            return ResponseEntity.ok(addresses);
+        List<Address> addresses = user.getAddresses();
+        userInfo.setAddresses(addresses);
+        userInfo.setEmail(user.getEmail());
+        responseDTO.setData(userInfo);
+        return ResponseEntity.ok(responseDTO);
 
     }
 

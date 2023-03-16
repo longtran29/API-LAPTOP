@@ -2,8 +2,8 @@ package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.ProductEntity;
-import com.springboot.laptop.model.dto.ProductDTO;
-import com.springboot.laptop.model.dto.ProductResponseDTO;
+import com.springboot.laptop.model.dto.request.ProductDTO;
+import com.springboot.laptop.model.dto.response.ProductResponseDTO;
 
 import java.util.List;
 

@@ -1,5 +1,6 @@
 package com.springboot.laptop.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.springboot.laptop.model.enums.OrderStatus;
 import lombok.AllArgsConstructor;
@@ -22,11 +23,13 @@ import java.util.List;
 public class Order extends  BaseEntity{
 
 
-    @JsonIgnoreProperties("user")
+    @JsonIgnoreProperties("order_user")
     @ManyToOne
     @JoinColumn(name= "user_id", referencedColumnName = "id")
     private UserEntity user;
 
+
+    @JsonBackReference("order_detail_order")
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetails> orderDetails = new ArrayList<>();
 
@@ -37,6 +40,7 @@ public class Order extends  BaseEntity{
     @Enumerated
     OrderStatus orderStatus;
 
+    @JsonBackReference("order_address")
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Address address;
 

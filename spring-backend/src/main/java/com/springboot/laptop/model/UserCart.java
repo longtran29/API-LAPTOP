@@ -1,14 +1,7 @@
 package com.springboot.laptop.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.springboot.laptop.model.dto.CartRequestDTO;
-import com.springboot.laptop.model.dto.CartResponseDTO;
-import com.springboot.laptop.repository.ProductRepository;
 import lombok.*;
-import org.apache.catalina.User;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -26,7 +19,7 @@ public class UserCart extends BaseEntity {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private UserEntity user;
 
-    @JsonManagedReference
+    @JsonManagedReference("cart_detail_user_cart")
 //    option if need bidirection, the JPA use annotation to get list cartDetails associated with userCar
     @OneToMany(mappedBy = "userCart", cascade = CascadeType.ALL)
     private List<CartDetails> cartDetails = new ArrayList<>();

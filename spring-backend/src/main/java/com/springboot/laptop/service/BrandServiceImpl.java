@@ -4,7 +4,7 @@ package com.springboot.laptop.service;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.dto.BrandRequestDTO;
+import com.springboot.laptop.model.dto.request.BrandRequestDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.UserRepository;

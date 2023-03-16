@@ -1,7 +1,7 @@
 package com.springboot.laptop.utils;
 import com.springboot.laptop.model.RefreshToken;
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.TokenDTO;
+import com.springboot.laptop.model.dto.request.TokenDTO;
 import com.springboot.laptop.repository.RefreshTokenRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import io.jsonwebtoken.*;

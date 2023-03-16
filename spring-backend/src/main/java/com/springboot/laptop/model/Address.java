@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Address extends BaseEntity {
 
-    @JsonBackReference
+    @JsonBackReference("user_address")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity user;
 
@@ -29,6 +29,7 @@ public class Address extends BaseEntity {
     private String zipcode;
 
     private String phoneNumber;
+
 
     @OneToMany(mappedBy = "address")
     List<Order> orders = new ArrayList<>();

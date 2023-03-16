@@ -24,7 +24,7 @@ public class CartDetails extends  BaseEntity{
 
     private LocalDateTime modifyDate;
 
-    @JsonBackReference
+    @JsonBackReference("cart_detail_user_cart")
     @ManyToOne
     @JoinColumn(name="cart_id", referencedColumnName = "id")
     private UserCart userCart;

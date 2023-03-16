@@ -1,7 +1,7 @@
 package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.AppClientSignUpDTO;
+import com.springboot.laptop.model.dto.request.AppClientSignUpDTO;
 
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;

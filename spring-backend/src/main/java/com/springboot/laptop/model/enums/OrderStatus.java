@@ -1,6 +1,19 @@
 package com.springboot.laptop.model.enums;
 
 public enum OrderStatus {
+    NEW("New"),
+    PROCESSING("Processing"),
+    SHIPPED("Shipped"),
+    DELIVERED("Delivered"),
+    CANCELED("Canceled");
 
-    PROCESSED, DELIVERED, SHIPPED
+    private final String name;
+
+    OrderStatus(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 }

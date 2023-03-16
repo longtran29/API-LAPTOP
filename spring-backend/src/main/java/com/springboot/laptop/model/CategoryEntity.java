@@ -23,7 +23,7 @@ public class CategoryEntity extends BaseEntity {
 
 
 //    resolve error jackson - arraylist, collection
-    @JsonBackReference
+    @JsonBackReference("category_product")
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<ProductEntity> products;
 

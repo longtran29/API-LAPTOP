@@ -3,7 +3,7 @@ package com.springboot.laptop.service;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.dto.ErrorCode;
+import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.service.impl.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;

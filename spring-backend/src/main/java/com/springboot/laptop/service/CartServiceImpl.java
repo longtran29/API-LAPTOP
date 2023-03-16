@@ -4,16 +4,14 @@ import com.springboot.laptop.model.CartDetails;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.CartResponseDTO;
+import com.springboot.laptop.model.dto.response.CartResponseDTO;
 import com.springboot.laptop.repository.CartDetailRepository;
 import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.service.impl.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
@@ -42,9 +40,10 @@ public class CartServiceImpl implements CartService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
 
-        UserCart userCart = user.getCart();
+        UserCart userCart = null;
 
-        if (!userCart.getCartDetails().isEmpty()) {
+        if(user.getCart() != null) {
+            userCart = user.getCart();
             CartDetails cartDetail = userCart.getCartDetails()
                     .stream()
                     .filter(cd -> cd.getProduct().getId().equals(productId))
@@ -65,19 +64,27 @@ public class CartServiceImpl implements CartService {
                 cartDetail.setUserCart(userCart);
                 userCart.getCartDetails().add(cartDetail);
             }
-        } else {
+
+        }
+        else {
+
+            userCart = new UserCart();
+            userCart.setUser(user);
             ProductEntity product = productRepository.findById(productId)
                     .orElseThrow(() -> new NoSuchElementException("Product not found"));
 
-            CartDetails cartDetails = new CartDetails();
-            cartDetails.setProduct(product);
-            cartDetails.setQuantity(quantity);
-            cartDetails.setAddDate(LocalDateTime.now());
-            cartDetails.setUserCart(userCart);
-            userCart.getCartDetails().add(cartDetails);
+            CartDetails cartDetail = new CartDetails();
+            cartDetail.setProduct(product);
+            cartDetail.setQuantity(quantity);
+            cartDetail.setAddDate(LocalDateTime.now());
+            cartDetail.setUserCart(userCart);
+            userCart.getCartDetails().add(cartDetail);
+
+
         }
+
         return cartRepository.save(userCart);
-        }
+}
 
 
 

@@ -31,7 +31,7 @@ public class UserRoleEntity extends BaseEntity {
     }
 
 
-    @JsonBackReference
+    @JsonBackReference("user_roles")
     @ManyToMany(mappedBy = "roles")
     private List<UserEntity> users = new ArrayList<>();
 }

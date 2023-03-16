@@ -3,7 +3,7 @@ package com.springboot.laptop.service.impl;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.dto.BrandRequestDTO;
+import com.springboot.laptop.model.dto.request.BrandRequestDTO;
 
 import java.util.List;
 
