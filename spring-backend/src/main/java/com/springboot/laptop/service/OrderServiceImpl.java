@@ -4,6 +4,7 @@ import com.springboot.laptop.model.*;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
 import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.repository.AddressRepository;
+import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.OrderRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.service.impl.OrderService;
@@ -23,18 +24,25 @@ public class OrderServiceImpl implements OrderService {
 
     private final AddressRepository addressRepository;
     private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
     @Autowired
-    public OrderServiceImpl(UserRepository userRepository, AddressRepository addressRepository, OrderRepository orderRepository) {
+    public OrderServiceImpl(UserRepository userRepository, AddressRepository addressRepository, OrderRepository orderRepository, CartRepository cartRepository) {
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
         this.orderRepository = orderRepository;
+        this.cartRepository = cartRepository;
 
+    }
+
+    public List<Order> getOrders() {
+        return orderRepository.findAll();
     }
 
 
     public Order checkout(OrderRequestDTO orderRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
+
 
         UserCart userCart = user.getCart();
         List<CartDetails> cartDetailList = userCart.getCartDetails();
@@ -68,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.setTotal(total);
         order.setOrderDetails(orderDetailList);
-
+        cartRepository.deleteById(user.getCart().getId());
 
         return orderRepository.save(order);
     }

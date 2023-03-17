@@ -20,7 +20,7 @@ import java.util.List;
 public class Address extends BaseEntity {
 
     @JsonBackReference("user_address")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private UserEntity user;
 
     private String address;
@@ -30,7 +30,7 @@ public class Address extends BaseEntity {
 
     private String phoneNumber;
 
-
+    @JsonBackReference("order_address")
     @OneToMany(mappedBy = "address")
     List<Order> orders = new ArrayList<>();
 
