@@ -3,6 +3,7 @@ package com.springboot.laptop.security;
 
 import com.springboot.laptop.config.JwtAuthenticationFilter;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -44,6 +46,8 @@ public class SecurityConfiguration {
                 .build();
     }
 
+
+
     @Autowired
     void configure(AuthenticationManagerBuilder auth) throws Exception {
         System.out.println("Vao authentication" + auth);
@@ -55,6 +59,12 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
+
+    @Bean
+    public InitializingBean initializingBean() {
+        return () -> SecurityContextHolder.setStrategyName(
+                SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{

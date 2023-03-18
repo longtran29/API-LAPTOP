@@ -2,6 +2,7 @@ package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -23,8 +24,7 @@ public class UserEntity extends BaseEntity {
     private String name;
     private String phoneNumber;
 
-
-    @JsonBackReference("user_roles")
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_role",
@@ -34,13 +34,18 @@ public class UserEntity extends BaseEntity {
     private List<UserRoleEntity> roles = new ArrayList<>();
 
 
-    @JsonIgnore
+//    @JsonIgnore
     @OneToOne(mappedBy = "user")
     private UserCart cart;
 
 
-    @JsonBackReference("user_address")
+    @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Address> addresses = new ArrayList<>();
+
+
+    @JsonManagedReference
+    @OneToMany( cascade = CascadeType.ALL, mappedBy = "user")
+    private List<Order> orders = new ArrayList<>();
 
 }

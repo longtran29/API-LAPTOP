@@ -1,5 +1,6 @@
 package com.springboot.laptop.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class ProductEntity extends BaseEntity {
     private Float original_price;
     private Float discount_percent;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name="brand_id")
     private BrandEntity brand;
@@ -30,6 +32,7 @@ public class ProductEntity extends BaseEntity {
 
 //    many instances of ProductEntity can be associated with one instance of CategoryEntity, a product belongs to
 //    only one category
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private CategoryEntity category;

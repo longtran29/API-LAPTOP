@@ -2,6 +2,7 @@ package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.springboot.laptop.model.enums.OrderStatus;
 import lombok.*;
 
@@ -20,26 +21,20 @@ import java.util.List;
 // named the table to  prevent the reversed keyword "order ...by" when querying
 @Table(name="orders")
 public class Order extends  BaseEntity{
-
-
-    @JsonIgnoreProperties("order_user")
+//    @JsonIgnoreProperties("order_user")
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name= "user_id", referencedColumnName = "id")
     private UserEntity user;
 
-
-    @JsonBackReference("order_detail_order")
+    @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetails> orderDetails = new ArrayList<>();
-
     private LocalDateTime orderDate;
-
     private float total;
-
     @Enumerated
     OrderStatus orderStatus;
-
-    @JsonBackReference("order_address")
+    @JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL)
     private Address address;
 

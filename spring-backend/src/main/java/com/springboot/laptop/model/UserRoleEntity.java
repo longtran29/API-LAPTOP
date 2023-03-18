@@ -2,6 +2,7 @@ package com.springboot.laptop.model;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,7 +32,6 @@ public class UserRoleEntity extends BaseEntity {
     }
 
 
-    @JsonBackReference("user_roles")
     @ManyToMany(mappedBy = "roles")
     private List<UserEntity> users = new ArrayList<>();
 }

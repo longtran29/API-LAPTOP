@@ -3,6 +3,7 @@ package com.springboot.laptop.config;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,67 +29,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired private JwtUtility jwtUtility;
 
-    private static List<String> skipFilterUrls = Arrays.asList("/api/v1/categories", "/api/v1/authenticate", "/api/v1/login");
+//    private static List<String> skipFilterUrls = Arrays.asList("/api/v1/categories", "/api/v1/authenticate");
+//
+//    @Override
+//    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+//        System.out.println("In not filter");
+//        return skipFilterUrls.stream().anyMatch(url -> new AntPathRequestMatcher(url).matches(request));
+//    }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        System.out.println("In not filter");
-        return skipFilterUrls.stream().anyMatch(url -> new AntPathRequestMatcher(url).matches(request));
-    }
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            System.out.println("Da vao doFilterInternal");
+            String token = getJwt(request);
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException
-    {
-
-        String accessToken = jwtUtility.resolveAccessToken(request);
-//        String accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2NzYyOTE4ODgsImV4cCI6MTY3NjI5MzY4OCwic3ViIjoiYWRtaW4ifQ.QMV7ewBDKBkz62ji3-crRs4GZ4cHgYMoGnFt0yLyxJM";
-        String refreshToken = jwtUtility.resolveRefreshToken(request);
-
-
-        System.out.println("Token i doFilter is " + accessToken + " and " + refreshToken);
-
-        if (accessToken != null) {
-            System.out.println("Da vao accessToken");
-            // AccessToken 이 유효하면?
-            if (jwtTokenProvider.validateToken(accessToken)) {
-                System.out.println("Validated");
-                this.setAuthentication(accessToken);
+            System.out.println("Token ngoai " + token);
+            if(token !=null &&jwtUtility.validateToken(token)){
+                System.out.println("Da vao trong " + token);
+                String username = jwtUtility.getUerNameFromToken(token);
+                System.out.println("username is " + username);
+                UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                System.out.println("authentication  is " + authenticationToken);
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
-            // AccessToken 은 만료, RefreshToken 은 존재
-            else if(!jwtTokenProvider.validateToken(accessToken) && refreshToken != null) {
-
-                //RefreshToken 유효?
-                boolean validRefreshToken = jwtUtility.validateToken(refreshToken);
-
-                //RefreshToken DB에 존재?
-                boolean isRefreshToken = jwtUtility.existsRefreshToken(refreshToken);
-
-                //RefreshToken이 유효기간 남았고 DB에 남아있다면 AccessToken 새로 발급
-                if (validRefreshToken && isRefreshToken) {
-                    String userName = jwtUtility.getUsernameFromToken(refreshToken);
-                    String newAccessToken = jwtUtility.createToken(userName);
-                    jwtUtility.setHeaderAccessToken(response, newAccessToken);
-                    this.setAuthentication(newAccessToken);
-                }
-            }
+        } catch (Exception e){
+            logger.error("Can't set user authentication -> Message: "+e);
         }
-        System.out.println("Truoc filter in Filter Jwer");
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(request,response);
     }
-    private String getJwtToken(HttpServletRequest request){
-        String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer")){
-            System.out.println("Token is " + bearerToken.substring(7, bearerToken.length()));
-            return bearerToken.substring(7, bearerToken.length());
+    private String getJwt(HttpServletRequest request){
+        String authHeader = request.getHeader("Authorization");
+        if(authHeader !=null && authHeader.startsWith("Bearer")){
+            return authHeader.replace("Bearer", "");
         }
         return null;
     }
 
-    public void setAuthentication(String token) {
-        Authentication authentication = jwtUtility.getAuthentication(token);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
 }

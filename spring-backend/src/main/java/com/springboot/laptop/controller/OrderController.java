@@ -4,6 +4,7 @@ import com.springboot.laptop.model.Order;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
 import com.springboot.laptop.model.dto.response.OrderCompleted;
+import com.springboot.laptop.model.dto.response.OrderResponseDTO;
 import com.springboot.laptop.model.dto.response.OrderedProduct;
 import com.springboot.laptop.service.OrderServiceImpl;
 import org.apache.coyote.Response;
@@ -48,6 +49,21 @@ public class OrderController {
     public ResponseEntity<?> getOrders() {
         List<Order> orders =  orderService.getOrders();
         return ResponseEntity.ok().body(orders);
+    }
+
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin/{orderId}")
+    public ResponseEntity<?> getOrderDetail(@PathVariable Long orderId) {
+        Order order = orderService.findById(orderId);
+        OrderResponseDTO orderResponse = new OrderResponseDTO();
+        orderResponse.setUser(order.getUser());
+        orderResponse.setOrderDetails(order.getOrderDetails());
+        orderResponse.setOrderDate(order.getOrderDate());
+        orderResponse.setOrderStatus(order.getOrderStatus());
+        orderResponse.setTotal(order.getTotal());
+        orderResponse.setAddress(order.getAddress());
+        return ResponseEntity.ok().body(orderResponse);
     }
 
     @PostMapping("/sendOrderNotification")

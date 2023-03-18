@@ -2,6 +2,7 @@ package com.springboot.laptop.model;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Address extends BaseEntity {
 
-    @JsonBackReference("user_address")
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     private UserEntity user;
 
@@ -30,7 +31,7 @@ public class Address extends BaseEntity {
 
     private String phoneNumber;
 
-    @JsonBackReference("order_address")
+    @JsonManagedReference
     @OneToMany(mappedBy = "address")
     List<Order> orders = new ArrayList<>();
 

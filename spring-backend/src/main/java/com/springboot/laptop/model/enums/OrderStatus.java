@@ -1,11 +1,11 @@
 package com.springboot.laptop.model.enums;
 
 public enum OrderStatus {
-    NEW("New"),
-    PROCESSING("Processing"),
-    SHIPPED("Shipped"),
-    DELIVERED("Delivered"),
-    CANCELED("Canceled");
+    NEW("Đặt hàng"),
+    PROCESSING("Đang xử lý"),
+    SHIPPED("Đang ship"),
+    DELIVERED("Đã hoàn thành"),
+    CANCELED("Đã huỷ");
 
     private final String name;
 

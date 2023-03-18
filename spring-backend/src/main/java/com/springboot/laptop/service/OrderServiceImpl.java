@@ -38,6 +38,10 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findAll();
     }
 
+    public Order findById(Long orderId) {
+        return orderRepository.findById(orderId).get();
+    }
+
 
     public Order checkout(OrderRequestDTO orderRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

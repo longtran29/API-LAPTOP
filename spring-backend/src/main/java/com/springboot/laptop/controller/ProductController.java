@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -40,9 +41,22 @@ public class ProductController {
         this.cloudinaryService = cloudinaryService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Thêm sản phẩm ",
+            description = "Thêm mới sản phẩm vào cơ sở dữ liệu",security = {
+            @SecurityRequirement(name = "bearer-key") },
+            responses = {
+                    @ApiResponse(description = "Thêm thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     // check authority base on SecurityContextHolder
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createProduct(@RequestBody ProductDTO product) {
         try {
             ResponseDTO responseDTO = new ResponseDTO();
@@ -55,6 +69,18 @@ public class ProductController {
         }
     }
 
+    @Operation(summary = "Lấy 1 sản phẩm ",
+            description = "Trả về 1 sản phẩm theo mã ",security = {
+            @SecurityRequirement(name = "bearer-key") },
+//            tags = {"Category"},
+            responses = {
+                    @ApiResponse(description = "thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @GetMapping("/{productId}")
     @PreAuthorize("permitAll")
     public ResponseEntity<?> getOneProduct(@PathVariable Long productId) {
@@ -71,16 +97,52 @@ public class ProductController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @Operation(summary = "Tải ảnh lên",
+            description = "Tải ảnh lên cloud",
+            responses = {
+                    @ApiResponse(description = "Tải thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PostMapping("/upload")
     public String uploadFile(@Param("file") MultipartFile file) {
         System.out.println("Da vao uploadFile");
         String url = cloudinaryService.uploadFile(file);
         return url;
     }
+
+    @Operation(summary = "Danh sách sản phẩm",
+            description = "Lấy ra danh sách các sản phẩm",
+            responses = {
+                    @ApiResponse(description = "Thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
         return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getAll(), HttpStatus.OK);
     }
+
+    @Operation(summary = "Xoá sản phẩm",
+            description = "Xoá sản phẩm",security = {
+            @SecurityRequirement(name = "bearer-key") },
+//            tags = {"Category"},
+            responses = {
+                    @ApiResponse(description = "Xoá thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
@@ -98,9 +160,21 @@ public class ProductController {
 
     }
 
-    @Operation(summary = "Update a product", responses = {
-            @ApiResponse(description = "Update product", responseCode = "200",
-                    content = @Content(mediaType = "application/json",schema = @Schema(implementation = CategoryEntity.class)))    })
+
+    @Operation(summary = "Cập nhật sản phẩm ",
+            description = "Cập nhật các thông tin sản pẩm",security = {
+            @SecurityRequirement(name = "bearer-key") },
+//            tags = {"Category"},
+            responses = {
+                    @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{productId}")
     public ResponseEntity<?> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ResourceNotFoundException {
@@ -117,13 +191,26 @@ public class ProductController {
         }
     }
 
+    @Operation(summary = "Cập nhật trạng thái ",
+            description = "Cập nhật trạng thái của sản phẩm",security = {
+            @SecurityRequirement(name = "bearer-key") },
+            responses = {
+                    @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PutMapping("/{cateId}/{cate_status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
         // note : not using operator "=="
         Boolean category_status =cate_status.equalsIgnoreCase("enabled");
         productServiceImpl.updateStatus(cateId, category_status);
-        return new ResponseEntity<String>("Update status successfully",HttpStatus.OK);
+        return new ResponseEntity<String>("Cập nhật trạng thái thành công",HttpStatus.OK);
     }
 
 }

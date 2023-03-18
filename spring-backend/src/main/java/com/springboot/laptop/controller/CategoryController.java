@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,16 @@ public class CategoryController {
     }
 
 
+    @Operation(summary = "Lấy 1 danh mục",
+            description = "Lấy ra 1 danh muc",
+            responses = {
+                    @ApiResponse(description = "Thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @GetMapping("/{categoryId}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long categoryId) {
         CategoryEntity category = categoryServiceImpl.findById(categoryId);
@@ -50,16 +61,25 @@ public class CategoryController {
         }
     }
 
-    @Operation(summary = "Create a new category", responses = {
-            @ApiResponse(description = "Create new category success", responseCode = "200",
-                    content = @Content(mediaType = "application/json",schema = @Schema(implementation = CategoryEntity.class))),
-//            @ApiResponse(description = "User not found",responseCode = "409",content = @Content)
-    })
+    @Operation(summary = "Tạo danh mục mới",
+            description = "Tạo một danh mục mới",security = {
+            @SecurityRequirement(name = "bearer-key") },
+            responses = {
+                    @ApiResponse(description = "Tạo thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PostMapping("/new")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createCategory(@RequestBody CategoryRequestDTO categoryDto) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
-        System.out.println("User principal in post cate " + SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println("User principal in post cate " + SecurityContextHolder.getContext().getAuthentication());
+        System.out.println("Authorities " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
         try {
             CategoryEntity newOne = new CategoryEntity(categoryDto.getName(), categoryDto.getEnabled());
             CategoryEntity newCate = categoryServiceImpl.createOne(newOne);
@@ -82,27 +102,38 @@ public class CategoryController {
     }
 
 
-//    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    @PreAuthorize("permitAll")
-    @Operation(
-            summary = "Get all category")
+
+    @Operation(summary = "Lấy tất cả danh mục",
+            description = "Tất cả danh mục",
+            responses = {
+                    @ApiResponse(description = "Lấy thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @GetMapping
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> getAllCategories() {
         List<CategoryEntity> listCates = categoryServiceImpl.getAll();
         return new ResponseEntity<List<CategoryEntity>>(listCates, HttpStatus.OK );
     }
 
-    @Operation(summary = "Update Category by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category updated",
-                    content = @Content(schema = @Schema(implementation = CategoryEntity.class))),
-            @ApiResponse(responseCode = "401", description = "User is unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Category not found"),
-    })
+    @Operation(summary = "Cập nhật danh mục",
+            description = "Cập nhật danh mục",security = {
+            @SecurityRequirement(name = "bearer-key") },
+            responses = {
+                    @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PutMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    @PostAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateCate(@PathVariable Long cateId, @RequestBody CategoryEntity cate )  {
         ResponseDTO responseDTO = new ResponseDTO();
         CategoryEntity updatedCate;
@@ -111,7 +142,7 @@ public class CategoryController {
             responseDTO.setData(updatedCate);
             responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
         } catch (DuplicatedDataException e) {
-            log.error("Error while creating a new category: ", e);
+            log.error(" "  +  e.getMessage());
             responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
             return ResponseEntity.badRequest().body(responseDTO);
         }
@@ -119,13 +150,18 @@ public class CategoryController {
     }
 
 
-    @Operation(summary = "Update Status Cate by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Category updated",
-                    content = @Content(schema = @Schema(implementation = CategoryEntity.class))),
-            @ApiResponse(responseCode = "401", description = "User is unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Category not found"),
-    })
+    @Operation(summary = "Cập nhật trạng thái",
+            description = "Cập nhật trạng thái",
+            responses = {
+                    @ApiResponse(description = "Thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PutMapping("/{cateId}/{cate_status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
@@ -136,10 +172,20 @@ public class CategoryController {
     }
 
 
-    @Operation(
-            summary = "Delete a category",
-            description = "Provide an category id to delete"
-    )
+    @Operation(summary = "Xoá danh mục ",
+            description = "Xoá danh mục",security = {
+            @SecurityRequirement(name = "bearer-key") },
+//            tags = {"Category"},
+            responses = {
+                    @ApiResponse(description = "Xoá thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @DeleteMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ResponseDTO> deleteCategory(@PathVariable Long cateId) throws ResourceNotFoundException, DeleteDataFail {

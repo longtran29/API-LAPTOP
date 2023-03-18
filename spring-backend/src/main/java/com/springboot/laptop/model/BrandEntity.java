@@ -3,6 +3,7 @@ package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -25,6 +26,7 @@ public class BrandEntity extends BaseEntity {
 
 
 
+    @JsonManagedReference
     @ManyToMany
     @JoinTable(
             name="brands_categories",
@@ -35,7 +37,7 @@ public class BrandEntity extends BaseEntity {
 
 
     //    resolve error jackson - arraylist, collection
-    @JsonBackReference("brand_product")
+    @JsonManagedReference
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductEntity> products = new ArrayList<>();
 

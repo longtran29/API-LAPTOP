@@ -2,6 +2,7 @@ package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.model.Address;
+import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.request.AddressRequestDTO;
 import com.springboot.laptop.model.dto.request.AppClientSignUpDTO;
@@ -9,6 +10,7 @@ import com.springboot.laptop.model.dto.request.NewPasswordRequest;
 import com.springboot.laptop.model.dto.request.TokenDTO;
 import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.model.dto.response.ResponseDTO;
+import com.springboot.laptop.model.dto.response.SuccessCode;
 import com.springboot.laptop.model.dto.response.UserInformationDTO;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
@@ -17,6 +19,11 @@ import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.UserServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 
@@ -58,6 +65,18 @@ public class AuthController {
         this.userRepository = userRepository;
     }
 
+
+
+    @Operation(summary = "Đăng ký ",
+            description = "Đăng ký tài khoản mới",
+            responses = {
+                    @ApiResponse(description = "Đăng ký thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PostMapping("/auth/register")
     public ResponseEntity<?> signup(@RequestBody AppClientSignUpDTO user) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
@@ -77,14 +96,25 @@ public class AuthController {
         }
         UserEntity client = this.userServiceImpl.register(user);
         responseDTO.setData(client);
+        responseDTO.setSuccessCode(SuccessCode.REIGSTER_SUCCESS);
         return ResponseEntity.ok(responseDTO);
     }
 
+
+    @Operation(summary = "Xác thực",
+            description = "Xác thực đăng nhập và hệ thống trả về Bearer token và quyền",
+            responses = {
+                    @ApiResponse(description = "Xac thực thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PostMapping("/authenticate")
     public ResponseEntity<?> authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            System.out.println("Da vao authenticate roi ne username " + jwtRequest.getUsername() + " password " + jwtRequest.getPassword());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             jwtRequest.getUsername(),
@@ -94,26 +124,22 @@ public class AuthController {
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            System.out.println("Value authenticate " + username);
-            System.out.println("auth.getAuthorities() = " + authentication.getAuthorities());
-            System.out.printf("Info are " + jwtRequest.getUsername() + jwtRequest.getPassword());
-
             final UserDetails userDetails
                     = userDetailService.loadUserByUsername(jwtRequest.getUsername());
 
             UserEntity loggedUser = userServiceImpl.findUserByUserName(userDetails.getUsername());
 
-            final TokenDTO tokenDto = jwtUtility.doGenerateToken(loggedUser);
-            jwtUtility.setHeaderAccessToken(response, tokenDto.getAccessToken());
-            jwtUtility.setHeaderRefreshToken(response, tokenDto.getRefreshToken());
+            final String tokenDto = jwtUtility.createToken(loggedUser);
             JwtResponse jwtResponse  = new JwtResponse();
-            jwtResponse.setJwtToken(tokenDto.getAccessToken());
+            jwtResponse.setJwtToken(tokenDto);
+
             if(loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
                 jwtResponse.setRole("USER");
             }
             else {
                 jwtResponse.setRole("ADMIN");
             }
+            responseDTO.setSuccessCode(SuccessCode.LOGIN_SUCCESS);
             responseDTO.setData(jwtResponse);
         } catch (BadCredentialsException e) {
             responseDTO.setErrorCode(ErrorCode.FAIL_AUTHENTICATION);
@@ -123,6 +149,17 @@ public class AuthController {
         return ResponseEntity.ok(responseDTO);
     }
 
+
+    @Operation(summary = "Thêm địa chỉ ",
+            description = "Thêm đia chỉ mới ",
+            responses = {
+                    @ApiResponse(description = "Xac thực thành công", responseCode = "200",
+                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
+                    ),
+                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
+                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
+                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
+            })
     @PostMapping("/user/addAddress")
     public ResponseEntity<?> addAddress(@RequestBody AddressRequestDTO requestAddress) {
         System.out.println("Vao day trươc " + requestAddress);
