@@ -1,6 +1,6 @@
 package com.springboot.laptop.model.dto.response;
 
-import com.springboot.laptop.model.ProductEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,11 +8,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderedProduct {
-
-    private ProductResponseDTO product;
-
-    private Long quantity;
+public class OrderAddressDTO {
 
 
+    private String address;
+    private String city;
+    private String country;
+    private String zipcode;
+
+    private String phoneNumber;
 }

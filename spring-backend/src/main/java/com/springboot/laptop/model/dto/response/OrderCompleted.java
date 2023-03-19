@@ -18,20 +18,10 @@ import java.util.List;
 public class OrderCompleted {
 
     private List<OrderedProduct> orderedProducts;
-    private Address deliveryAddress;
+    private OrderAddressDTO deliveryAddress;
 
     private float totalAmt;
     private float cartTotal;
 
     private String email;
-
-    public List<OrderedProduct> getOrderedProducts() {
-        return orderedProducts;
-    }
-
-    public void setOrderedProducts(List<OrderedProduct> orderedProducts) {
-        this.orderedProducts = orderedProducts;
-    }
-
-
 }

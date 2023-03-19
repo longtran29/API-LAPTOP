@@ -2,10 +2,7 @@ package com.springboot.laptop.model.dto.response;
 
 
 import com.springboot.laptop.model.ProductEntity;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,41 +12,42 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductResponseDTO {
     private Long prod_id;
     private String primaryImage;
 
-    private String prodName;
+    private String name;
     private boolean enabled;
 
     private boolean inStock;
     private float original_price;
     private Long brandId;
 
-    private float discount;
+    private float discount_percent;
 
     private Long categoryId;
 
-    private String description;
+    private Long productQuantity;
 
-    private Long productQty;
+    private String description;
 
 
     public ProductResponseDTO convertToDto(ProductEntity product) {
-        ProductResponseDTO prodResponse = new ProductResponseDTO();
-        prodResponse.setProd_id(product.getId());
-        prodResponse.setProdName(product.getName());
-        prodResponse.setEnabled(product.isEnabled());
-        prodResponse.setOriginal_price(product.getOriginal_price());
-        prodResponse.setBrandId(product.getBrand().getId());
-        prodResponse.setPrimaryImage(product.getPrimaryImage());
-        prodResponse.setDiscount(product.getDiscount_percent());
-        prodResponse.setCategoryId(product.getCategory().getId());
-        prodResponse.setEnabled(product.isEnabled());
-        prodResponse.setInStock(product.isInStock());
-        prodResponse.setDescription(product.getDescription());
-        prodResponse.setProductQty(product.getProductQuantity());
-        return prodResponse;
+        return ProductResponseDTO.builder()
+                .prod_id(product.getId())
+                .name(product.getName())
+                .enabled(product.isEnabled())
+                .original_price(product.getOriginal_price())
+                .brandId(product.getBrand().getId())
+                .primaryImage(product.getPrimaryImage())
+                .discount_percent(product.getDiscount_percent())
+                .categoryId(product.getCategory().getId())
+                .enabled(product.isEnabled())
+                .inStock(product.isInStock())
+                .description(product.getDescription())
+                .productQuantity(product.getProductQuantity())
+                .build();
     }
     public List<ProductResponseDTO> convertProdDto(List<ProductEntity> productList) {
         List<ProductResponseDTO> listProdResponse = new ArrayList<>();
