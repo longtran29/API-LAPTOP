@@ -1,7 +1,12 @@
 package com.springboot.laptop.service;
 
 import com.springboot.laptop.model.*;
+import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
+import com.springboot.laptop.model.dto.response.OrderDetailResponseDTO;
+import com.springboot.laptop.model.dto.response.OrderResponseDTO;
+import com.springboot.laptop.model.dto.response.ProductResponseDTO;
+import com.springboot.laptop.model.dto.response.UserResponseDTO;
 import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.repository.AddressRepository;
 import com.springboot.laptop.repository.CartRepository;
@@ -34,10 +39,49 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
-    public List<Order> getOrders() {
-        return orderRepository.findAll();
+    public List<OrderResponseDTO> getOrders() {
+        List<Order> orders =  orderRepository.findAll();
+        List<OrderResponseDTO> userOrders = new ArrayList<>();
+
+        for(Order order : orders) {
+            List<OrderDetails> orderDetails = order.getOrderDetails();
+            List<OrderDetailResponseDTO> orderDetailResponseDTOS = new ArrayList<>();
+            for(OrderDetails orderDetails1 : orderDetails) {
+                orderDetailResponseDTOS.add(OrderDetailResponseDTO.builder().product(ProductResponseDTO.builder().primaryImage(orderDetails1.getProduct().getPrimaryImage()).name(orderDetails1.getProduct().getName()).build()).total(orderDetails1.getTotal()).quantity(orderDetails1.getQuantity()).build());
+            }
+            userOrders.add(OrderResponseDTO.builder().user(UserResponseDTO.builder().email(order.getUser().getEmail()).username(order.getUser().getUsername()).name(order.getUser().getName()).build()).orderDate(order.getOrderDate()).id(order.getId()).orderDetails(orderDetailResponseDTOS).total(order.getTotal()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).build());
+        }
+
+        return userOrders;
+
     }
 
+    public Order changeStatus(ChangeStatusDTO changeStatusDTO) {
+        OrderStatus status = OrderStatus.getStatus(changeStatusDTO.getStatusName());
+
+        Order order = orderRepository.findById(changeStatusDTO.getOrderId()).get();
+        order.setOrderStatus(status);
+
+        return orderRepository.save(order);
+    }
+
+    public List<OrderResponseDTO> getUserOrders() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUsername(username).get();
+
+        List<Order> userOrder = user.getOrders();
+        List<OrderResponseDTO> userOrders = new ArrayList<>();
+        for(Order order : userOrder) {
+            List<OrderDetails> orderDetails = order.getOrderDetails();
+            List<OrderDetailResponseDTO> orderDetailResponseDTOS = new ArrayList<>();
+            for(OrderDetails orderDetails1 : orderDetails) {
+                orderDetailResponseDTOS.add(OrderDetailResponseDTO.builder().product(ProductResponseDTO.builder().primaryImage(orderDetails1.getProduct().getPrimaryImage()).name(orderDetails1.getProduct().getName()).build()).total(orderDetails1.getTotal()).quantity(orderDetails1.getQuantity()).build());
+            }
+            userOrders.add(OrderResponseDTO.builder().orderDate(order.getOrderDate()).id(order.getId()).orderDetails(orderDetailResponseDTOS).total(order.getTotal()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).build());
+        }
+
+        return userOrders;
+    }
     public Order findById(Long orderId) {
         return orderRepository.findById(orderId).get();
     }

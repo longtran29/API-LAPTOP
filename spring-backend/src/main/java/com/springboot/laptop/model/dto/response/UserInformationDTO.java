@@ -1,18 +1,28 @@
 package com.springboot.laptop.model.dto.response;
 
 import com.springboot.laptop.model.Address;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class UserInformationDTO {
 
     private List<Address> addresses;
 
     private String email;
+
+    private String username;
+
+    private String name;
+
+    private String phoneNumber;
+
+    private String imgURL;
+
+
 }

@@ -1,21 +1,20 @@
 package com.springboot.laptop.controller;
 
 import com.springboot.laptop.model.Order;
-import com.springboot.laptop.model.ProductEntity;
+import com.springboot.laptop.model.OrderDetails;
+import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
-import com.springboot.laptop.model.dto.response.OrderCompleted;
-import com.springboot.laptop.model.dto.response.OrderResponseDTO;
-import com.springboot.laptop.model.dto.response.OrderedProduct;
+import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.service.OrderServiceImpl;
-import org.apache.coyote.Response;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -46,9 +45,23 @@ public class OrderController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/get_all_orders")
-    public ResponseEntity<?> getOrders() {
-        List<Order> orders =  orderService.getOrders();
+    public ResponseEntity<?> manageOrders4Admin() {
+        List<OrderResponseDTO> orders =  orderService.getOrders();
         return ResponseEntity.ok().body(orders);
+    }
+
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/admin/change_status")
+    public ResponseEntity<?> changeStatusOrderAdmin(@RequestBody ChangeStatusDTO changeStatusDTO) {
+        return ResponseEntity.ok().body(orderService.changeStatus(changeStatusDTO));
+    }
+
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @GetMapping("/users/get_order")
+    public ResponseEntity<?> viewOrders() {
+        return ResponseEntity.ok().body(orderService.getUserOrders());
     }
 
 
@@ -56,13 +69,22 @@ public class OrderController {
     @GetMapping("/admin/{orderId}")
     public ResponseEntity<?> getOrderDetail(@PathVariable Long orderId) {
         Order order = orderService.findById(orderId);
-        OrderResponseDTO orderResponse = new OrderResponseDTO();
-        orderResponse.setUser(order.getUser());
-        orderResponse.setOrderDetails(order.getOrderDetails());
-        orderResponse.setOrderDate(order.getOrderDate());
-        orderResponse.setOrderStatus(order.getOrderStatus());
-        orderResponse.setTotal(order.getTotal());
-        orderResponse.setAddress(order.getAddress());
+
+        System.out.println("Order id " + orderId);
+
+//        orderResponse.setId(orderId);
+//        orderResponse.setUser(UserResponseDTO.builder().username(order.getUser().getUsername()).email(order.getUser().getEmail()).build());
+//        orderResponse.setOrderDate(order.getOrderDate());
+//        orderResponse.setStatusName(order.getOrderStatus().getName());
+//
+//        orderResponse.setTotal(order.getTotal());
+//        orderResponse.setAddress(AddressResponseDTO.builder().address(order.getAddress().getAddress()).city(order.getAddress().getCity()).phoneNumber(order.getAddress().getPhoneNumber()).build());
+        List<OrderDetailResponseDTO> orderDetails = new ArrayList<>();
+        for (OrderDetails orderDetail : order.getOrderDetails()) {
+            orderDetails.add(OrderDetailResponseDTO.builder().product(ProductResponseDTO.builder().prod_id(orderDetail.getProduct().getId()).primaryImage(orderDetail.getProduct().getPrimaryImage()).name(orderDetail.getProduct().getName()).build()).quantity(orderDetail.getQuantity()).total(orderDetail.getTotal()).build());
+        }
+//        orderResponse.setOrderDetails(orderDetails);
+        OrderResponseDTO orderResponse = OrderResponseDTO.builder().id(orderId).user(UserResponseDTO.builder().username(order.getUser().getUsername()).email(order.getUser().getEmail()).build()).orderDate(order.getOrderDate()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).total(order.getTotal()).address(AddressResponseDTO.builder().address(order.getAddress().getAddress()).city(order.getAddress().getCity()).phoneNumber(order.getAddress().getPhoneNumber()).build()).orderDetails(orderDetails).build();
         return ResponseEntity.ok().body(orderResponse);
     }
 

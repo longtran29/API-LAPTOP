@@ -24,6 +24,8 @@ public class UserEntity extends BaseEntity {
     private String name;
     private String phoneNumber;
 
+    private String imgURL;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

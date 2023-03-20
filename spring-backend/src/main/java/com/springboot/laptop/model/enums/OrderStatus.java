@@ -1,14 +1,28 @@
 package com.springboot.laptop.model.enums;
 
+import org.springframework.util.StringUtils;
+
 public enum OrderStatus {
-    NEW("Đặt hàng"),
-    PROCESSING("Đang xử lý"),
-    SHIPPED("Đang ship"),
+    NEW("Chờ xác nhận"),
+    SHIPPED("Đang giao hàng"),
     DELIVERED("Đã hoàn thành"),
     CANCELED("Đã huỷ");
 
     private final String name;
 
+
+    public static OrderStatus getStatus(String statusName) {
+        if(statusName == null || statusName.trim().length()== 0) {
+            return null;
+        } else {
+            for(OrderStatus orderStatus : OrderStatus.values()) {
+                if (orderStatus.name.equals(statusName)) {
+                    return orderStatus;
+                }
+            }
+            return null;
+        }
+    }
     OrderStatus(String name) {
         this.name = name;
     }
@@ -16,4 +30,6 @@ public enum OrderStatus {
     public String getName() {
         return name;
     }
+
+
 }

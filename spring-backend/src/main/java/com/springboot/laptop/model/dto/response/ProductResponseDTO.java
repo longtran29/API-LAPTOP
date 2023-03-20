@@ -8,10 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class ProductResponseDTO {
     private Long prod_id;

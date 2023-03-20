@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -48,24 +50,26 @@ public class ProductServiceImpl implements ProductService {
         productRepository.updateStatus(productId, status);
     }
     @Override
-    public ProductEntity createOne(ProductDTO product) {
+    public ProductEntity createOne(ProductDTO product) throws ParseException {
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         CategoryEntity category = categoryRepository.findById(Long.valueOf(product.getCategoryId())).get();
         BrandEntity brand =  brandRepository.findById(Long.valueOf(product.getBrandId())).get();
         System.out.println("Result is " + category.getName() + " " + brand.getName());
-        ProductEntity newProduct = new ProductEntity();
-        newProduct.setName(product.getName());
-        newProduct.setPrimaryImage(product.getPrimaryImage());
-        newProduct.setAlias(product.getAlias());
-        newProduct.setEnabled(product.isEnabled());
-        newProduct.setOriginal_price(product.getOriginal_price());
-        newProduct.setDiscount_percent(product.getDiscount_percent());
-        newProduct.setBrand(brand);
-        newProduct.setCategory(category);
-        newProduct.setDescription(product.getDescription());
-        newProduct.setInStock(product.isInStock());
-        newProduct.setCreationDate(new Date());
-        newProduct.setModifiedDate(new Date());
-        newProduct.setProductQuantity(product.getProductQty());
+        ProductEntity newProduct =ProductEntity.builder()
+                .name(product.getName())
+                .primaryImage(product.getPrimaryImage())
+                .alias(product.getAlias())
+                .enabled(product.isEnabled())
+                .original_price(product.getOriginal_price())
+                .discount_percent(product.getDiscount_percent())
+                .brand(brand)
+                .category(category)
+                .description(product.getDescription())
+                .inStock(product.isInStock())
+                .creationDate(dateFormat.parse(dateFormat.format(date)))
+                .productQuantity(product.getProductQty())
+                .build();
 
         return productRepository.save(newProduct);
     }
@@ -76,9 +80,10 @@ public class ProductServiceImpl implements ProductService {
         return new ProductResponseDTO().convertProdDto(products);
     }
     @Override
-    public ProductEntity updateProduct(Long productId, ProductDTO updateProduct) throws ResourceNotFoundException {
+    public ProductEntity updateProduct(Long productId, ProductDTO updateProduct) throws ResourceNotFoundException, ParseException {
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("No product found with id " + productId));
-
+        Date date = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         if(updateProduct.getName() != null) existingProduct.setName(updateProduct.getName());
         if(updateProduct.getDescription() != null) existingProduct.setDescription(updateProduct.getDescription());
         if(updateProduct.getOriginal_price() != null) existingProduct.setOriginal_price(updateProduct.getOriginal_price());
@@ -87,16 +92,18 @@ public class ProductServiceImpl implements ProductService {
         if(updateProduct.getBrandId() != null) existingProduct.setBrand(brandRepository.findById(updateProduct.getBrandId()).get());
         if(updateProduct.getPrimaryImage() != null)existingProduct.setPrimaryImage(updateProduct.getPrimaryImage());
         if(updateProduct.getProductQty() != null) existingProduct.setProductQuantity(updateProduct.getProductQty());
+        existingProduct.setModifiedDate(dateFormat.parse(dateFormat.format(date)));
         productRepository.save(existingProduct);
 
         return existingProduct;
     }
 
     @Override
-    public boolean deleteProduct(Long productId) throws ResourceNotFoundException {
+    public ProductEntity deleteProduct(Long productId) throws ResourceNotFoundException {
         ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(""+ ErrorCode.FIND_PRODUCT_ERROR));
+        System.out.println("Product delete " + product.getName());
         this.productRepository.delete(product);
-        return true;
+        return product;
     }
 }
 

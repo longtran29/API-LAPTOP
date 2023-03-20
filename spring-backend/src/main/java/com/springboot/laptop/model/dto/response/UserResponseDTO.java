@@ -4,9 +4,16 @@ import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.UserRoleEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
-
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
 public class UserResponseDTO {
 
     private Long id;
@@ -15,21 +22,4 @@ public class UserResponseDTO {
     private String email;
     private String name;
     private String phoneNumber;
-    private List<UserRoleEntity> roles;
-    private UserCart cart;
-    private List<Address> addresses;
-
-    public UserResponseDTO(UserEntity user) {
-        this.id = user.getId();
-        this.username = user.getUsername();
-        this.password = user.getPassword();
-        this.email = user.getEmail();
-        this.name = user.getName();
-        this.phoneNumber = user.getPhoneNumber();
-        this.roles = user.getRoles();
-        this.cart = user.getCart();
-        this.addresses = user.getAddresses();
-    }
-
-
 }

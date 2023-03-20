@@ -4,31 +4,36 @@ import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.OrderDetails;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.enums.OrderStatus;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Enumerated;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class OrderResponseDTO {
 
-    private UserEntity user;
+    private Long id;
 
-    private List<OrderDetails> orderDetails;
+    private UserResponseDTO user;
+
+    private List<OrderDetailResponseDTO> orderDetails;
 
     private LocalDateTime orderDate;
 
     private float total;
 
-    @Enumerated
-    OrderStatus orderStatus;
 
-    private Address address;
+    // trạng thái đơn hàng hiện tại
+    private Object status;
+    private Object statusName;
+
+    private AddressResponseDTO address;
 
 
 }

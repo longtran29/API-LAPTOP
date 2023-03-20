@@ -196,7 +196,7 @@ public class CategoryController {
             responseDTO.setSuccessCode(SuccessCode.DELETE_CATEGORY_SUCCESS);
         } catch (DataIntegrityViolationException ex) {
             System.err.println(ex.getMessage());
-            responseDTO.setData("Error foreign key constraint referenced by other table");
+            responseDTO.setData("Không xoá được vì danh mục của hãng");
             responseDTO.setErrorCode(ErrorCode.DATA_INTEGRITY_VIOLATION_ERROR);
         } catch (Exception ex) {
             ex.printStackTrace();

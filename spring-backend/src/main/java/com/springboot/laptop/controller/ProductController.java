@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -66,6 +68,8 @@ public class ProductController {
         } catch (StackOverflowError e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -148,15 +152,20 @@ public class ProductController {
     public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            boolean delProduct = productServiceImpl.deleteProduct(productId);
+            ProductEntity delProduct = productServiceImpl.deleteProduct(productId);
             responseDTO.setData(delProduct);
             responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
         }
-        catch (Exception ex){
-            throw new DeleteDataFail(""+ ErrorCode.DELETE_PRODUCT_ERROR);
+        catch (DataIntegrityViolationException ex) {
+            responseDTO.setData("Sản phẩm trong đơn đặt hàng không thể xoá");
+            responseDTO.setErrorCode(ErrorCode.DATA_INTEGRITY_VIOLATION_ERROR);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+            responseDTO.setData("Lỗi trong quá trình xoá");
+            responseDTO.setErrorCode(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
-        return ResponseEntity.ok().body(responseDTO);
+        return new ResponseEntity<ResponseDTO>(responseDTO, HttpStatus.OK);
 
     }
 
@@ -164,7 +173,6 @@ public class ProductController {
     @Operation(summary = "Cập nhật sản phẩm ",
             description = "Cập nhật các thông tin sản pẩm",security = {
             @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
             responses = {
                     @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -188,6 +196,9 @@ public class ProductController {
             responseDTO.setErrorCode(ErrorCode.NOT_FOUND_EXCEPTION);
             responseDTO.setData(ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
+        } catch (ParseException e) {
+            // exception parse new Date()
+            throw new RuntimeException(e);
         }
     }
 

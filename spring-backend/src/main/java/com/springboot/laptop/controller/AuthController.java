@@ -170,13 +170,14 @@ public class AuthController {
     @GetMapping(value = "/user/information")
     public ResponseEntity<?> getUserInformation() {
         ResponseDTO responseDTO = new ResponseDTO();
-        UserInformationDTO userInfo = new UserInformationDTO();
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
 
         List<Address> addresses = user.getAddresses();
-        userInfo.setAddresses(addresses);
-        userInfo.setEmail(user.getEmail());
+        UserInformationDTO userInfo = UserInformationDTO.builder().addresses(addresses).username(user.getUsername()).email(user.getEmail()).imgURL(user.getImgURL()).phoneNumber(user.getPhoneNumber()).name(user.getName()).build();
+//                userInfo.setAddresses(addresses);
+//        userInfo.setEmail(user.getEmail());
         responseDTO.setData(userInfo);
         return ResponseEntity.ok(responseDTO);
 
