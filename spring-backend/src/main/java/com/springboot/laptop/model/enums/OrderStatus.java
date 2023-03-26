@@ -5,8 +5,12 @@ import org.springframework.util.StringUtils;
 public enum OrderStatus {
     NEW("Chờ xác nhận"),
     SHIPPED("Đang giao hàng"),
-    DELIVERED("Đã hoàn thành"),
+
+    REJECTED ("Từ chối"),
+    DELIVERED("Đã thanh toán"),
     CANCELED("Đã huỷ");
+
+
 
     private final String name;
 

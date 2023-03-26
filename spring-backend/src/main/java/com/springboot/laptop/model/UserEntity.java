@@ -36,7 +36,7 @@ public class UserEntity extends BaseEntity {
     private List<UserRoleEntity> roles = new ArrayList<>();
 
 
-//    @JsonIgnore
+    @JsonIgnore
     @OneToOne(mappedBy = "user")
     private UserCart cart;
 

@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserEntityDTO {
+public class UserRequestDTO {
 
     private String username;
     private String email;
     private String name;
     private String phoneNumber;
+
+    private String imgURL;
 }

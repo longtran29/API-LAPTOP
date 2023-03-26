@@ -55,6 +55,29 @@ class LaptopApplicationTests {
 		userRoleRepository.save(userRole);
 	}
 
+
+//	@Test
+//	public void testDecode() {
+//		String pass1 = passwordEncoder.encode("123456");
+//		String pass2 = passwordEncoder.encode("123456");
+//		System.out.println("Pass1 \n" + pass1 + "\n pass2 \n" + pass2);
+//
+//		System.out.println("IS EQUAL " + passwordEncoder.matches(pass1, pass2));
+//	}
+
+	@Test
+	public void testDecode() {
+		String hashedPasswordFromDatabase = "'$2a$10$lio2nEiKeJjXL.HjoZb7z.u1IkGM6vlpcJS4n9tTSp3679jtiLs6.'";
+		String plaintextPassword = "123456";
+		boolean passwordMatches = passwordEncoder.matches(plaintextPassword, hashedPasswordFromDatabase);
+		if (passwordMatches) {
+			System.out.println("Password is correct!");
+		} else {
+			System.out.println("Password is incorrect!");
+		}
+	}
+
+
 	@Test
 	public void addNewUser() {
 		UserEntity appClient = new UserEntity();

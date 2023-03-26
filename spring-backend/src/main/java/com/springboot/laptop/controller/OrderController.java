@@ -1,11 +1,13 @@
 package com.springboot.laptop.controller;
 
+import com.springboot.laptop.exception.OrderStatusException;
 import com.springboot.laptop.model.Order;
 import com.springboot.laptop.model.OrderDetails;
 import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
 import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.service.OrderServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,18 +33,15 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+
+    @Operation(summary = "API thanh toán")
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<?> checkout(@RequestBody OrderRequestDTO orderRequest) {
         return ResponseEntity.ok().body(orderService.checkout(orderRequest));
     }
 
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    public ResponseEntity<?> updateStatusOrder() {
-//
-//        return ResponseEntity.ok().body();
-//    }
-
+    @Operation(summary = "API lấy tất cả đơn hàng cho quản trị viên")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/get_all_orders")
     public ResponseEntity<?> manageOrders4Admin() {
@@ -50,14 +49,33 @@ public class OrderController {
         return ResponseEntity.ok().body(orders);
     }
 
-
+    @Operation(summary = "API cập nhật trang thái đơn hàng - chỉ cho quản trị viên")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/admin/change_status")
     public ResponseEntity<?> changeStatusOrderAdmin(@RequestBody ChangeStatusDTO changeStatusDTO) {
-        return ResponseEntity.ok().body(orderService.changeStatus(changeStatusDTO));
+        ResponseDTO responseDTO = new ResponseDTO();
+        responseDTO.setData(orderService.changeStatus(changeStatusDTO));
+        return ResponseEntity.ok().body(responseDTO);
     }
 
 
+    @Operation(summary = "API hủy đơn hàng")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @PostMapping("/cancel_order/{orderId}")
+    public ResponseEntity<?> cancelOrders(@PathVariable Long orderId) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            responseDTO.setData(orderService.cancelOrders(orderId));
+
+        } catch (OrderStatusException ex) {
+            responseDTO.setErrorCode(ErrorCode.ORDER_CANCEL_CONFLICT);
+            responseDTO.setData(ex.getMessage());
+        }
+
+        return ResponseEntity.ok().body(responseDTO) ;
+    }
+
+    @Operation(summary = "API lấy các đơn hàng")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping("/users/get_order")
     public ResponseEntity<?> viewOrders() {
@@ -65,6 +83,7 @@ public class OrderController {
     }
 
 
+    @Operation(summary = "API xem chi tiết đơn hàng")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/admin/{orderId}")
     public ResponseEntity<?> getOrderDetail(@PathVariable Long orderId) {
@@ -88,6 +107,8 @@ public class OrderController {
         return ResponseEntity.ok().body(orderResponse);
     }
 
+
+    @Operation(summary = "API gủi mail thông báo đơn hàng")
     @PostMapping("/sendOrderNotification")
     public ResponseEntity<String> sendOrderNotification(@RequestBody OrderCompleted order) {
         SimpleMailMessage message = new SimpleMailMessage();

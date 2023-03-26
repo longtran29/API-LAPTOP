@@ -1,13 +1,11 @@
 package com.springboot.laptop.controller;
 
 
+import com.springboot.laptop.exception.UserPasswordException;
 import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.request.AddressRequestDTO;
-import com.springboot.laptop.model.dto.request.AppClientSignUpDTO;
-import com.springboot.laptop.model.dto.request.NewPasswordRequest;
-import com.springboot.laptop.model.dto.request.TokenDTO;
+import com.springboot.laptop.model.dto.request.*;
 import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.model.dto.response.ResponseDTO;
 import com.springboot.laptop.model.dto.response.SuccessCode;
@@ -17,16 +15,19 @@ import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
+import com.springboot.laptop.service.CloudinaryService;
 import com.springboot.laptop.service.UserServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +37,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.webjars.NotFoundException;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
@@ -56,13 +59,16 @@ public class AuthController {
     private final UserDetailServiceImpl userDetailService;
     private final UserRepository userRepository;
 
+    private final CloudinaryService cloudinaryService;
+
     @Autowired
-    public AuthController(UserServiceImpl userServiceImpl, UserRepository userRepository, JwtUtility jwtUtility, UserDetailServiceImpl userDetailService, AuthenticationManager authenticationManager) {
+    public AuthController(UserServiceImpl userServiceImpl, UserRepository userRepository, JwtUtility jwtUtility, UserDetailServiceImpl userDetailService, AuthenticationManager authenticationManager, CloudinaryService cloudinaryService) {
         this.userServiceImpl = userServiceImpl;
         this.authenticationManager = authenticationManager;
         this.jwtUtility = jwtUtility;
         this.userDetailService = userDetailService;
         this.userRepository = userRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
 
@@ -167,6 +173,7 @@ public class AuthController {
         return ResponseEntity.ok((getUserInformation()));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping(value = "/user/information")
     public ResponseEntity<?> getUserInformation() {
         ResponseDTO responseDTO = new ResponseDTO();
@@ -200,16 +207,57 @@ public class AuthController {
             return ResponseEntity.ok("không có token");
     }
 
+    @PostMapping("/upload")
+    public String uploadFile(@Param("file") MultipartFile file) {
+        System.out.println("Da vao uploadFile");
+        String url = cloudinaryService.uploadFile(file);
+        return url;
+    }
 
-    @PostMapping("/newpassword/{email}")
-    public ResponseEntity<?> newPassword(@PathVariable("email") String email,@Valid @RequestBody NewPasswordRequest newPasswordRequest) {
-        return ResponseEntity.ok(userServiceImpl.newPassword(email, newPasswordRequest.getPassword(), newPasswordRequest.getPasswordConfirm()));
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @PutMapping("/updateInformation")
+    public ResponseEntity<?> updateInformation(@RequestBody UserRequestDTO userRequestDTO) {
+            return ResponseEntity.ok().body(userServiceImpl.updateInformation(userRequestDTO));
     }
-    @PostMapping("/forgetpassword/{email}")
-    public ResponseEntity<?> forgetPasword(@PathVariable("email") String email, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException, MessagingException, UnsupportedEncodingException {
-        String verifyURL = request.getRequestURL().toString()
-                .replace(request.getServletPath(), "") + "/signin/newpassword/"+email;
-        userServiceImpl.sendVerificationEmail(email,verifyURL);
-        return ResponseEntity.ok("Đã gửi mail");
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> newPassword(@Valid @RequestBody NewPasswordRequest newPasswordRequest) throws UserPasswordException {
+        ResponseDTO response = new ResponseDTO();
+
+        try {
+            response.setData(userServiceImpl.newPassword(newPasswordRequest));
+            return ResponseEntity.ok(response);
+        } catch (UserPasswordException ex) {
+            response.setData(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception ex) {
+            response.setData(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
+//    @PostMapping("/forgotPassword/{email}")
+//    public ResponseEntity<?> forgetPasword(@PathVariable("email") String email, HttpServletRequest request) throws Exception {
+//        String verifyURL = request.getRequestURL().toString()
+//                .replace(request.getServletPath(), "") + "/signin/newpassword/"+email;
+//        try {
+//            userServiceImpl.sendVerificationEmail(email,verifyURL);
+//            return ResponseEntity.ok("Đã gửi mail");
+//        } catch (NotFoundException ex) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+//        }
+//
+//    }
+
+
+//    @PostMapping("/forgotPassword/{email}")
+//    public ResponseEntity<?> forgetPassword(@PathVariable("email") String email) throws Exception {
+//        try {
+//            userServiceImpl.sendVerificationEmail(email);
+//            return ResponseEntity.ok("Đã gửi mail");
+//        } catch (Exception ex) {
+//            return ResponseEntity.badRequest().body(ex.getMessage());
+//        }
+//
+//    }
 }

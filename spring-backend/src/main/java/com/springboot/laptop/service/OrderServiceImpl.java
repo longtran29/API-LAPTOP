@@ -1,5 +1,6 @@
 package com.springboot.laptop.service;
 
+import com.springboot.laptop.exception.OrderStatusException;
 import com.springboot.laptop.model.*;
 import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
@@ -39,6 +40,8 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+
+    @Override
     public List<OrderResponseDTO> getOrders() {
         List<Order> orders =  orderRepository.findAll();
         List<OrderResponseDTO> userOrders = new ArrayList<>();
@@ -56,15 +59,37 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+
+    @Override
+    public Order cancelOrders(Long orderId) {
+        Order order = orderRepository.findById(orderId).get();
+        if(order.getOrderStatus().equals(OrderStatus.SHIPPED)) {
+            throw new OrderStatusException("Đơn hàng đang được giao không thể huỷ !");
+        }
+        if(order.getOrderStatus().equals(OrderStatus.REJECTED)) throw new OrderStatusException("Đơn hàng đã bị từ chối bởi quản trị viên !");
+        order.setOrderStatus(OrderStatus.CANCELED);
+        return orderRepository.save(order);
+    }
+
+    @Override
     public Order changeStatus(ChangeStatusDTO changeStatusDTO) {
         OrderStatus status = OrderStatus.getStatus(changeStatusDTO.getStatusName());
 
         Order order = orderRepository.findById(changeStatusDTO.getOrderId()).get();
+
+//        if (OrderStatus.CANCELED.equals(status)) {
+//            throw new OrderStatusException("Đơn hàng đã bị huỷ");
+//        } else if (OrderStatus.REJECTED.equals(status)) {
+//            throw new OrderStatusException("Đơn hàng bị từ chối bởi admin");
+//        }
+
         order.setOrderStatus(status);
 
         return orderRepository.save(order);
     }
 
+
+    @Override
     public List<OrderResponseDTO> getUserOrders() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
@@ -82,11 +107,13 @@ public class OrderServiceImpl implements OrderService {
 
         return userOrders;
     }
+
+    @Override
     public Order findById(Long orderId) {
         return orderRepository.findById(orderId).get();
     }
 
-
+    @Override
     public Order checkout(OrderRequestDTO orderRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
