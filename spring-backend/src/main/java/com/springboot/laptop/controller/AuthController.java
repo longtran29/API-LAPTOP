@@ -38,6 +38,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.webjars.NotFoundException;
 
 import javax.mail.MessagingException;
@@ -250,14 +251,27 @@ public class AuthController {
 //    }
 
 
-//    @PostMapping("/forgotPassword/{email}")
-//    public ResponseEntity<?> forgetPassword(@PathVariable("email") String email) throws Exception {
-//        try {
-//            userServiceImpl.sendVerificationEmail(email);
-//            return ResponseEntity.ok("Đã gửi mail");
-//        } catch (Exception ex) {
-//            return ResponseEntity.badRequest().body(ex.getMessage());
-//        }
-//
-//    }
+    @PostMapping("/forgotPassword/{email}")
+    public ResponseEntity<?> forgetPassword(@PathVariable("email") String email) throws Exception {
+        try {
+
+            return ResponseEntity.status(HttpStatus.OK).body(userServiceImpl.sendVerificationEmail(email));
+        }
+        // handler more exceptions
+        catch(ResponseStatusException ex) {
+            return ResponseEntity.badRequest().body(ex.getReason());
+        }
+        catch (Exception ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO payload) throws Exception {
+        try {
+            return ResponseEntity.ok().body(userServiceImpl.resetPassword(payload));
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
 }

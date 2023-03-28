@@ -9,6 +9,7 @@ public class CustomResponseException extends ResponseStatusException {
 
     public CustomResponseException(StatusResponseDTO response) {
         super(HttpStatus.valueOf(Integer.parseInt(response.getCode())), response.getMessage());
+        System.out.println("Value in custom exception " + response.getCode() + " message " + response.getMessage());
     }
 
 

@@ -108,37 +108,47 @@ public class OrderController {
     }
 
 
+//    @Operation(summary = "API gủi mail thông báo đơn hàng")
+//    @PostMapping("/sendOrderNotification")
+//    public ResponseEntity<String> sendOrderNotification(@RequestBody OrderCompleted order) {
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setTo(order.getEmail());
+//        message.setSubject("Đơn hàng");
+//        // Create a StringBuilder to build the email message text
+//        StringBuilder messageTextBuilder = new StringBuilder();
+//        messageTextBuilder.append("Cảm ơn bạn đã sử dụng dịch vụ chúng tôi. Chi tiết đơn hàng như sau:\n\n");
+//
+//        // Append the ordered products information to the email message text
+//        messageTextBuilder.append("Các sản phẩm đã đặt:\n");
+//        for (OrderedProduct product : order.getOrderedProducts()) {
+//            messageTextBuilder.append("- ").append(product.getProduct().getName()).append(" (").append(product.getQuantity()).append(")\n");
+//        }
+//
+//        // Append the delivery address information to the email message text
+//        messageTextBuilder.append("\n Địa chỉ vận chuyển:\n");
+//        messageTextBuilder.append(order.getDeliveryAddress().getAddress()).append("\n");
+//        messageTextBuilder.append(order.getDeliveryAddress().getCity()).append("\n");
+//        messageTextBuilder.append(order.getDeliveryAddress().getCountry()).append("\n");
+//        messageTextBuilder.append(order.getDeliveryAddress().getZipcode()).append("\n\n");
+//
+//        // Append the rest of the message text
+//        messageTextBuilder.append("Số lượng: ").append(order.getTotalAmt()).append("\n");
+//        messageTextBuilder.append("Tổng giá tiền : ").append(order.getCartTotal()).append("\n\n");
+//
+//
+//        message.setText(messageTextBuilder.toString());
+//        mailSender.send(message);
+//        return ResponseEntity.ok("Kiểm tra mail về đơn hàng nhé");
+//    }
+
     @Operation(summary = "API gủi mail thông báo đơn hàng")
     @PostMapping("/sendOrderNotification")
-    public ResponseEntity<String> sendOrderNotification(@RequestBody OrderCompleted order) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(order.getEmail());
-        message.setSubject("Đơn hàng");
-        // Create a StringBuilder to build the email message text
-        StringBuilder messageTextBuilder = new StringBuilder();
-        messageTextBuilder.append("Cảm ơn bạn đã sử dụng dịch vụ chúng tôi. Chi tiết đơn hàng như sau:\n\n");
-
-        // Append the ordered products information to the email message text
-        messageTextBuilder.append("Các sản phẩm đã đặt:\n");
-        for (OrderedProduct product : order.getOrderedProducts()) {
-            messageTextBuilder.append("- ").append(product.getProduct().getName()).append(" (").append(product.getQuantity()).append(")\n");
+    public ResponseEntity<?> sendOrderNotification(@RequestBody OrderCompleted order) {
+        try {
+            return ResponseEntity.ok().body(orderService.sendMail4Order(order));
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
         }
-
-        // Append the delivery address information to the email message text
-        messageTextBuilder.append("\n Địa chỉ vận chuyển:\n");
-        messageTextBuilder.append(order.getDeliveryAddress().getAddress()).append("\n");
-        messageTextBuilder.append(order.getDeliveryAddress().getCity()).append("\n");
-        messageTextBuilder.append(order.getDeliveryAddress().getCountry()).append("\n");
-        messageTextBuilder.append(order.getDeliveryAddress().getZipcode()).append("\n\n");
-
-        // Append the rest of the message text
-        messageTextBuilder.append("Số lượng: ").append(order.getTotalAmt()).append("\n");
-        messageTextBuilder.append("Tổng giá tiền : ").append(order.getCartTotal()).append("\n\n");
-
-
-        message.setText(messageTextBuilder.toString());
-        mailSender.send(message);
-        return ResponseEntity.ok("Kiểm tra mail về đơn hàng nhé");
     }
 
 }

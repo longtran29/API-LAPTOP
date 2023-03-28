@@ -14,6 +14,7 @@ import com.springboot.laptop.repository.ResetTokenRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.service.impl.MailService;
 import com.springboot.laptop.service.impl.UserService;
+import com.springboot.laptop.utils.ResetPasswordUtils;
 import com.springboot.laptop.utils.UidUtils;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
@@ -38,8 +39,8 @@ public class UserServiceImpl implements UserService {
     @Value("${spring.mail.username}")
     private String emailown;
 
-//    @Autowired
-//    private final Configuration configuration;
+    @Autowired
+    private Configuration configuration;
 
     public static final String F_DDMMYYYYHHMM = "dd/MM/yyyy HH:mm";
 
@@ -52,7 +53,7 @@ public class UserServiceImpl implements UserService {
     private static final String RESET_PASSWORD_TEMPLATE_NAME = "reset_password.ftl";
     private static final String FROM = "Laptop Store<%s>";
     private static final String SUBJECT = "QUÊN MẬT KHẨU";
-    private static final String DOMAIN_CLIENT = "http://localhost:8080/reset-password";
+    private static final String DOMAIN_CLIENT = "http://localhost:3000/reset-password";
     private static final long MINUS_TO_EXPIRED = 10;
 
     @Autowired
@@ -64,14 +65,16 @@ public class UserServiceImpl implements UserService {
     private final MailService mailService;
 
 
+
+
     @Autowired
-    public UserServiceImpl( UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleServiceImpl userRoleServiceImpl, ResetTokenRepository resetTokenRepository, MailService mailService) {
+    public UserServiceImpl(Configuration configuration, UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleServiceImpl userRoleServiceImpl, ResetTokenRepository resetTokenRepository, MailService mailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRoleServiceImpl = userRoleServiceImpl;
         this.resetTokenRepository = resetTokenRepository;
         this.mailService = mailService;
-//        this.configuration = configuration;
+        this.configuration = configuration;
 
     }
 
@@ -110,6 +113,8 @@ public class UserServiceImpl implements UserService {
         }
         return userRepository.save(user);
     }
+
+
 
     public UserEntity addNewAddress(AddressRequestDTO requestAddress) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -166,51 +171,54 @@ public class UserServiceImpl implements UserService {
 //
 //    }
 
-//    @Override
-//    public ResponseDTO sendVerificationEmail(String email) throws IOException {
-//        ResponseDTO response = new ResponseDTO();
-//        UserEntity existingUser;
-//        if(!StringUtils.hasText(email)) {
-//            throw new CustomResponseException(StatusResponseDTO.EMAIL_NOT_BLANK);
-//        }
-//
-//        if(userRepository.findByEmail(email) != null) {
-//            existingUser = userRepository.findByEmail(email).get();
-//        } else {
-//            throw new CustomResponseException(StatusResponseDTO.ERROR_NOT_FOUND);
-//        }
-//
-//        String token = UidUtils.generateRandomString(9);
-//
-//        ResetTokenEntity resetToken = ResetTokenEntity.builder().token(token).userId(existingUser).active(true).createdDate(new Date()).build();
-//
-//        resetTokenRepository.save(resetToken);
-//
-//
-//        freemarker.template.Template template = configuration.getTemplate(RESET_PASSWORD_TEMPLATE_NAME);
-//
-//        Map model = buildModel(existingUser, resetToken);
-//        try {
-//            ResetPasswordMailDTO rpmd = ResetPasswordMailDTO.builder().from(String.format(FROM, email))
-//                    .to(existingUser.getEmail())
-//                    .text(FreeMarkerTemplateUtils.processTemplateIntoString(template, model))
-//                    .subject(SUBJECT).build();
-//        mailService.sendWForgotPassword(rpmd).get();
-//            response.setData("mail send to : " + existingUser.getEmail());
-////            response.setSuccessCode(Boolean.TRUE);
-//        } catch (Exception e) {
-//            throw new CustomResponseException(StatusResponseDTO.INTERNAL_SERVER);
-//        }
-//
-//        return response;
-//    }
+    @Override
+    public ResponseDTO sendVerificationEmail(String email) throws IOException {
+        ResponseDTO response = new ResponseDTO();
+        if(!StringUtils.hasText(email)) {
+            // call StatusResponseDTO.EMAIL_NOT_BLANK -> return ("404", "Không tìm thấy dữ liệu") gồm code 404 và message
+            throw new CustomResponseException(StatusResponseDTO.EMAIL_NOT_BLANK);
+        }
+
+
+        UserEntity existingUser;
+
+        if(userRepository.findByEmail(email).isPresent()) {
+            existingUser = userRepository.findByEmail(email).get();
+        } else {
+            throw new CustomResponseException(StatusResponseDTO.ERROR_NOT_FOUND);
+        }
+
+        String token = UidUtils.generateRandomString(9);
+
+        ResetTokenEntity resetToken = ResetTokenEntity.builder().token(token).userId(existingUser).active(true).createdDate(new Date()).build();
+
+        resetTokenRepository.save(resetToken);
+
+
+        freemarker.template.Template template = configuration.getTemplate(RESET_PASSWORD_TEMPLATE_NAME);
+
+        Map model = buildModel(existingUser, resetToken);
+        try {
+            ResetPasswordMailDTO rpmd = ResetPasswordMailDTO.builder().from(String.format(FROM, email))
+                    .to(existingUser.getEmail())
+                    .text(FreeMarkerTemplateUtils.processTemplateIntoString(template, model))
+                    .subject(SUBJECT).build();
+        mailService.sendWForgotPassword(rpmd).get();
+            response.setData("mail send to : " + existingUser.getEmail());
+//            response.setSuccessCode(Boolean.TRUE);
+        } catch (Exception e) {
+            throw new CustomResponseException(StatusResponseDTO.INTERNAL_SERVER);
+        }
+
+        return response;
+    }
 
     private static Map buildModel(UserEntity customer, ResetTokenEntity resetToken) {
         Map<String, Object> model = new HashMap<>();
         model.put("time", toStr(new Date(), F_DDMMYYYYHHMM));
         model.put("name", customer.getName());
         model.put("email", customer.getEmail());
-        model.put("link", String.format(DOMAIN_CLIENT, resetToken.getToken()));
+        model.put("link", String.format(DOMAIN_CLIENT + "/%s", resetToken.getToken()));
         model.put("minusToExpired", MINUS_TO_EXPIRED);
         return model;
     }
@@ -237,4 +245,22 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+
+    @Override
+    public Object resetPassword(ResetPasswordDTO payload) throws Exception {
+        try {
+            ResetPasswordUtils.validConstraint(payload);
+
+            ResetTokenEntity resetToken = resetTokenRepository.findByToken(payload.getToken());
+            UserEntity existingUser = userRepository.findById(resetToken.getUserId().getId()).get();
+
+            existingUser.setPassword(passwordEncoder.encode(payload.getNewPassword()));
+
+            resetToken.setActive(false);
+            resetTokenRepository.save(resetToken);
+            return existingUser;
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
 }

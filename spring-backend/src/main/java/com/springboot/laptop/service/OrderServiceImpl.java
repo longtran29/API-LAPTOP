@@ -1,26 +1,31 @@
 package com.springboot.laptop.service;
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.OrderStatusException;
 import com.springboot.laptop.model.*;
 import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
+import com.springboot.laptop.model.dto.request.OrderInfoMail;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
-import com.springboot.laptop.model.dto.response.OrderDetailResponseDTO;
-import com.springboot.laptop.model.dto.response.OrderResponseDTO;
-import com.springboot.laptop.model.dto.response.ProductResponseDTO;
-import com.springboot.laptop.model.dto.response.UserResponseDTO;
+import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.repository.AddressRepository;
 import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.OrderRepository;
 import com.springboot.laptop.repository.UserRepository;
+import com.springboot.laptop.service.impl.MailService;
 import com.springboot.laptop.service.impl.OrderService;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -31,6 +36,13 @@ public class OrderServiceImpl implements OrderService {
     private final AddressRepository addressRepository;
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
+
+    private final String ORDER_INFO_TEMPLATE_NAME =  "order_info.ftl";
+    private static final String FROM = "BAMBOO STORE<%s>";
+    private static final String SUBJECT = "Xác nhận đơn hàng ";
+
+    @Autowired private Configuration configuration;
+    @Autowired private MailService mailService;
     @Autowired
     public OrderServiceImpl(UserRepository userRepository, AddressRepository addressRepository, OrderRepository orderRepository, CartRepository cartRepository) {
         this.userRepository = userRepository;
@@ -111,6 +123,39 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order findById(Long orderId) {
         return orderRepository.findById(orderId).get();
+    }
+
+    @Override
+    public Object sendMail4Order(OrderCompleted order) {
+
+        Map orderInfo = orderInfo(order);
+        try {
+            Template template = configuration.getTemplate(ORDER_INFO_TEMPLATE_NAME);
+            OrderInfoMail orderIn4 = OrderInfoMail.builder()
+                    .from(String.format(FROM, "tuna.music@gmail.com"))
+                    .to(order.getEmail())
+                    .text(FreeMarkerTemplateUtils.processTemplateIntoString(template, orderInfo))
+                    .subject(SUBJECT +  " từ BAMBOO STORE")
+                    .build();
+            mailService.send4OrderInfo(orderIn4).get();
+            return order;
+        } catch (Exception e) {
+            throw new CustomResponseException(StatusResponseDTO.INTERNAL_SERVER);
+        }
+    }
+
+
+    public Map orderInfo(OrderCompleted order) {
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("ADDRESS", order.getDeliveryAddress().getAddress() + " " + order.getDeliveryAddress().getCity() + " " + order.getDeliveryAddress().getCountry() + " " + order.getDeliveryAddress().getZipcode());
+        map.put("TOTAL_AMOUT", order.getTotalAmt() );
+        map.put("TOTAL_PRICE", order.getCartTotal() );
+        map.put("PRODUCT", order.getOrderedProducts());
+        map.put("PHONENUMBER", order.getDeliveryAddress().getPhoneNumber());
+        map.put("EMAIL", order.getEmail());
+
+        return map;
     }
 
     @Override

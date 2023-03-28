@@ -25,13 +25,7 @@
                         style="font-size: 13px;
                             padding: 15px 40px 25px 40px;
                             margin: 80px">
-                        <div align="center">
-<<<<<<< Updated upstream
-                            <h1 style="color: #27AAE1; font-size: 20px; ">SHOES STORE</h1>
-=======
-                            <h1 style="color: #27AAE1; font-size: 20px; ">Shose Store</h1>
->>>>>>> Stashed changes
-                        </div>
+
                         <div style="font-size: 16px">
                             <h3>Chào ${name},</h3>
 

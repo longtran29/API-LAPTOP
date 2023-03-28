@@ -3,7 +3,14 @@ package com.springboot.laptop.model.dto.response;
 public enum StatusResponseDTO {
     EMAIL_NOT_BLANK("400", "Email không được để trống"),
     ERROR_NOT_FOUND("404", "Không tìm thấy dữ liệu"),
-    INTERNAL_SERVER("500", "Hệ thống đang bị gián đoạn! Xin vui lòng thử lại sau");
+    INTERNAL_SERVER("500", "Hệ thống đang bị gián đoạn! Xin vui lòng thử lại sau"),
+
+
+    RESET_PASSWORD_FAILED("400", "Đổi mật khẩu không thành công"),
+
+
+
+        ;
 
 
     private final String code;
