@@ -1,5 +1,6 @@
 package com.springboot.laptop.service;
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
@@ -7,12 +8,16 @@ import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.model.dto.request.ProductDTO;
 import com.springboot.laptop.model.dto.response.ProductResponseDTO;
+import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.service.impl.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.server.ResponseStatusException;
+import org.webjars.NotFoundException;
 
 import javax.transaction.Transactional;
 import java.text.ParseException;
@@ -46,30 +51,48 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void updateStatus (Long productId, Boolean status) {
+    public void updateStatus (Long productId, String productStatus) {
+        Boolean status = productStatus.equalsIgnoreCase("enabled");
+            try {
+                if(!productRepository.findById(productId).isPresent()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND);
+            }
+            catch (HttpServerErrorException.InternalServerError ex) {
+                throw new CustomResponseException(StatusResponseDTO.INTERNAL_SERVER);
+            }
         productRepository.updateStatus(productId, status);
     }
     @Override
     public ProductEntity createOne(ProductDTO product) throws ParseException {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        CategoryEntity category = categoryRepository.findById(Long.valueOf(product.getCategoryId())).get();
-        BrandEntity brand =  brandRepository.findById(Long.valueOf(product.getBrandId())).get();
-        System.out.println("Result is " + category.getName() + " " + brand.getName());
-        ProductEntity newProduct =ProductEntity.builder()
-                .name(product.getName())
-                .primaryImage(product.getPrimaryImage())
-                .alias(product.getAlias())
-                .enabled(product.isEnabled())
-                .original_price(product.getOriginal_price())
-                .discount_percent(product.getDiscount_percent())
-                .brand(brand)
-                .category(category)
-                .description(product.getDescription())
-                .inStock(product.isInStock())
-                .creationDate(dateFormat.parse(dateFormat.format(date)))
-                .productQuantity(product.getProductQty())
-                .build();
+            CategoryEntity category;
+            if(categoryRepository.findById(Long.valueOf(product.getCategoryId())).isPresent()) {
+                category = categoryRepository.findById(Long.valueOf(product.getCategoryId())).get();
+            } else {
+                throw new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND);
+            }
+
+            BrandEntity brand;
+            if(brandRepository.findById(Long.valueOf(product.getBrandId())).isPresent()) {
+                brand =  brandRepository.findById(Long.valueOf(product.getBrandId())).get();
+            } else {
+                throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
+            }
+            System.out.println("Result is " + category.getName() + " " + brand.getName());
+            ProductEntity newProduct =ProductEntity.builder()
+                    .name(product.getName())
+                    .primaryImage(product.getPrimaryImage())
+                    .alias(product.getAlias())
+                    .enabled(product.isEnabled())
+                    .original_price(product.getOriginal_price())
+                    .discount_percent(product.getDiscount_percent())
+                    .brand(brand)
+                    .category(category)
+                    .description(product.getDescription())
+                    .inStock(product.isInStock())
+                    .creationDate(dateFormat.parse(dateFormat.format(date)))
+                    .productQuantity(product.getProductQty())
+                    .build();
 
         return productRepository.save(newProduct);
     }
@@ -99,9 +122,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductEntity deleteProduct(Long productId) throws ResourceNotFoundException {
-        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException(""+ ErrorCode.FIND_PRODUCT_ERROR));
-        System.out.println("Product delete " + product.getName());
+    public ProductEntity deleteProduct(Long productId)  {
+        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ERROR_NOT_FOUND) );
         this.productRepository.delete(product);
         return product;
     }

@@ -1,6 +1,7 @@
 package com.springboot.laptop.controller;
 
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.DeleteDataFail;
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.CategoryEntity;
@@ -60,14 +61,16 @@ public class ProductController {
     // check authority base on SecurityContextHolder
     @PostMapping
     public ResponseEntity<?> createProduct(@RequestBody ProductDTO product) {
+        ResponseDTO responseDTO = null;
         try {
-            ResponseDTO responseDTO = new ResponseDTO();
+            responseDTO = new ResponseDTO();
             ProductEntity createdProduct = productServiceImpl.createOne(product);
             responseDTO.setData(createdProduct);
             return ResponseEntity.ok().body(responseDTO);
-        } catch (StackOverflowError e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (CustomResponseException ex) {
+//            System.out.println("Execption is " + ex.getReason());
+            responseDTO.setData(ex.getReason());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -136,7 +139,6 @@ public class ProductController {
     @Operation(summary = "Xoá sản phẩm",
             description = "Xoá sản phẩm",security = {
             @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
             responses = {
                     @ApiResponse(description = "Xoá thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -159,14 +161,11 @@ public class ProductController {
         catch (DataIntegrityViolationException ex) {
             responseDTO.setData("Sản phẩm trong đơn đặt hàng không thể xoá");
             responseDTO.setErrorCode(ErrorCode.DATA_INTEGRITY_VIOLATION_ERROR);
-        }catch (Exception ex) {
-            ex.printStackTrace();
-            responseDTO.setData("Lỗi trong quá trình xoá");
-            responseDTO.setErrorCode(ErrorCode.INTERNAL_SERVER_ERROR);
+        }catch (CustomResponseException ex) {
+            responseDTO.setData(ex.getReason());
         }
-
-        return new ResponseEntity<ResponseDTO>(responseDTO, HttpStatus.OK);
-
+        return ResponseEntity.ok()
+                .body(responseDTO);
     }
 
 
@@ -215,13 +214,19 @@ public class ProductController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @PutMapping("/{cateId}/{cate_status}")
+    @PutMapping("/{productId}/{status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
+    public ResponseEntity<?> updateStatus(@PathVariable Long productId, @PathVariable String status ) {
         // note : not using operator "=="
-        Boolean category_status =cate_status.equalsIgnoreCase("enabled");
-        productServiceImpl.updateStatus(cateId, category_status);
-        return new ResponseEntity<String>("Cập nhật trạng thái thành công",HttpStatus.OK);
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            productServiceImpl.updateStatus(productId, status);
+            return ResponseEntity.status(HttpStatus.OK).body("Cập nhật trạng thái thành công");
+
+        } catch (CustomResponseException ex ) {
+            responseDTO.setData(ex.getReason());
+            return ResponseEntity.badRequest().body(responseDTO);
+        }
     }
 
 }

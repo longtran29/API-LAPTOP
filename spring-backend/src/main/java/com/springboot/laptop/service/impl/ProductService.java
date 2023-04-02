@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ProductService {
     public ProductEntity getOneProduct(Long productId) throws ResourceNotFoundException;
-    public void updateStatus (Long productId, Boolean status);
+    public void updateStatus (Long productId, String status);
 
     public ProductEntity createOne(ProductDTO product) throws ParseException;
 

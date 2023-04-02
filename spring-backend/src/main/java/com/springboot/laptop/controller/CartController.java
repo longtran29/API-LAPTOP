@@ -43,7 +43,7 @@ public class CartController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @PostMapping("/add_to_cart")
     public ResponseEntity<?> addProductToCart(@RequestBody CartRequestDTO cartRequest) {
         UserCart userCart = cartService.addToCart(cartRequest.getProductId(), cartRequest.getQuantity());

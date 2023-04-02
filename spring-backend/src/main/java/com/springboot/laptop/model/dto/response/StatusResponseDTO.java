@@ -8,8 +8,9 @@ public enum StatusResponseDTO {
 
     RESET_PASSWORD_FAILED("400", "Đổi mật khẩu không thành công"),
 
-
-
+    CATEGORY_NOT_FOUND("404", "Không tìm thấy danh mục này"),
+    BRAND_NOT_FOUND("404", "Không tìm thấy hãng sản xuất"),
+    PRODUCT_NOT_FOUND("404", "Không tìm thấy sản phẩm")
         ;
 
 

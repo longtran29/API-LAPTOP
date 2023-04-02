@@ -200,7 +200,7 @@ public class AuthController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null){
                 System.out.println("Da vao trong nay " + auth );
-                new SecurityContextLogoutHandler().logout(request, response, auth);
+                new SecurityContextLogoutHandler().logout(request, response, null);
             }
             return ResponseEntity.ok("Logout success");
         }

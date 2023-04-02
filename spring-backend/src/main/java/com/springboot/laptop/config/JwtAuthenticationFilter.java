@@ -40,18 +40,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-            System.out.println("Da vao doFilterInternal");
+
             String token = getJwt(request);
 
-            System.out.println("Token ngoai " + token);
             if(token !=null &&jwtUtility.validateToken(token)){
-                System.out.println("Da vao trong " + token);
                 String username = jwtUtility.getUerNameFromToken(token);
-                System.out.println("username is " + username);
+
                 UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                System.out.println("authentication  is " + authenticationToken);
+
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
