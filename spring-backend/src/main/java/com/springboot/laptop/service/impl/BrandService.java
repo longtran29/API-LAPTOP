@@ -8,10 +8,10 @@ import com.springboot.laptop.model.dto.request.BrandRequestDTO;
 import java.util.List;
 
 public interface BrandService {
-    public BrandEntity findById(Long brandId);
+    public Object findById(Long brandId);
     public List<BrandEntity> getAll();
-    public BrandEntity createOne(BrandRequestDTO newbrand) throws DuplicatedDataException;
-    public void deleteOne(Long brandId);
+    public Object createOne(BrandRequestDTO newbrand) ;
+    public Object deleteOne(Long brandId);
     public BrandEntity updateOne(Long brandId, BrandRequestDTO updateBrand) throws DuplicatedDataException;
     public List<CategoryEntity> getAllCateFromBrand(Long brandId);
 }

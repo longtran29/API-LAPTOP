@@ -1,10 +1,12 @@
 package com.springboot.laptop.service;
 
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.request.BrandRequestDTO;
+import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.UserRepository;
@@ -30,8 +32,12 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public BrandEntity findById(Long brandId) {
-        return brandRepository.findById(brandId).get();
+    public Object findById(Long brandId) {
+        try {
+            return brandRepository.findById(brandId).get();
+        }  catch (Exception ex) {
+            throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
+        }
     }
 
     @Override
@@ -39,13 +45,16 @@ public class BrandServiceImpl implements BrandService {
         return brandRepository.findAll();
     }
 
+
     @Override
-    public BrandEntity createOne(BrandRequestDTO newbrand) throws DuplicatedDataException {
+    public BrandEntity createOne(BrandRequestDTO newbrand)  {
         BrandEntity foundBrand = null;
+        if(newbrand.getBrandName().isEmpty()) throw new CustomResponseException(StatusResponseDTO.DATA_EMPTY);
+        if(newbrand.getCateIds().size() <1) throw new CustomResponseException(StatusResponseDTO.DATA_EMPTY);
         if(brandRepository.findByName(newbrand.getBrandName()).isPresent()) {
             foundBrand = brandRepository.findByName(newbrand.getBrandName()).get();
         }
-        if (foundBrand != null) throw new DuplicatedDataException("Duplicated data");
+        if (foundBrand != null) throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
         else {
             BrandEntity brand = new BrandEntity();
             brand.setName(newbrand.getBrandName());
@@ -60,8 +69,19 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public void deleteOne(Long brandId) {
-        brandRepository.delete(brandRepository.findById(brandId).get());
+    public Object deleteOne(Long brandId) {
+            BrandEntity existingBrand;
+            if(brandRepository.findById(brandId).isPresent()) {
+                existingBrand = brandRepository.findById(brandId).get();
+                try {
+                    brandRepository.delete(brandRepository.findById(brandId).get());
+                } catch (Exception ex) {
+                    throw new CustomResponseException(StatusResponseDTO.BRAND_CONSTRAINT_EXCEPTION);
+                }
+            } else {
+                throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
+            }
+            return "Xoá thành công";
     }
 
     @Override

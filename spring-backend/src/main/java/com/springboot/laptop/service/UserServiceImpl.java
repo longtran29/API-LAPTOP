@@ -7,33 +7,48 @@ import com.springboot.laptop.model.ResetTokenEntity;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.UserRoleEntity;
 import com.springboot.laptop.model.dto.request.*;
+import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.model.dto.response.ResponseDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
+import com.springboot.laptop.model.dto.response.SuccessCode;
 import com.springboot.laptop.model.enums.UserRoleEnum;
+import com.springboot.laptop.model.jwt.JwtRequest;
+import com.springboot.laptop.model.jwt.JwtResponse;
 import com.springboot.laptop.repository.ResetTokenRepository;
 import com.springboot.laptop.repository.UserRepository;
+import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.impl.MailService;
 import com.springboot.laptop.service.impl.UserService;
+import com.springboot.laptop.utils.JwtUtility;
 import com.springboot.laptop.utils.ResetPasswordUtils;
 import com.springboot.laptop.utils.UidUtils;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
+import jdk.jshell.Snippet;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.client.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.StringUtils;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
     @Value("${spring.mail.username}")
@@ -63,18 +78,67 @@ public class UserServiceImpl implements UserService {
     private final UserRoleServiceImpl userRoleServiceImpl;
     private final ResetTokenRepository resetTokenRepository;
     private final MailService mailService;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailServiceImpl userDetailService;
+    private final JwtUtility jwtUtility;
 
 
 
 
     @Autowired
-    public UserServiceImpl(Configuration configuration, UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleServiceImpl userRoleServiceImpl, ResetTokenRepository resetTokenRepository, MailService mailService) {
+    public UserServiceImpl(Configuration configuration, UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleServiceImpl userRoleServiceImpl, ResetTokenRepository resetTokenRepository, MailService mailService, AuthenticationManager authenticationManager, UserDetailServiceImpl userDetailService, JwtUtility jwtUtility) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRoleServiceImpl = userRoleServiceImpl;
         this.resetTokenRepository = resetTokenRepository;
         this.mailService = mailService;
         this.configuration = configuration;
+        this.authenticationManager = authenticationManager;
+
+        this.userDetailService = userDetailService;
+        this.jwtUtility = jwtUtility;
+
+    }
+
+    public Object authenticateUser(JwtRequest jwtRequest) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            jwtRequest.getUsername(),
+
+                            jwtRequest.getPassword()
+                    )
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            final UserDetails userDetails
+                    = userDetailService.loadUserByUsername(jwtRequest.getUsername());
+
+            UserEntity loggedUser = this.findUserByUserName(userDetails.getUsername());
+
+            if(!loggedUser.getEnabled()) throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
+
+            final String tokenDto = jwtUtility.createToken(loggedUser);
+            JwtResponse jwtResponse  = new JwtResponse();
+            jwtResponse.setJwtToken(tokenDto);
+
+            if(loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
+                jwtResponse.setRole("USER");
+            }
+            else {
+                jwtResponse.setRole("ADMIN");
+            }
+            responseDTO.setSuccessCode(SuccessCode.LOGIN_SUCCESS);
+            responseDTO.setData(jwtResponse);
+            return responseDTO;
+        }
+        catch (CustomResponseException ex) {
+            throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
+        }
+        catch (BadCredentialsException e) {
+          throw new CustomResponseException(StatusResponseDTO.FAIL_AUTHENTICATION);
+        }
 
     }
 
@@ -86,6 +150,7 @@ public class UserServiceImpl implements UserService {
         appClient.setUsername(user.getUsername());
         appClient.setEmail(user.getEmail());
         appClient.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        appClient.setEnabled(true);
         return userRepository.save(appClient);
     }
 
@@ -94,6 +159,37 @@ public class UserServiceImpl implements UserService {
         Optional<UserEntity> byUsername = this.userRepository.findByUsername(username);
         Optional<UserEntity> byEmail = this.userRepository.findByEmail(email);
         return byUsername.isPresent() || byEmail.isPresent();
+    }
+
+    public List<UserEntity> getAll() {
+        return userRepository.findAll();
+    }
+
+    public void deleteCustomer(Long customerId) throws Exception {
+       UserEntity existingUser;
+       try {
+           if(userRepository.findById(customerId).isPresent()) {
+               existingUser = userRepository.findById(customerId).get();
+               userRepository.delete(existingUser);
+           } else {
+               throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+           }
+       }
+       catch (Exception ex) {
+           throw new Exception(ex.getMessage());
+       }
+
+    }
+
+    public void updateStatus(Long customerId, String status) {
+            Boolean updateStatus = status.equalsIgnoreCase("enabled");
+            UserEntity existingUser;
+            if(userRepository.findById(customerId).isPresent()) {
+                existingUser = userRepository.findById(customerId).get();
+                userRepository.updateStatus(customerId, updateStatus );
+
+            } else throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+
     }
 
     @Override
