@@ -19,4 +19,6 @@ public interface UserService {
     public UserEntity newPassword(NewPasswordRequest newPasswordRequest);
     public UserEntity updateInformation(UserRequestDTO userRequestDTO);
     public Object resetPassword(ResetPasswordDTO payload) throws Exception;
+
+
 }

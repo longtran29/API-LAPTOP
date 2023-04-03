@@ -1,6 +1,7 @@
 package com.springboot.laptop.controller;
 
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,13 +69,8 @@ public class BrandController {
             })
 
     @GetMapping("/{brandId}")
-    public ResponseEntity<?> getBrandById(@PathVariable Long brandId) {
-        BrandEntity brand = brandServiceImpl.findById(brandId);
-        if (brand == null) {
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.ok(brand);
-        }
+    public Object getBrandById(@PathVariable Long brandId) {
+      return brandServiceImpl.findById(brandId);
     }
 
     @Operation(summary = "Các thương hiệu",
@@ -95,7 +92,6 @@ public class BrandController {
     @Operation(summary = "Tạo thương hiệu mới",
             description = "Tạo một thương hiệu mới",security = {
             @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
             responses = {
                     @ApiResponse(description = "Tạo thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -108,29 +104,14 @@ public class BrandController {
             })
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> createBrand(@RequestBody BrandRequestDTO newBrand) throws Exception {
-        ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            BrandEntity brand = brandServiceImpl.createOne(newBrand);
-            responseDTO.setData(brand);
-            responseDTO.setSuccessCode(SuccessCode.ADD_BRAND_SUCCESS);
-
-        } catch (DuplicatedDataException e) {
-            responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-        catch (Exception e) {
-            responseDTO.setErrorCode(ErrorCode.ADD_CATEGORY_ERROR);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDTO);
-        }
-        return ResponseEntity.ok(responseDTO);
+    public Object createBrand(@RequestBody BrandRequestDTO newBrand) {
+        return brandServiceImpl.createOne(newBrand);
     }
 
 
     @Operation(summary = "Xoá thương hiệu",
             description = "Xoá một thương hiệu",security = {
             @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
             responses = {
                     @ApiResponse(description = "Xoá thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -143,15 +124,13 @@ public class BrandController {
             })
     @DeleteMapping("/{brandId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> deleteBrand(@PathVariable Long brandId) {
-        brandServiceImpl.deleteOne(brandId);
-        return new ResponseEntity<String>("Xoá thành công ",HttpStatus.NO_CONTENT );
+    public Object deleteBrand(@PathVariable Long brandId) {
+       return brandServiceImpl.deleteOne(brandId);
     }
 
     @Operation(summary = "Cập nhật thương hiệu",
             description = "Cập nhật thương hiệu",security = {
             @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
             responses = {
                     @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))

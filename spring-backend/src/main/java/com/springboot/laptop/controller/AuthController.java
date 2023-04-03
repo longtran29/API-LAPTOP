@@ -1,15 +1,13 @@
 package com.springboot.laptop.controller;
 
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.UserPasswordException;
 import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.request.*;
-import com.springboot.laptop.model.dto.response.ErrorCode;
-import com.springboot.laptop.model.dto.response.ResponseDTO;
-import com.springboot.laptop.model.dto.response.SuccessCode;
-import com.springboot.laptop.model.dto.response.UserInformationDTO;
+import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
@@ -122,38 +120,15 @@ public class AuthController {
     public ResponseEntity<?> authenticate(@RequestBody JwtRequest jwtRequest, HttpServletResponse response) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            jwtRequest.getUsername(),
-
-                            jwtRequest.getPassword()
-                    )
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            final UserDetails userDetails
-                    = userDetailService.loadUserByUsername(jwtRequest.getUsername());
-
-            UserEntity loggedUser = userServiceImpl.findUserByUserName(userDetails.getUsername());
-
-            final String tokenDto = jwtUtility.createToken(loggedUser);
-            JwtResponse jwtResponse  = new JwtResponse();
-            jwtResponse.setJwtToken(tokenDto);
-
-            if(loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
-                jwtResponse.setRole("USER");
-            }
-            else {
-                jwtResponse.setRole("ADMIN");
-            }
-            responseDTO.setSuccessCode(SuccessCode.LOGIN_SUCCESS);
-            responseDTO.setData(jwtResponse);
-        } catch (BadCredentialsException e) {
-            responseDTO.setErrorCode(ErrorCode.FAIL_AUTHENTICATION);
-            responseDTO.setData("Tên đăng nhập hoặc mật khẩu sai !");
+//            responseDTO.setData(userServiceImpl.authenticateUser(jwtRequest));
+            return ResponseEntity.ok().body(userServiceImpl.authenticateUser(jwtRequest));
+        } catch (CustomResponseException ex) {
+            responseDTO.setData(ex.getReason());
+            return ResponseEntity.badRequest().body(responseDTO);
+        } catch (Exception ex) {
+            responseDTO.setData(ex.getMessage());
             return ResponseEntity.badRequest().body(responseDTO);
         }
-        return ResponseEntity.ok(responseDTO);
     }
 
 
