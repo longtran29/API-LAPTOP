@@ -1,20 +1,16 @@
 package com.springboot.laptop.controller;
 
 
-import com.springboot.laptop.exception.DeleteDataFail;
-import com.springboot.laptop.exception.DuplicatedDataException;
-import com.springboot.laptop.exception.ResourceNotFoundException;
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
-import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.model.dto.response.ResponseDTO;
-import com.springboot.laptop.model.dto.response.SuccessCode;
-import com.springboot.laptop.service.CategoryServiceImpl;
+import com.springboot.laptop.model.dto.response.StatusResponseDTO;
+import com.springboot.laptop.service.impl.CategoryServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +19,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,11 +48,13 @@ public class CategoryController {
             })
     @GetMapping("/{categoryId}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long categoryId) {
-        CategoryEntity category = categoryServiceImpl.findById(categoryId);
-        if (category == null) {
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.ok(category);
+        ResponseDTO responseDTO = new ResponseDTO();
+        try {
+            responseDTO.setData((categoryServiceImpl.findById(categoryId)));
+            return  ResponseEntity.ok().body(responseDTO);
+        } catch (CustomResponseException ex) {
+            responseDTO.setData(ex.getReason());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
         }
     }
 
@@ -76,31 +73,9 @@ public class CategoryController {
             })
     @PostMapping("/new")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createCategory(@RequestBody CategoryRequestDTO categoryDto) throws Exception {
-        ResponseDTO responseDTO = new ResponseDTO();
-        System.out.println("User principal in post cate " + SecurityContextHolder.getContext().getAuthentication());
-        System.out.println("Authorities " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
-        try {
-            CategoryEntity newOne = new CategoryEntity(categoryDto.getName(), categoryDto.getEnabled());
-            CategoryEntity newCate = categoryServiceImpl.createOne(newOne);
-            responseDTO.setData(newCate);
-            responseDTO.setSuccessCode(SuccessCode.ADD_CATEGORY_SUCCESS);
-        } catch (DuplicatedDataException e) {
-            log.error("Error while creating a new category: ", e);
-            responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
-            return ResponseEntity.badRequest().body(responseDTO);
-        } catch (IllegalArgumentException | DataIntegrityViolationException e) {
-            log.error("Error while creating a new category: ", e);
-            responseDTO.setErrorCode(ErrorCode.ADD_CATEGORY_ERROR);
-            return ResponseEntity.badRequest().body(responseDTO);
-        } catch (Exception e) {
-            log.error("Unexpected error while creating a new category: ", e);
-            responseDTO.setErrorCode(ErrorCode.ADD_CATEGORY_ERROR);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDTO);
-        }
-        return ResponseEntity.ok(responseDTO);
+    public Object createCategory(@RequestBody CategoryRequestDTO categoryDto) {
+        return categoryServiceImpl.createOne(categoryDto);
     }
-
 
 
     @Operation(summary = "Lấy tất cả danh mục",
@@ -134,19 +109,8 @@ public class CategoryController {
             })
     @PutMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> updateCate(@PathVariable Long cateId, @RequestBody CategoryEntity cate )  {
-        ResponseDTO responseDTO = new ResponseDTO();
-        CategoryEntity updatedCate;
-        try {
-            updatedCate = categoryServiceImpl.updateOne(cateId, cate);
-            responseDTO.setData(updatedCate);
-            responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
-        } catch (DuplicatedDataException e) {
-            log.error(" "  +  e.getMessage());
-            responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-        return new ResponseEntity<CategoryEntity>(updatedCate, HttpStatus.CREATED);
+    public Object updateCate(@PathVariable Long cateId, @RequestBody CategoryEntity category )  {
+        return categoryServiceImpl.updateOne(cateId, category);
     }
 
 
@@ -164,11 +128,10 @@ public class CategoryController {
             })
     @PutMapping("/{cateId}/{cate_status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
+    public Object updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
         // note : not using operator "=="
         Boolean category_status =cate_status.equalsIgnoreCase("enabled");
-        categoryServiceImpl.updateStatus(cateId, category_status);
-        return new ResponseEntity<String>("Update status successfully",HttpStatus.OK);
+        return categoryServiceImpl.updateStatus(cateId, category_status);
     }
 
 
@@ -188,22 +151,15 @@ public class CategoryController {
             })
     @DeleteMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ResponseDTO> deleteCategory(@PathVariable Long cateId) throws ResourceNotFoundException, DeleteDataFail {
+    public ResponseEntity<?> deleteCategory(@PathVariable Long cateId) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            CategoryEntity delCategory = categoryServiceImpl.deleteOne(cateId);
-            responseDTO.setData(delCategory);
-            responseDTO.setSuccessCode(SuccessCode.DELETE_CATEGORY_SUCCESS);
+            categoryServiceImpl.deleteOne(cateId);
+            responseDTO.setData("Xoá thành công");
         } catch (DataIntegrityViolationException ex) {
-            System.err.println(ex.getMessage());
-            responseDTO.setData("Không xoá được vì danh mục của hãng");
-            responseDTO.setErrorCode(ErrorCode.DATA_INTEGRITY_VIOLATION_ERROR);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            responseDTO.setData("Lỗi trong quá trình xoá");
-            responseDTO.setErrorCode(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new CustomResponseException(StatusResponseDTO.CATEGORY_VIOLATION_EXCEPTION);
         }
-        return new ResponseEntity<ResponseDTO>(responseDTO, HttpStatus.OK);
+        return ResponseEntity.ok().body(responseDTO);
     }
-
 }
+

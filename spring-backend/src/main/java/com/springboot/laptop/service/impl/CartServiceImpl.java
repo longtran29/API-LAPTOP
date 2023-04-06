@@ -1,15 +1,17 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.CartDetails;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.response.CartResponseDTO;
+import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.CartDetailRepository;
 import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.repository.UserRepository;
-import com.springboot.laptop.service.impl.CartService;
+import com.springboot.laptop.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,15 @@ public class CartServiceImpl implements CartService {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.cartDetailRepository = cartDetailRepository;
+    }
+
+
+    @Override
+    public UserCart findCartById(Long cartId) {
+        if(!productRepository.findById(cartId).isPresent()) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
+        else  {
+            return cartRepository.findById(cartId).get();
+        }
     }
 
     @Override
@@ -87,8 +98,9 @@ public class CartServiceImpl implements CartService {
 }
 
 
-
+    @Override
     public List<CartResponseDTO> getAllCartDetails(UserCart userCart) {
+
         List<CartResponseDTO> listCart = new ArrayList<>();
         for(CartDetails cartDetail : userCart.getCartDetails()) {
             CartResponseDTO cart = new CartResponseDTO();
@@ -100,8 +112,10 @@ public class CartServiceImpl implements CartService {
     }
 
     public UserCart updateQuantityItem(UserEntity user, Long productId, String type) {
+        if(!productRepository.findById(productId).isPresent()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND);
         try {
             UserCart userCart = user.getCart();
+            if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
             List<CartDetails> listCart = userCart.getCartDetails();
             for (CartDetails cartDetail: listCart
             ) {
@@ -117,12 +131,11 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    @Override
     public UserCart removeCartItem(Long productId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
-
-        System.out.println("User logged  " + user.getName());
-
+        if(!productRepository.findById(productId).isPresent()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND);
         UserCart userCart = user.getCart();
         if(userCart != null) {
             Optional<CartDetails> removeItem = userCart.getCartDetails().stream().filter(item -> item.getProduct().getId() == productId).findFirst();
@@ -132,8 +145,6 @@ public class CartServiceImpl implements CartService {
                 System.out.println("cart details " + userCart.getCartDetails());
                 userCart.getCartDetails().remove(removeItem.get());
                 cartDetailRepository.delete(removeItem.get());
-
-
             }
         }
         else {

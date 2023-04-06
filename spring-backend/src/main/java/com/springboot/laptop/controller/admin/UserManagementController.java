@@ -4,14 +4,11 @@ package com.springboot.laptop.controller.admin;
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.response.ResponseDTO;
-import com.springboot.laptop.repository.UserRepository;
-import com.springboot.laptop.service.UserServiceImpl;
-import org.apache.coyote.Response;
+import com.springboot.laptop.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,22 +52,9 @@ public class UserManagementController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long customerId) throws Exception {
+    public Object deleteUser(@PathVariable Long customerId) throws Exception {
         ResponseDTO response = new ResponseDTO();
-        try {
-            userService.deleteCustomer(customerId);
-            response.setData("Xoá thành công");
-        } catch (CustomResponseException ex) {
-            response.setData(ex.getReason());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-        catch (Exception ex) {
-            response.setData(ex.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
+        return userService.deleteCustomer(customerId);
 
-        return ResponseEntity.ok().body(response);
     }
-
-
 }

@@ -1,4 +1,4 @@
-package com.springboot.laptop.service.impl;
+package com.springboot.laptop.service;
 
 import com.springboot.laptop.model.dto.request.OrderInfoMail;
 import com.springboot.laptop.model.dto.request.ResetPasswordMailDTO;

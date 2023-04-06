@@ -5,14 +5,11 @@ import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.DeleteDataFail;
 import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.ProductEntity;
+import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
 import com.springboot.laptop.model.dto.request.ProductDTO;
-import com.springboot.laptop.model.dto.response.ErrorCode;
-import com.springboot.laptop.model.dto.response.ProductResponseDTO;
-import com.springboot.laptop.model.dto.response.ResponseDTO;
-import com.springboot.laptop.model.dto.response.SuccessCode;
-import com.springboot.laptop.service.CloudinaryService;
-import com.springboot.laptop.service.ProductServiceImpl;
+import com.springboot.laptop.model.dto.response.*;
+import com.springboot.laptop.service.impl.CloudinaryService;
+import com.springboot.laptop.service.impl.ProductServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -60,26 +57,14 @@ public class ProductController {
             })
     // check authority base on SecurityContextHolder
     @PostMapping
-    public ResponseEntity<?> createProduct(@RequestBody ProductDTO product) {
-        ResponseDTO responseDTO = null;
-        try {
-            responseDTO = new ResponseDTO();
-            ProductEntity createdProduct = productServiceImpl.createOne(product);
-            responseDTO.setData(createdProduct);
-            return ResponseEntity.ok().body(responseDTO);
-        } catch (CustomResponseException ex) {
-//            System.out.println("Execption is " + ex.getReason());
-            responseDTO.setData(ex.getReason());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+    public Object createProduct(@RequestBody ProductDTO product) throws ParseException {
+        return productServiceImpl.createOne(product);
+
     }
 
     @Operation(summary = "Lấy 1 sản phẩm ",
             description = "Trả về 1 sản phẩm theo mã ",security = {
             @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
             responses = {
                     @ApiResponse(description = "thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -90,18 +75,8 @@ public class ProductController {
             })
     @GetMapping("/{productId}")
     @PreAuthorize("permitAll")
-    public ResponseEntity<?> getOneProduct(@PathVariable Long productId) {
-        ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            ProductResponseDTO updateProduct = new ProductResponseDTO();
-            updateProduct = updateProduct.convertToDto(productServiceImpl.getOneProduct(productId));
-            responseDTO.setData(updateProduct);
-
-        }catch (Exception ex) {
-            responseDTO.setData("Khong tim thay san pham nao voi ma " + productId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
-        }
-        return ResponseEntity.ok(responseDTO);
+    public Object getOneProduct(@PathVariable Long productId) {
+       return productServiceImpl.getOneProduct(productId);
     }
 
     @Operation(summary = "Tải ảnh lên",
@@ -121,6 +96,11 @@ public class ProductController {
         return url;
     }
 
+    @GetMapping("/best-seller")
+    public ResponseEntity<?> bestSellerProducts() {
+        return ResponseEntity.ok().body(productServiceImpl.getBestSellingProducts());
+    }
+
     @Operation(summary = "Danh sách sản phẩm",
             description = "Lấy ra danh sách các sản phẩm",
             responses = {
@@ -134,6 +114,11 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<?> getAllProducts() {
         return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getAll(), HttpStatus.OK);
+    }
+
+    @PostMapping("/product_in_category")
+    public ResponseEntity<?> getProductByCategory(@RequestBody CategoryRequestDTO category) {
+        return ResponseEntity.ok().body(productServiceImpl.getProductByCategory(category.getName()));
     }
 
     @Operation(summary = "Xoá sản phẩm",
@@ -151,23 +136,16 @@ public class ProductController {
             })
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
+    public Object deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
-            ProductEntity delProduct = productServiceImpl.deleteProduct(productId);
-            responseDTO.setData(delProduct);
-            responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
+            productServiceImpl.deleteProduct(productId);
+//            responseDTO.setData("Xoá thành công");
+            return ResponseEntity.ok().body(responseDTO);
+        } catch (DataIntegrityViolationException ex) {
+            throw new CustomResponseException(StatusResponseDTO.PRODUCT_VIOLATION_EXCEPTION);
         }
-        catch (DataIntegrityViolationException ex) {
-            responseDTO.setData("Sản phẩm trong đơn đặt hàng không thể xoá");
-            responseDTO.setErrorCode(ErrorCode.DATA_INTEGRITY_VIOLATION_ERROR);
-        }catch (CustomResponseException ex) {
-            responseDTO.setData(ex.getReason());
-        }
-        return ResponseEntity.ok()
-                .body(responseDTO);
     }
-
 
     @Operation(summary = "Cập nhật sản phẩm ",
             description = "Cập nhật các thông tin sản pẩm",security = {
@@ -184,21 +162,8 @@ public class ProductController {
             })
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{productId}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ResourceNotFoundException {
-        ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            ProductEntity updateProduct = productServiceImpl.updateProduct(productId, product);
-            responseDTO.setData(updateProduct);
-            return ResponseEntity.ok().body(responseDTO);
-
-        } catch (ResourceNotFoundException ex) {
-            responseDTO.setErrorCode(ErrorCode.NOT_FOUND_EXCEPTION);
-            responseDTO.setData(ex.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
-        } catch (ParseException e) {
-            // exception parse new Date()
-            throw new RuntimeException(e);
-        }
+    public Object updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ParseException, ResourceNotFoundException {
+        return productServiceImpl.updateProduct(productId, product);
     }
 
     @Operation(summary = "Cập nhật trạng thái ",

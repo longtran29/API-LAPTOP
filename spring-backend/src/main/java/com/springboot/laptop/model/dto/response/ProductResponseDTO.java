@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ProductResponseDTO {
-    private Long prod_id;
+    private Long id;
     private String primaryImage;
 
     private String name;
@@ -34,7 +34,7 @@ public class ProductResponseDTO {
 
     public ProductResponseDTO convertToDto(ProductEntity product) {
         return ProductResponseDTO.builder()
-                .prod_id(product.getId())
+                .id(product.getId())
                 .name(product.getName())
                 .enabled(product.isEnabled())
                 .original_price(product.getOriginal_price())

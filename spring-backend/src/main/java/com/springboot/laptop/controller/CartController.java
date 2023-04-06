@@ -4,8 +4,8 @@ import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.request.CartRequestDTO;
-import com.springboot.laptop.service.CartServiceImpl;
-import com.springboot.laptop.service.UserServiceImpl;
+import com.springboot.laptop.service.impl.CartServiceImpl;
+import com.springboot.laptop.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,7 +45,7 @@ public class CartController {
             })
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @PostMapping("/add_to_cart")
-    public ResponseEntity<?> addProductToCart(@RequestBody CartRequestDTO cartRequest) {
+    public Object addProductToCart(@RequestBody CartRequestDTO cartRequest) throws Exception {
         UserCart userCart = cartService.addToCart(cartRequest.getProductId(), cartRequest.getQuantity());
         return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
     }
@@ -75,7 +75,6 @@ public class CartController {
             UserCart userCart = user.getCart();
             return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
         }
-
         catch(NullPointerException ex) {
             return ResponseEntity.badRequest().body("Chưa có giỏ hàng nào");
         }

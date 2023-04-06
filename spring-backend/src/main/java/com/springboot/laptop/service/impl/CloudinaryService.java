@@ -1,4 +1,4 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
 import com.cloudinary.utils.ObjectUtils;
 import com.springboot.laptop.config.CloudinaryConfig;

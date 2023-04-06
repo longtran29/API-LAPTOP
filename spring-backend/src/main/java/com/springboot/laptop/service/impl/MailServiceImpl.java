@@ -1,9 +1,8 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.model.dto.request.OrderInfoMail;
 import com.springboot.laptop.model.dto.request.ResetPasswordMailDTO;
-import com.springboot.laptop.model.dto.response.OrderCompleted;
-import com.springboot.laptop.service.impl.MailService;
+import com.springboot.laptop.service.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;

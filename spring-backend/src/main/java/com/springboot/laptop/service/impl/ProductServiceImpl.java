@@ -1,23 +1,19 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.CustomResponseException;
-import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.ProductEntity;
-import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.model.dto.request.ProductDTO;
 import com.springboot.laptop.model.dto.response.ProductResponseDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.ProductRepository;
-import com.springboot.laptop.service.impl.ProductService;
+import com.springboot.laptop.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.server.ResponseStatusException;
-import org.webjars.NotFoundException;
 
 import javax.transaction.Transactional;
 import java.text.ParseException;
@@ -41,15 +37,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductEntity getOneProduct(Long productId) throws ResourceNotFoundException {
-        try {
-             ProductEntity product = productRepository.findById(productId).get();
-             return product;
-        } catch (Exception ex) {
-            throw new ResourceNotFoundException("Khong tim thay san pham voi id " + productId);
+    public Object getOneProduct(Long productId)  {
+        if(!productRepository.findById(productId).isPresent()) {
+            throw new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND);
         }
-    }
+        else {
+            ProductResponseDTO updateProduct = new ProductResponseDTO();
+            updateProduct = updateProduct.convertToDto(productRepository.findById(productId).get());
+            return updateProduct;
+        }
 
+    }
     @Override
     public void updateStatus (Long productId, String productStatus) {
         Boolean status = productStatus.equalsIgnoreCase("enabled");
@@ -83,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
                     .name(product.getName())
                     .primaryImage(product.getPrimaryImage())
                     .alias(product.getAlias())
-                    .enabled(product.isEnabled())
+                    .enabled(true)
                     .original_price(product.getOriginal_price())
                     .discount_percent(product.getDiscount_percent())
                     .brand(brand)
@@ -98,13 +96,30 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductEntity> getProductByCategory(String categoryName) {
+        CategoryEntity category;
+        if(!categoryRepository.findByName(categoryName).isPresent())
+            throw new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND);
+        else {
+            category = categoryRepository.findByName(categoryName).get();
+            return (List<ProductEntity>) category.getProducts();
+        }
+
+    }
+
+    @Override
+    public List<ProductEntity> getBestSellingProducts() {
+        return productRepository.findBestSellerProducts();
+    }
+
+    @Override
     public List<ProductResponseDTO> getAll() {
         List<ProductEntity> products =  productRepository.findAll() ;
         return new ProductResponseDTO().convertProdDto(products);
     }
     @Override
-    public ProductEntity updateProduct(Long productId, ProductDTO updateProduct) throws ResourceNotFoundException, ParseException {
-        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new ResourceNotFoundException("No product found with id " + productId));
+    public ProductEntity updateProduct(Long productId, ProductDTO updateProduct) throws ParseException {
+        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         if(updateProduct.getName() != null) existingProduct.setName(updateProduct.getName());
@@ -115,6 +130,7 @@ public class ProductServiceImpl implements ProductService {
         if(updateProduct.getBrandId() != null) existingProduct.setBrand(brandRepository.findById(updateProduct.getBrandId()).get());
         if(updateProduct.getPrimaryImage() != null)existingProduct.setPrimaryImage(updateProduct.getPrimaryImage());
         if(updateProduct.getProductQty() != null) existingProduct.setProductQuantity(updateProduct.getProductQty());
+        existingProduct .setInStock((updateProduct.isInStock()));
         existingProduct.setModifiedDate(dateFormat.parse(dateFormat.format(date)));
         productRepository.save(existingProduct);
 
@@ -122,10 +138,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductEntity deleteProduct(Long productId)  {
-        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ERROR_NOT_FOUND) );
-        this.productRepository.delete(product);
-        return product;
+    public void deleteProduct(Long productId)  {
+        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+        productRepository.delete(existingProduct);
     }
 }
 
