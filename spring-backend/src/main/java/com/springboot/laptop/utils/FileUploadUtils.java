@@ -1,6 +1,6 @@
 package com.springboot.laptop.utils;
 
-import com.springboot.laptop.service.CloudinaryService;
+import com.springboot.laptop.service.impl.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Component
 @RestController

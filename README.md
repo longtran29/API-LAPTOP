@@ -6,7 +6,7 @@
 
 ## API Reference
 
-#### Authenticate login
+#### Authenticate user
 
 ```http
   POST /api/v1/authenticate
@@ -15,9 +15,9 @@
 
 | Parameter | Type     | Description                |
 | :-------- | :------- | :------------------------- |
-| `username`, `password` | `JSON` | **Required**. Return the accesstoken for logged user |
+| `username`, `password` | `JSON` | **Required**. Authenticate user and return the accesstoken for successful logged user |
 
-#### Get item
+#### Delete a product
 
 ```http
   DELETE /api/v1/products/{productId}
@@ -25,7 +25,36 @@
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `productId`      | `Long` | **Required**. Delete a product |
+| `productId`      | `Long` | **Required**. Delete a product by provided id |
+
+
+#### Update product quantity in the shopping cart
+
+```http
+  
+PUT /api/v1/cart/update/{productId}/{type}
+
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `productId` ,   `type`   | `integer`,  `string` | **Required**. Increase/ decrease  quantity in shopping cart |
+
+
+
+#### Update product quantity in the shopping cart
+
+```http
+  
+PUT /api/v1/cart/update/{productId}/{type}
+
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `productId` ,   `type`   | `integer`,  `string` | **Required**. Increase/ decrease  quantity in shopping cart |
+
+
 
 
 
@@ -37,7 +66,22 @@
 ![App Screenshot](https://i.ibb.co/PFqrfJ9/cb94848b-40f4-49d0-aa98-5459069388ed.png)
 
 
+Order Endpoint
+
 ![App Screenshot](https://i.ibb.co/BLdJrWf/b8e5361b-b1aa-4ed3-b088-27ff113d3f11.png)
+
+
+Authentication Enpoint
+![App Screenshot](https://i.ibb.co/Lk5Wk4C/authen.png)
+
+Send mail order detail
+
+![App Screenshot](https://i.ibb.co/93Y9p6T/order.jpg)
+
+
+Request Forgot Password 
+
+![App Screenshot](https://i.ibb.co/b6JrrDZ/forgotpass.png)
 
 
 
@@ -48,21 +92,29 @@
 
 🛠️ Requirements
 
-Intellij
+Intellij IDEA Community Edition
+ 
+Visual Studio Code
 
-VsCode
 
-
-Install project
+Download to your local machine
 
 ```bash
   git clone https://github.com/xiexie2904/API_LAPTOP.git
 ```
     
 
-Front-end - ReactJS
+Front-end - ReactJS : 
 
 https://github.com/xiexie2904/LAPTOP_FE.git
+
+Download FE project to local machine: 
+```bash
+  npm install
+  cd LAPTOP_FE
+```
+
+Run this command to install dependencies base on package.json file: 
 
 ```bash
   npm install
@@ -70,36 +122,12 @@ https://github.com/xiexie2904/LAPTOP_FE.git
 ```
 
 
-## Run Locally
-
-Clone the project
-
-```bash
-  git clone https://link-to-project
-```
-
-Go to the project directory
-
-```bash
-  cd my-project
-```
-
-Install dependencies
-
-```bash
-  npm install
-```
-
-Start the server
-
-```bash
-  npm run start
-```
 
 
 ## Acknowledgements
 
- - [Awesome Readme Templates](https://awesomeopensource.com/project/elangosundar/awesome-README-templates)
- - [Awesome README](https://github.com/matiassingers/awesome-readme)
- - [How to write a Good readme](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
+ - [FreeMarker Templates](https://www.javainuse.com/spring/spring-boot-freemarker-hello-world)
+
+ - [Rest with Spring Tutorail](https://www.baeldung.com/rest-with-spring-series)
+ - [Restful API documentation homepage](https://spring.io/guides/tutorials/rest/)
 

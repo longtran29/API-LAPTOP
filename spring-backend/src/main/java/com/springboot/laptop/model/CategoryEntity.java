@@ -1,6 +1,7 @@
 package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
@@ -14,6 +15,7 @@ import java.util.Collection;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CategoryEntity extends BaseEntity {
 
     @Column(nullable = false, name = "category_name")
@@ -24,7 +26,8 @@ public class CategoryEntity extends BaseEntity {
 
 
 //    resolve error jackson - arraylist, collection
-    @JsonManagedReference
+    @JsonManagedReference(value = "category-products")
+    @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<ProductEntity> products;
 
@@ -32,5 +35,4 @@ public class CategoryEntity extends BaseEntity {
         this.name = name;
         this.enabled = enabled;
     }
-
 }

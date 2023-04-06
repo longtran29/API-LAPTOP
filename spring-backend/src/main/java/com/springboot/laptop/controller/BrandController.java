@@ -1,7 +1,6 @@
 package com.springboot.laptop.controller;
 
 
-import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
@@ -10,13 +9,12 @@ import com.springboot.laptop.model.dto.response.ErrorCode;
 import com.springboot.laptop.model.dto.response.ResponseDTO;
 import com.springboot.laptop.model.dto.response.SuccessCode;
 import com.springboot.laptop.repository.CategoryRepository;
-import com.springboot.laptop.service.BrandServiceImpl;
+import com.springboot.laptop.service.impl.BrandServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

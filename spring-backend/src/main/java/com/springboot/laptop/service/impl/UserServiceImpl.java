@@ -1,4 +1,4 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.UserPasswordException;
@@ -7,31 +7,23 @@ import com.springboot.laptop.model.ResetTokenEntity;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.UserRoleEntity;
 import com.springboot.laptop.model.dto.request.*;
-import com.springboot.laptop.model.dto.response.ErrorCode;
-import com.springboot.laptop.model.dto.response.ResponseDTO;
-import com.springboot.laptop.model.dto.response.StatusResponseDTO;
-import com.springboot.laptop.model.dto.response.SuccessCode;
+import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
 import com.springboot.laptop.repository.ResetTokenRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
-import com.springboot.laptop.service.impl.MailService;
-import com.springboot.laptop.service.impl.UserService;
+import com.springboot.laptop.service.MailService;
+import com.springboot.laptop.service.UserService;
 import com.springboot.laptop.utils.JwtUtility;
 import com.springboot.laptop.utils.ResetPasswordUtils;
 import com.springboot.laptop.utils.UidUtils;
 import freemarker.template.Configuration;
-import freemarker.template.TemplateException;
-import jdk.jshell.Snippet;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.http.client.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,10 +31,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
@@ -161,26 +156,27 @@ public class UserServiceImpl implements UserService {
         return byUsername.isPresent() || byEmail.isPresent();
     }
 
+    @Override
     public List<UserEntity> getAll() {
         return userRepository.findAll();
     }
 
-    public void deleteCustomer(Long customerId) throws Exception {
+    @Override
+    public Object deleteCustomer(Long customerId)  {
        UserEntity existingUser;
-       try {
-           if(userRepository.findById(customerId).isPresent()) {
-               existingUser = userRepository.findById(customerId).get();
-               userRepository.delete(existingUser);
-           } else {
-               throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
-           }
-       }
-       catch (Exception ex) {
-           throw new Exception(ex.getMessage());
-       }
+
+              if(userRepository.findById(customerId).isPresent()) {
+                  existingUser = userRepository.findById(customerId).get();
+                  if(existingUser.getOrders().size() >0) throw new CustomResponseException(StatusResponseDTO.CUSTOMER_VIOLATION_EXCEPTION);
+                  userRepository.delete(existingUser);
+                  return "Xoá thành công";
+              } else {
+                  throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+              }
 
     }
 
+    @Override
     public void updateStatus(Long customerId, String status) {
             Boolean updateStatus = status.equalsIgnoreCase("enabled");
             UserEntity existingUser;
@@ -341,6 +337,36 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+
+
+    @Override
+    public Object logoutUser(HttpServletRequest request, HttpServletResponse response) {
+        if(StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")){
+            String token =request.getHeader("Authorization").substring(7);
+
+            System.out.println("token = " + token);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null){
+                System.out.println("Da vao trong nay " + auth );
+                new SecurityContextLogoutHandler().logout(request, response, null);
+            }
+            return "Logout thành công";
+        }
+        else
+            return "Không có token";
+    }
+
+
+    @Override
+    public Object getUserInformation() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user;
+        if(!userRepository.findByUsername(username).isPresent()) throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+        else user = userRepository.findByUsername(username).get();
+
+        List<Address> addresses = user.getAddresses();
+        return UserInformationDTO.builder().addresses(addresses).username(user.getUsername()).email(user.getEmail()).imgURL(user.getImgURL()).phoneNumber(user.getPhoneNumber()).name(user.getName()).build();
+    }
 
     @Override
     public Object resetPassword(ResetPasswordDTO payload) throws Exception {

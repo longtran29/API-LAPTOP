@@ -1,8 +1,8 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.model.UserRoleEntity;
 import com.springboot.laptop.repository.UserRoleRepository;
-import com.springboot.laptop.service.impl.UserRoleService;
+import com.springboot.laptop.service.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

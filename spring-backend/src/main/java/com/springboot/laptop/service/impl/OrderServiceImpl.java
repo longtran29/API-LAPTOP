@@ -1,4 +1,4 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.OrderStatusException;
@@ -12,8 +12,8 @@ import com.springboot.laptop.repository.AddressRepository;
 import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.OrderRepository;
 import com.springboot.laptop.repository.UserRepository;
-import com.springboot.laptop.service.impl.MailService;
-import com.springboot.laptop.service.impl.OrderService;
+import com.springboot.laptop.service.MailService;
+import com.springboot.laptop.service.OrderService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,12 +71,27 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    @Override
+    public Object getOrderDetails(Long orderId) {
+        Order order = this.findById(orderId);
+
+        List<OrderDetailResponseDTO> orderDetails = new ArrayList<>();
+        for (OrderDetails orderDetail : order.getOrderDetails()) {
+            orderDetails.add(OrderDetailResponseDTO.builder().product(ProductResponseDTO.builder().id(orderDetail.getProduct().getId()).primaryImage(orderDetail.getProduct().getPrimaryImage()).name(orderDetail.getProduct().getName()).build()).quantity(orderDetail.getQuantity()).total(orderDetail.getTotal()).build());
+        }
+
+        OrderResponseDTO orderResponse = OrderResponseDTO.builder().id(orderId).user(UserResponseDTO.builder().username(order.getUser().getUsername()).email(order.getUser().getEmail()).build()).orderDate(order.getOrderDate()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).total(order.getTotal()).address(AddressResponseDTO.builder().address(order.getAddress().getAddress()).city(order.getAddress().getCity()).phoneNumber(order.getAddress().getPhoneNumber()).build()).orderDetails(orderDetails).build();
+        return orderResponse;
+    }
+
 
     @Override
     public Order cancelOrders(Long orderId) {
         Order order = orderRepository.findById(orderId).get();
+        if(order == null) throw new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND);
         if(order.getOrderStatus().equals(OrderStatus.SHIPPED)) {
-            throw new OrderStatusException("Đơn hàng đang được giao không thể huỷ !");
+//            throw new OrderStatusException("Đơn hàng đang được giao không thể huỷ !");
+            throw new CustomResponseException(StatusResponseDTO.ORDER_CANCEL_VIOLATION);
         }
         if(order.getOrderStatus().equals(OrderStatus.REJECTED)) throw new OrderStatusException("Đơn hàng đã bị từ chối bởi quản trị viên !");
         order.setOrderStatus(OrderStatus.CANCELED);
@@ -87,17 +102,15 @@ public class OrderServiceImpl implements OrderService {
     public Order changeStatus(ChangeStatusDTO changeStatusDTO) {
         OrderStatus status = OrderStatus.getStatus(changeStatusDTO.getStatusName());
 
-        Order order = orderRepository.findById(changeStatusDTO.getOrderId()).get();
+        if(!orderRepository.findById(changeStatusDTO.getOrderId()).isPresent()) {
+            throw new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND);
+        } else {
+            Order order = orderRepository.findById(changeStatusDTO.getOrderId()).get();
+            order.setOrderStatus(status);
 
-//        if (OrderStatus.CANCELED.equals(status)) {
-//            throw new OrderStatusException("Đơn hàng đã bị huỷ");
-//        } else if (OrderStatus.REJECTED.equals(status)) {
-//            throw new OrderStatusException("Đơn hàng bị từ chối bởi admin");
-//        }
+            return orderRepository.save(order);
+        }
 
-        order.setOrderStatus(status);
-
-        return orderRepository.save(order);
     }
 
 
@@ -122,7 +135,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order findById(Long orderId) {
-        return orderRepository.findById(orderId).get();
+        if(!orderRepository.findById(orderId).isPresent()) {
+            throw new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND);
+        } else {
+            return orderRepository.findById(orderId).get();
+        }
     }
 
     @Override
@@ -179,7 +196,7 @@ public class OrderServiceImpl implements OrderService {
 
         // add order detail to the order
         List<OrderDetails> orderDetailList = new ArrayList<>();
-        float total = 0;
+        float total = 0L;
         for(CartDetails cartDetail : cartDetailList) {
             ProductEntity product = cartDetail.getProduct();
 
@@ -187,7 +204,7 @@ public class OrderServiceImpl implements OrderService {
             orderDetails.setOrder(order);
             orderDetails.setProduct(product);
             orderDetails.setQuantity(cartDetail.getQuantity());
-            orderDetails.setTotal((cartDetail.getProduct().getOriginal_price()* cartDetail.getProduct().getDiscount_percent()) * cartDetail.getQuantity() );
+            orderDetails.setTotal((cartDetail.getProduct().getOriginal_price() - ((cartDetail.getProduct().getOriginal_price()* cartDetail.getProduct().getDiscount_percent()))) * cartDetail.getQuantity() );
 
 
             orderDetailList.add(orderDetails);

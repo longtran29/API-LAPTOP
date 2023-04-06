@@ -1,4 +1,4 @@
-package com.springboot.laptop.service;
+package com.springboot.laptop.service.impl;
 
 
 import com.springboot.laptop.exception.CustomResponseException;
@@ -10,7 +10,7 @@ import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.repository.UserRepository;
-import com.springboot.laptop.service.impl.BrandService;
+import com.springboot.laptop.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -114,7 +114,12 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public List<CategoryEntity> getAllCateFromBrand(Long brandId) {
-        return brandRepository.findCategoriesByBrandId(brandId);
+        System.out.println("BBrand id la " + brandId);
+        if(!brandRepository.findById(brandId).isPresent()) {
+            throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
+        } else {
+            return brandRepository.findCategoriesByBrandId(brandId);
+        }
     }
 
 }

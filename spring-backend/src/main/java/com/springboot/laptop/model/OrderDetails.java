@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class OrderDetails extends  BaseEntity {
 
 

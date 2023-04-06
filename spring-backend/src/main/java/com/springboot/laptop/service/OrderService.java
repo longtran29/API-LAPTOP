@@ -1,4 +1,4 @@
-package com.springboot.laptop.service.impl;
+package com.springboot.laptop.service;
 
 import com.springboot.laptop.model.Order;
 import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
@@ -22,4 +22,5 @@ public interface OrderService {
 
     public Object sendMail4Order(OrderCompleted order);
 
+    public Object getOrderDetails(Long orderId) ;
 }
