@@ -112,8 +112,15 @@ public class ProductController {
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
     @GetMapping
+    public ResponseEntity<?> getActiveProducts() {
+        return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getActiveProduct(), HttpStatus.OK);
+    }
+
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/active")
     public ResponseEntity<?> getAllProducts() {
-        return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getAll(), HttpStatus.OK);
+        return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getAllProduct(), HttpStatus.OK);
     }
 
     @PostMapping("/product_in_category")

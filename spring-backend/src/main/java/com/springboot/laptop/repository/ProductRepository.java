@@ -30,4 +30,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findBestSellerProducts();
 
 
+    @Query(value = "select * from products where enabled = 1;", nativeQuery = true)
+    List<ProductEntity> getActiveProducts();
+
+
 }
