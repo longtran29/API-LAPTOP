@@ -113,8 +113,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponseDTO> getAll() {
-        List<ProductEntity> products =  productRepository.findAll() ;
+    public List<ProductResponseDTO> getActiveProduct() {
+        List<ProductEntity> products =  productRepository.getActiveProducts() ;
+        return new ProductResponseDTO().convertProdDto(products);
+    }
+
+    @Override
+    public List<ProductResponseDTO> getAllProduct() {
+        List<ProductEntity> products =  productRepository.findAll();
         return new ProductResponseDTO().convertProdDto(products);
     }
     @Override

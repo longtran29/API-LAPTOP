@@ -14,9 +14,11 @@ public interface ProductService {
 
     public ProductEntity createOne(ProductDTO product) throws ParseException;
 
-    public List<ProductResponseDTO> getAll();
+    public List<ProductResponseDTO> getActiveProduct();
     public ProductEntity updateProduct(Long productId, ProductDTO updateProduct)throws ParseException;
     public void deleteProduct(Long productId) throws ResourceNotFoundException;
+
+    public List<ProductResponseDTO> getAllProduct();
 
     public List<ProductEntity> getProductByCategory(String categoryName);
 

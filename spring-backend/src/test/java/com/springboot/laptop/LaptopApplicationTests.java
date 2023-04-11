@@ -54,8 +54,8 @@ class LaptopApplicationTests {
 	@Test
 	public void addNewRole() {
 		UserRoleEntity userRole = new UserRoleEntity();
-		userRole.setName(UserRoleEnum.ROLE_ADMIN.name());
-		userRole.setDescription("Quan tri vien");
+		userRole.setName(UserRoleEnum.ROLE_USER.name());
+		userRole.setDescription("Khach hang");
 		userRoleRepository.save(userRole);
 	}
 
@@ -93,6 +93,7 @@ class LaptopApplicationTests {
 		appClient.setRoles(listRoles);
 		appClient.setUsername("admin");
 		appClient.setEmail("admin2001@gmail.com");
+		appClient.setEnabled(true);
 		appClient.setPassword(passwordEncoder.encode("123456"));
 		userRepository.save(appClient);
 	}

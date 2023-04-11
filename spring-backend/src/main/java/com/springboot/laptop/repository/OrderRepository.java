@@ -34,7 +34,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /*
     doanh thu theo ngày
      */
-    @Query(value= "SELECT * FROM orders o\n" +
+    @Query(value= "SELECT o.total FROM orders o\n" +
             "            WHERE o.orderStatus = 3 \n" +
             "            AND cast(o.orderDate as date) = cast(current_date as date)\n", nativeQuery = true)
     Float totalRevenueToday();
