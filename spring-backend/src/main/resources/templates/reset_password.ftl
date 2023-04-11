@@ -27,7 +27,7 @@
                             margin: 80px">
 
                         <div style="font-size: 16px">
-                            <h3>Chào ${name},</h3>
+                            <h3>Chào ban,</h3>
 
                             <p>Chúng tôi nhận được một yêu cầu đặt lại mật khẩu cho tài khoản ${email} vào lúc ${time}
                                 .</p>
