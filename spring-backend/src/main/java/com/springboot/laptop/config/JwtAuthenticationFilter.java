@@ -29,17 +29,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired private JwtUtility jwtUtility;
 
-//    private static List<String> skipFilterUrls = Arrays.asList("/api/v1/categories", "/api/v1/authenticate");
+//    private final List<String> excludedPaths = Arrays.asList("/register","/authenticate");
 //
 //    @Override
 //    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-//        System.out.println("In not filter");
-//        return skipFilterUrls.stream().anyMatch(url -> new AntPathRequestMatcher(url).matches(request));
+//        // Exclude paths that should not be filtered
+//        System.out.println("should not filter internal");
+//        String path = request.getRequestURI();
+//        System.out.println("Path is " + path );
+//        System.out.println("Path is " + excludedPaths.stream().anyMatch(path::contains) );
+//        return excludedPaths.stream().anyMatch(path::contains);
 //    }
 
+
+
+
+//    only run into this after pass shouldNotFilter function
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
+
+            System.out.println("Da vao filter internal");
 
             String token = getJwt(request);
 

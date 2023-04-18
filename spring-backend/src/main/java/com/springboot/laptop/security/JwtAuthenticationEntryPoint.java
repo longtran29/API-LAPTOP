@@ -1,6 +1,7 @@
 package com.springboot.laptop.security;
 
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) throws IOException, ServletException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
+        response
+                .addHeader("message", "Luke, I am your father!");
+        response
+                .sendError(HttpStatus.UNAUTHORIZED.value());
     }
 }

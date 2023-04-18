@@ -1,7 +1,6 @@
 package com.springboot.laptop.service;
 
-import com.springboot.laptop.exception.DuplicatedDataException;
-import com.springboot.laptop.exception.ResourceNotFoundException;
+
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
 

@@ -10,6 +10,9 @@ import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 
+
+
+// setup cors
 @Configuration
 public class CorsConfig {
 

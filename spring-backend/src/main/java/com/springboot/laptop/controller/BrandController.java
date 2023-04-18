@@ -1,7 +1,7 @@
 package com.springboot.laptop.controller;
 
 
-import com.springboot.laptop.exception.DuplicatedDataException;
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.request.BrandRequestDTO;
@@ -25,7 +25,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/brands")
-@CrossOrigin(origins = "http://localhost:3000")
 public class BrandController {
 
     private final BrandServiceImpl brandServiceImpl;
@@ -148,7 +147,7 @@ public class BrandController {
             updatedBrand = brandServiceImpl.updateOne(brandId, updateBrand);
             responseDTO.setData(updatedBrand);
             responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
-        } catch (DuplicatedDataException e) {
+        } catch (CustomResponseException e) {
             responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
             return ResponseEntity.badRequest().body(responseDTO);
         }

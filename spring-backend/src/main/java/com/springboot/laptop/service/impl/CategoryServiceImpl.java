@@ -27,7 +27,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Object createOne(CategoryRequestDTO category) {
-        CategoryEntity foundCate = null;
         CategoryEntity newCategory;
         if (categoryRepository.findByName(category.getName().replaceAll("\\s+", " ")).isPresent()) {
             throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
