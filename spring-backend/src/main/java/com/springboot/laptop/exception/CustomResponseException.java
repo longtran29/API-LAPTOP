@@ -12,7 +12,4 @@ public class CustomResponseException extends ResponseStatusException {
         System.out.println("Value in custom exception " + response.getCode() + " message " + response.getMessage());
     }
 
-
-
-
 }

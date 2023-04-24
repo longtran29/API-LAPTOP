@@ -34,7 +34,7 @@ import javax.validation.Valid;
 
 @RestController
 //@CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
+//@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/api/v1")
 public class AuthController {
     private final UserServiceImpl userServiceImpl;

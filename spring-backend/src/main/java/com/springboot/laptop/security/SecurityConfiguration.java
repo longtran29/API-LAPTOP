@@ -50,9 +50,10 @@ public class SecurityConfiguration {
 
 
 
+
+
     @Autowired
     void configure(AuthenticationManagerBuilder auth) throws Exception {
-        System.out.println("Vao authentication" + auth);
         auth.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
     }
 
@@ -69,24 +70,27 @@ public class SecurityConfiguration {
         bean.setTemplateLoaderPath("classpath:/templates");
         return bean;
     }
-    @Bean
-    public InitializingBean initializingBean() {
-        return () -> SecurityContextHolder.setStrategyName(
-                SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
-    }
+
+
+//    passed context when create new thread with async
+//    @Bean
+//    public InitializingBean initializingBean() {
+//        return () -> SecurityContextHolder.setStrategyName(
+//                SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-        http
+        http.cors().and()
                 .csrf()
                 .disable()
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and().authorizeRequests()
-//                        .anyRequest().authenticated();
-                .anyRequest().permitAll();
+
+        .and().authorizeRequests()
+                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**").permitAll()
+                        .anyRequest().authenticated();
         http.httpBasic(Customizer.withDefaults());
-        http.headers().frameOptions().sameOrigin();
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

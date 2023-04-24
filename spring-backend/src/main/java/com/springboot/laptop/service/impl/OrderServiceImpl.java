@@ -90,10 +90,9 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId).get();
         if(order == null) throw new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND);
         if(order.getOrderStatus().equals(OrderStatus.SHIPPED)) {
-//            throw new OrderStatusException("Đơn hàng đang được giao không thể huỷ !");
             throw new CustomResponseException(StatusResponseDTO.ORDER_CANCEL_VIOLATION);
         }
-        if(order.getOrderStatus().equals(OrderStatus.REJECTED)) throw new OrderStatusException("Đơn hàng đã bị từ chối bởi quản trị viên !");
+        if(order.getOrderStatus().equals(OrderStatus.REJECTED)) throw new CustomResponseException(StatusResponseDTO.ORDER_REJECTED_VIOLATION);
         order.setOrderStatus(OrderStatus.CANCELED);
         return orderRepository.save(order);
     }

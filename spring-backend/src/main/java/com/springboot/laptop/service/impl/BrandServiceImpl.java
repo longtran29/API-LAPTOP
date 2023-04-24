@@ -2,7 +2,6 @@ package com.springboot.laptop.service.impl;
 
 
 import com.springboot.laptop.exception.CustomResponseException;
-import com.springboot.laptop.exception.DuplicatedDataException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.request.BrandRequestDTO;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class BrandServiceImpl implements BrandService {
@@ -35,13 +35,16 @@ public class BrandServiceImpl implements BrandService {
     public Object findById(Long brandId) {
         try {
             return brandRepository.findById(brandId).get();
-        }  catch (Exception ex) {
+        }  catch (NoSuchElementException ex) {
             throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
+        }  catch (Exception ex) {
+            throw new CustomResponseException(StatusResponseDTO.INTERNAL_SERVER);
         }
     }
 
     @Override
     public List<BrandEntity> getAll() {
+        // we also can try -catch here
         return brandRepository.findAll();
     }
 
@@ -49,8 +52,7 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public BrandEntity createOne(BrandRequestDTO newbrand)  {
         BrandEntity foundBrand = null;
-        if(newbrand.getBrandName().isEmpty()) throw new CustomResponseException(StatusResponseDTO.DATA_EMPTY);
-        if(newbrand.getCateIds().size() <1) throw new CustomResponseException(StatusResponseDTO.DATA_EMPTY);
+        if(newbrand.getBrandName().isEmpty() || newbrand.getCateIds().size() <1) throw new CustomResponseException(StatusResponseDTO.DATA_EMPTY);
         if(brandRepository.findByName(newbrand.getBrandName()).isPresent()) {
             foundBrand = brandRepository.findByName(newbrand.getBrandName()).get();
         }
@@ -70,29 +72,35 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public Object deleteOne(Long brandId) {
-            BrandEntity existingBrand;
             if(brandRepository.findById(brandId).isPresent()) {
-                existingBrand = brandRepository.findById(brandId).get();
                 try {
-                    brandRepository.delete(brandRepository.findById(brandId).get());
-                } catch (Exception ex) {
+                    BrandEntity brand = brandRepository.findById(brandId).get();
+                    brandRepository.delete(brand);
+                    return "Xoá thành công";
+                } catch (NoSuchElementException ex) {
+                    throw new NoSuchElementException();
+                }
+                catch (Exception ex) {
                     throw new CustomResponseException(StatusResponseDTO.BRAND_CONSTRAINT_EXCEPTION);
                 }
             } else {
                 throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
             }
-            return "Xoá thành công";
+
     }
 
     @Override
-    public BrandEntity updateOne(Long brandId, BrandRequestDTO updateBrand) throws DuplicatedDataException {
+    public BrandEntity updateOne(Long brandId, BrandRequestDTO updateBrand) {
         BrandEntity brand = brandRepository.findById(brandId).get();
+        if(!brandRepository.findById(brandId).isPresent()) {
+            throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
+        }
 
         BrandEntity foundBrand;
         if(brandRepository.findByName(updateBrand.getBrandName()).isPresent()) {
             foundBrand = brandRepository.findByName(updateBrand.getBrandName()).get();
             if(foundBrand.getId() != brandId) {
-                throw new DuplicatedDataException("Duplicated data");
+                throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
             }
         }
         List<CategoryEntity> listCate = new ArrayList<>();
@@ -102,7 +110,6 @@ public class BrandServiceImpl implements BrandService {
             listCate.add(refCate);
         }
         brand.setCategories(listCate);
-        System.out.println("Brand name update " + updateBrand.getBrandName());
         brand.setName(updateBrand.getBrandName());
         brand.setModifiedDate(new Date());
         brandRepository.saveAndFlush(brand);
@@ -114,7 +121,6 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public List<CategoryEntity> getAllCateFromBrand(Long brandId) {
-        System.out.println("BBrand id la " + brandId);
         if(!brandRepository.findById(brandId).isPresent()) {
             throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
         } else {

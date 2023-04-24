@@ -2,8 +2,6 @@ package com.springboot.laptop.controller;
 
 
 import com.springboot.laptop.exception.CustomResponseException;
-import com.springboot.laptop.exception.DeleteDataFail;
-import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
 import com.springboot.laptop.model.dto.request.ProductDTO;
@@ -29,7 +27,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/products")
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = {"http://localhost:3000"})
 public class ProductController {
 
     private final ProductServiceImpl productServiceImpl;
@@ -143,11 +141,10 @@ public class ProductController {
             })
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public Object deleteProduct(@PathVariable("productId") Long productId) throws DeleteDataFail {
+    public Object deleteProduct(@PathVariable("productId") Long productId) {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
             productServiceImpl.deleteProduct(productId);
-//            responseDTO.setData("Xoá thành công");
             return ResponseEntity.ok().body(responseDTO);
         } catch (DataIntegrityViolationException ex) {
             throw new CustomResponseException(StatusResponseDTO.PRODUCT_VIOLATION_EXCEPTION);
@@ -169,7 +166,7 @@ public class ProductController {
             })
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{productId}")
-    public Object updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ParseException, ResourceNotFoundException {
+    public Object updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ParseException {
         return productServiceImpl.updateProduct(productId, product);
     }
 

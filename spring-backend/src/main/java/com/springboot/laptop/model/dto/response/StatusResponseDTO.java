@@ -10,7 +10,7 @@ public enum StatusResponseDTO {
     DATA_EMPTY("500", "Vui lòng điền dữ liệu"),
 
     ORDER_CANCEL_VIOLATION("500", "Đơn hàng đang được giao không thể huỷ"),
-    ORDER_REJECTED_VIOLATION("500", "Đơn hàng bị từ cối bởi bán"),
+    ORDER_REJECTED_VIOLATION("500", "Đơn hàng bị từ chối bởi quản trị viên"),
 
     CUSTOMER_VIOLATION_EXCEPTION("500", "Khách hàng đã có đơn hàng "),
 

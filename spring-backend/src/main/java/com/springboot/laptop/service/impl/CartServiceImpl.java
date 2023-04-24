@@ -47,7 +47,6 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public UserCart addToCart(Long productId, Long quantity) {
-//        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
 
@@ -66,7 +65,7 @@ public class CartServiceImpl implements CartService {
                 cartDetail.setModifyDate(LocalDateTime.now());
             } else {
                 ProductEntity product = productRepository.findById(productId)
-                        .orElseThrow(() -> new NoSuchElementException("Product not found"));
+                        .orElseThrow(() -> new NoSuchElementException());
 
                 cartDetail = new CartDetails();
                 cartDetail.setProduct(product);
@@ -82,7 +81,7 @@ public class CartServiceImpl implements CartService {
             userCart = new UserCart();
             userCart.setUser(user);
             ProductEntity product = productRepository.findById(productId)
-                    .orElseThrow(() -> new NoSuchElementException("Product not found"));
+                    .orElseThrow(() -> new NoSuchElementException());
 
             CartDetails cartDetail = new CartDetails();
             cartDetail.setProduct(product);
@@ -141,14 +140,12 @@ public class CartServiceImpl implements CartService {
             Optional<CartDetails> removeItem = userCart.getCartDetails().stream().filter(item -> item.getProduct().getId() == productId).findFirst();
 
             if(removeItem.isPresent()) {
-                System.out.println("Da vao removeItem");
-                System.out.println("cart details " + userCart.getCartDetails());
                 userCart.getCartDetails().remove(removeItem.get());
                 cartDetailRepository.delete(removeItem.get());
             }
         }
         else {
-            throw new NotFoundException("Không tìm thấy");
+            throw new NoSuchElementException();
         }
         return cartRepository.save(userCart);
     }

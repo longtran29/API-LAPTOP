@@ -1,6 +1,5 @@
 package com.springboot.laptop.service;
 
-import com.springboot.laptop.exception.ResourceNotFoundException;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.dto.request.ProductDTO;
 import com.springboot.laptop.model.dto.response.ProductResponseDTO;
@@ -16,7 +15,7 @@ public interface ProductService {
 
     public List<ProductResponseDTO> getActiveProduct();
     public ProductEntity updateProduct(Long productId, ProductDTO updateProduct)throws ParseException;
-    public void deleteProduct(Long productId) throws ResourceNotFoundException;
+    public void deleteProduct(Long productId);
 
     public List<ProductResponseDTO> getAllProduct();
 
