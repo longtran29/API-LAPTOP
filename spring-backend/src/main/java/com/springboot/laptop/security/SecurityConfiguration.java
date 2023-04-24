@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,29 +28,24 @@ import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 public class SecurityConfiguration {
 
 
-    @Autowired
-    private UserDetailServiceImpl userDetailsService;
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(){
-        return new JwtAuthenticationFilter();
-    }
-
-    private static String[] resources = new String[] {
+    private static final String[] resources = new String[]{
 
     };
-
+    @Autowired
+    private UserDetailServiceImpl userDetailsService;
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                 .build();
     }
-
-
-
 
 
     @Autowired
@@ -66,7 +62,7 @@ public class SecurityConfiguration {
     @Primary
     @Bean
     public FreeMarkerConfigurationFactoryBean factoryBean() {
-        FreeMarkerConfigurationFactoryBean bean=new FreeMarkerConfigurationFactoryBean();
+        FreeMarkerConfigurationFactoryBean bean = new FreeMarkerConfigurationFactoryBean();
         bean.setTemplateLoaderPath("classpath:/templates");
         return bean;
     }
@@ -80,16 +76,16 @@ public class SecurityConfiguration {
 //    }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors().and()
                 .csrf()
                 .disable()
-                .exceptionHandling()
+                .authorizeRequests()
+                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**", "/**/brands/**").permitAll()
+                .anyRequest().authenticated()
+                .and().exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-
-        .and().authorizeRequests()
-                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**").permitAll()
-                        .anyRequest().authenticated();
+                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // each request must include necessary information to authenticate the user - postman testing
         http.httpBasic(Customizer.withDefaults());
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
