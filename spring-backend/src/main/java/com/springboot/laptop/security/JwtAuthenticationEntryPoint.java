@@ -16,9 +16,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException) throws IOException, ServletException {
-        response
-                .addHeader("message", "Luke, I am your father!");
-        response
-                .sendError(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\": \"You must be authenticated first!\"}");
     }
 }

@@ -81,18 +81,16 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-        http
+        http.cors().and()
                 .csrf()
                 .disable()
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and().authorizeRequests()
-                .anyRequest().permitAll();
-//        .and().authorizeRequests()
-//                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**").permitAll()
-//                        .anyRequest().authenticated();
+
+        .and().authorizeRequests()
+                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**").permitAll()
+                        .anyRequest().authenticated();
         http.httpBasic(Customizer.withDefaults());
-//        http.headers().frameOptions().sameOrigin();
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
