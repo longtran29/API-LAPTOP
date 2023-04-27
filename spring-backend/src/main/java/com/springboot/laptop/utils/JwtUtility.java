@@ -31,19 +31,14 @@ public class JwtUtility implements Serializable {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e){
-            logger.error("Invalid JWT signature -> Message: {}",e);
             throw new JwtValidationException("Invalid JWT signature", e);
         } catch (MalformedJwtException e){
-            logger.error("Invalid format Token -> Message: {}",e);
             throw new JwtValidationException("Invalid format Token", e);
         } catch (ExpiredJwtException e){
-            logger.error("Expired JWT token -> Message: {}",e);
             throw new JwtValidationException("Expired JWT token", e);
         } catch (UnsupportedJwtException e){
-            logger.error("Unsupported JWT token -> Message: {}",e);
             throw new JwtValidationException("Unsupported JWT token", e);
         } catch (IllegalArgumentException e){
-            logger.error("JWT claims string is empty --> Message {}",e);
             throw new JwtValidationException("JWT claims string is empty", e);
         }
     }
