@@ -1,5 +1,6 @@
 package com.springboot.laptop;
 
+import com.springboot.laptop.controller.ProductController;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 @OpenAPIDefinition(
@@ -20,7 +22,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class LaptopApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LaptopApplication.class, args);
+		ConfigurableApplicationContext context = SpringApplication.run(LaptopApplication.class, args);
+		System.out.println("Application context get all products " + context.getBean(ProductController.class).getActiveProducts());
 	}
 
 }
