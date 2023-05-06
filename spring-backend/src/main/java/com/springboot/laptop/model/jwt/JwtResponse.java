@@ -14,4 +14,8 @@ public class JwtResponse {
     private String jwtToken;
     private String role;
 
+    private long expiresIn;
+
+
+
 }

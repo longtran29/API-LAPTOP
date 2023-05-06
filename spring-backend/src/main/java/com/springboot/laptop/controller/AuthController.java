@@ -31,10 +31,9 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
-//@CrossOrigin(origins = "http://localhost:3000", allowCredentials="true")
-//@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/api/v1")
 public class AuthController {
     private final UserServiceImpl userServiceImpl;
@@ -72,23 +71,19 @@ public class AuthController {
     public ResponseEntity<?> signup(@RequestBody AppClientSignUpDTO user) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         if (userRepository.existsByUsername(user.getUsername())) {
-            responseDTO.setErrorCode(ErrorCode.EXIST_USER);
-            responseDTO.setData("Tên người dùng đã tồn tại !");
-            return ResponseEntity
-                    .badRequest()
-                    .body(responseDTO);
+           throw new CustomResponseException(StatusResponseDTO.USERNAME_IN_USE);
         }
         if (userRepository.existsByEmail(user.getEmail())) {
-            responseDTO.setErrorCode(ErrorCode.EXIST_USER);
-            responseDTO.setData("Gmail đã được sử dụng !");
-            return ResponseEntity
-                    .badRequest()
-                    .body(responseDTO);
+            throw new CustomResponseException(StatusResponseDTO.EMAIL_IN_USE);
         }
-        UserEntity client = this.userServiceImpl.register(user);
-        responseDTO.setData(client);
-        responseDTO.setSuccessCode(SuccessCode.REIGSTER_SUCCESS);
-        return ResponseEntity.ok(responseDTO);
+        try {
+            UserEntity client = this.userServiceImpl.register(user);
+            responseDTO.setData(client);
+            responseDTO.setSuccessCode(SuccessCode.REIGSTER_SUCCESS);
+            return ResponseEntity.ok(responseDTO);
+        } catch(Exception ex) {
+            throw new Exception(ex);
+        }
     }
 
 
@@ -152,7 +147,7 @@ public class AuthController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @PutMapping("/updateInformation")
-    public ResponseEntity<?> updateInformation(@RequestBody UserRequestDTO userRequestDTO) {
+    public ResponseEntity<?> updateInformation(@RequestBody UserRequestDTO userRequestDTO) throws Exception {
             return ResponseEntity.ok().body(userServiceImpl.updateInformation(userRequestDTO));
     }
 
@@ -173,18 +168,9 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/forgotPassword/{email}")
-    public ResponseEntity<?> forgetPassword(@PathVariable("email") String email) throws Exception {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(userServiceImpl.sendVerificationEmail(email));
-        }
-        // handler more exceptions
-        catch(ResponseStatusException ex) {
-            return ResponseEntity.badRequest().body(ex.getReason());
-        }
-        catch (Exception ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
+    @GetMapping("/forgotPassword/{email}")
+    public ResponseEntity<?> forgetPassword(@PathVariable("email") String email) throws IOException {
+        return ResponseEntity.status(HttpStatus.OK).body(userServiceImpl.sendVerificationEmail(email));
     }
 
     @PostMapping("/reset-password")

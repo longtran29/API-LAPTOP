@@ -101,13 +101,19 @@ public class CartServiceImpl implements CartService {
     public List<CartResponseDTO> getAllCartDetails(UserCart userCart) {
 
         List<CartResponseDTO> listCart = new ArrayList<>();
-        for(CartDetails cartDetail : userCart.getCartDetails()) {
-            CartResponseDTO cart = new CartResponseDTO();
-            cart.setQuantity(cartDetail.getQuantity());
-            cart.setProduct(productRepository.findById(cartDetail.getProduct().getId()).orElse(null));
-            listCart.add(cart);
+        try {
+            for(CartDetails cartDetail : userCart.getCartDetails()) {
+                CartResponseDTO cart = new CartResponseDTO();
+                cart.setQuantity(cartDetail.getQuantity());
+                cart.setProduct(productRepository.findById(cartDetail.getProduct().getId()).orElse(null));
+                listCart.add(cart);
+            }
+            return listCart;
+
+        } catch (NullPointerException ex) {
+            return listCart;
         }
-        return listCart;
+
     }
 
     public UserCart updateQuantityItem(UserEntity user, Long productId, String type) {

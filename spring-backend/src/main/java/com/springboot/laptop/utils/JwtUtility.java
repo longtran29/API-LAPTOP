@@ -14,7 +14,7 @@ import java.util.Date;
 public class JwtUtility implements Serializable {
     @Value("${jwt.secret}")
     private String jwtSecret;
-    private static final long EXPIRE_DURATION = 24 * 60 * 60 * 1000; // 24 hour
+    public static final long EXPIRE_DURATION = 24*60 * 60 * 1000; // 24 hour
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtility.class);
 

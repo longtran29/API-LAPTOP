@@ -81,11 +81,11 @@ public class SecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeRequests()
-                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**", "/**/brands/**").permitAll()
+                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**", "/**/brands/**", "/**/uploadImage", "/**/forgotPassword/**", "/**/reset-password", "/**/register").permitAll()
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // each request must include necessary information to authenticate the user - postman testing
+               .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // each request must include necessary information to authenticate the user - postman testing
         http.httpBasic(Customizer.withDefaults());
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
