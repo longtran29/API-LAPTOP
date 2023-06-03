@@ -61,6 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         } else {
             CategoryEntity cateUpdate = categoryRepository.findById(cateId).get();
             cateUpdate.setName(updateCategory.getName());
+            cateUpdate.setEnabled(updateCategory.getEnabled());
             return categoryRepository.save(cateUpdate);
         }
 

@@ -2,10 +2,16 @@ package com.springboot.laptop.controller;
 
 import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
+import com.springboot.laptop.model.dto.request.PaymentRequestDTo;
 import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.service.impl.OrderServiceImpl;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -85,5 +91,37 @@ public class OrderController {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
+
+
+    @PostMapping(value = "/create-payment-intent", consumes={"application/json"})
+    public CreatePaymentResponse  StripPayment(@RequestBody PaymentRequestDTo paymentRequest) throws StripeException {
+
+        String public_key = "pk_test_51NEH4zD418vZNZvg2Si23JwSsO7EdrNjIh9JkIfOimNQ4hwn4nhbXuKFLaq8nOjmBns1eWGy7QW3Nnu8iATt7WET000nvU6aAz";
+        String private_key = "sk_test_51NEH4zD418vZNZvgwa8aLlDUWPGw4Uvfpu9WMeDlFCGGxxwKepdDUzwtB3oQA6J6bJwpRr5C5PFdGaBsg8Ky7XWF00h8byWwVM";
+        Stripe.apiKey = private_key ;
+
+//        List<CartResponseDTO> cartList= paymentRequest.getItems();
+//        float totalPrice = 0;
+//
+//        for (CartResponseDTO cart: cartList
+//             ) {
+//
+//            totalPrice += (cart.getProduct().getOriginal_price()  - (cart.getProduct().getOriginal_price() * cart.getProduct().getDiscount_percent()))* cart.getQuantity();
+//        }
+
+        PaymentIntentCreateParams createParams = new
+                PaymentIntentCreateParams.Builder()
+                .setCurrency("VND")
+                .setAmount((long) (paymentRequest.getTotalPrice() * 1000))
+                .build();
+
+        PaymentIntent intent = PaymentIntent.create(createParams);			// cần có Stripe.apiKey đ tạo ra PaymentIntent, Stripe sẽ tự sử dụng apiKey trong process này
+
+        // Send publishable key and PaymentIntent details to client
+        CreatePaymentResponse paymentResponse = new CreatePaymentResponse(public_key, intent.getClientSecret());
+		return paymentResponse;
+    }
+
+
 
 }

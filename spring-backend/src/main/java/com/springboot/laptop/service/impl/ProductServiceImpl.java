@@ -64,6 +64,8 @@ public class ProductServiceImpl implements ProductService {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
             CategoryEntity category;
+            if(product.getName() == null || product.getOriginal_price() == null || product.getDiscount_percent() == null || product.getBrandId() == null || product.getProductQty() == null || product.getDescription() == null)
+                throw new CustomResponseException(StatusResponseDTO.DATA_VALIDATION);
             if(categoryRepository.findById(Long.valueOf(product.getCategoryId())).isPresent()) {
                 category = categoryRepository.findById(Long.valueOf(product.getCategoryId())).get();
             } else {
@@ -76,7 +78,6 @@ public class ProductServiceImpl implements ProductService {
             } else {
                 throw new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND);
             }
-            System.out.println("Result is " + category.getName() + " " + brand.getName());
             ProductEntity newProduct =ProductEntity.builder()
                     .name(product.getName())
                     .primaryImage(product.getPrimaryImage())

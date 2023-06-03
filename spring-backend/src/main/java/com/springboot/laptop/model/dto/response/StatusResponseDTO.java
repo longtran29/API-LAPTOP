@@ -5,16 +5,23 @@ public enum StatusResponseDTO {
     ERROR_NOT_FOUND("404", "Không tìm thấy dữ liệu"),
     INTERNAL_SERVER("500", "Hệ thống đang bị gián đoạn! Xin vui lòng thử lại sau"),
 
+    PASSWORD_NOT_MATCH("500", "Hai mật khẩu không trùng nhau"),
+    USERNAME_IN_USE("500", "Tên người dùng đã tồn tại !"),
+
+    EMAIL_IN_USE("500", "Gmail đã được sử dụng !"),
+
     DUPLICATED_DATA ("500", "Dữ liệu đã bị trùng !"),
     ACCOUNT_BEEN_INACTIVATED("404", "Tài khoản của bạn đã bị khoá, vui lòng liên hệ admin"),
     DATA_EMPTY("500", "Vui lòng điền dữ liệu"),
 
+    PRODUCT_OUT_STOCK("500", "Không đủ hàng trong kho. Vui lòng liên hệ quản trị viên để được hỗ trợ"),
+    ROLE_NOT_FOUND("404", "Không tồn tại quyền này trên hệ thống"),
     ORDER_CANCEL_VIOLATION("500", "Đơn hàng đang được giao không thể huỷ"),
     ORDER_REJECTED_VIOLATION("500", "Đơn hàng bị từ chối bởi quản trị viên"),
 
     CUSTOMER_VIOLATION_EXCEPTION("500", "Khách hàng đã có đơn hàng "),
 
-
+    DATA_VALIDATION("500", "Vui lòng nhập đầy đủ dữ liệu "),
     BRAND_CONSTRAINT_EXCEPTION("500", "Hãng sản xuất có danh mục đang được kính doanh"),
     CATEGORY_VIOLATION_EXCEPTION("500", "Danh mục có sản phẩm đang được kinh doanh"),
     FAIL_AUTHENTICATION("404", "Tên đăng nhập hoặc mật khẩu sai !"),

@@ -1,8 +1,15 @@
 package com.springboot.laptop;
 
 import com.springboot.laptop.model.*;
+import com.springboot.laptop.model.dto.response.CreatePaymentResponse;
+import com.springboot.laptop.model.enums.PaymentMethod;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.repository.*;
+import com.stripe.Stripe;
+import com.stripe.exception.*;
+import com.stripe.model.Charge;
+import com.stripe.model.PaymentIntent;
+import com.stripe.net.RequestOptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -12,12 +19,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
+import com.stripe.param.PaymentIntentCreateParams;
 
 import javax.transaction.Transactional;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -55,7 +61,7 @@ class LaptopApplicationTests {
 	public void addNewRole() {
 		UserRoleEntity userRole = new UserRoleEntity();
 		userRole.setName(UserRoleEnum.ROLE_USER.name());
-		userRole.setDescription("Khach hang");
+		userRole.setDescription("Người dùng");
 		userRoleRepository.save(userRole);
 	}
 
@@ -111,7 +117,43 @@ class LaptopApplicationTests {
 
 
 
+
 	@Test
+	public void  testStrip() throws StripeException {
+
+//		stripe js: https://stripe.com/docs/js/including
+
+//		tham khao git : https://github.com/oracle-quickstart/oci-caas-pci-ecommerce/blob/497f73428a9912a7aca6dd7513272d2af5a5900e/src/main/java/com/oci/caas/pciecommerce/rest/TestRestController.java#L28
+
+		String public_key = "pk_test_51NEH4zD418vZNZvg2Si23JwSsO7EdrNjIh9JkIfOimNQ4hwn4nhbXuKFLaq8nOjmBns1eWGy7QW3Nnu8iATt7WET000nvU6aAz";
+		String private_key = "sk_test_51NEH4zD418vZNZvgwa8aLlDUWPGw4Uvfpu9WMeDlFCGGxxwKepdDUzwtB3oQA6J6bJwpRr5C5PFdGaBsg8Ky7XWF00h8byWwVM";
+		Stripe.apiKey = private_key ;
+			PaymentIntentCreateParams createParams = new
+					PaymentIntentCreateParams.Builder()
+					.setCurrency("usd")
+					.setAmount(50 * 100L)
+					.build();
+
+//		https://stripe.com/docs/api/payment_intents/create
+		// Create a PaymentIntent with the order amount and currency
+		PaymentIntent intent = PaymentIntent.create(createParams);			// cần có Stripe.apiKey đ tạo ra PaymentIntent, Stripe sẽ tự sử dụng apiKey trong process này
+
+		// Send publishable key and PaymentIntent details to client
+		CreatePaymentResponse paymentResponse = new CreatePaymentResponse(public_key, intent.getClientSecret());
+//		return paymentResponse;
+		System.out.println("Value paymentresponse " + paymentResponse + " va " + intent.getClientSecret());
+		}
+
+
+		@Test
+		public void getMethodType() {
+			 PaymentMethod paymentMethod= PaymentMethod.getPaymentMethod("Tiền mặt");
+			System.out.println(paymentMethod.name() );
+		}
+
+
+
+		@Test
 	public void getNumberOrderRejectedAndCancel() {
 //		Optional<Order> pendingOrders = orderRepository.findById(101L);
 //		Long toal = pendingOrders.get().getTotal()

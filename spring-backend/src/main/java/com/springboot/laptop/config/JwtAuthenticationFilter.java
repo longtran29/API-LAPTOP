@@ -1,5 +1,6 @@
 package com.springboot.laptop.config;
 
+import com.springboot.laptop.exception.JwtValidationException;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
-        } catch (Exception e){
+        }
+        catch(JwtValidationException ex) {
+            logger.error("Loi token roi");
+        }
+        catch (Exception e){
             logger.error("Can't set user authentication -> Message: "+e);
         }
         filterChain.doFilter(request,response);

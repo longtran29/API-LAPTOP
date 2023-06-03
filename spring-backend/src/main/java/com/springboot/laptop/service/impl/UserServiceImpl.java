@@ -46,28 +46,12 @@ import java.util.*;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    @Value("${spring.mail.username}")
-    private String emailown;
-
-    @Autowired
-    private Configuration configuration;
-
     public static final String F_DDMMYYYYHHMM = "dd/MM/yyyy HH:mm";
-
-
-    public static String toStr(Date date, String format) {
-        return date != null ? DateFormatUtils.format(date, format) : "";
-    }
-
-
     private static final String RESET_PASSWORD_TEMPLATE_NAME = "reset_password.ftl";
     private static final String FROM = "Laptop Store<%s>";
     private static final String SUBJECT = "QUÊN MẬT KHẨU";
     private static final String DOMAIN_CLIENT = "http://localhost:3000/reset-password";
     private static final long MINUS_TO_EXPIRED = 10;
-
-    @Autowired
-    private JavaMailSender mailSender;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRoleServiceImpl userRoleServiceImpl;
@@ -76,10 +60,12 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtility jwtUtility;
-
-
-
-
+    @Value("${spring.mail.username}")
+    private String emailown;
+    @Autowired
+    private Configuration configuration;
+    @Autowired
+    private JavaMailSender mailSender;
     @Autowired
     public UserServiceImpl(Configuration configuration, UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleServiceImpl userRoleServiceImpl, ResetTokenRepository resetTokenRepository, MailService mailService, AuthenticationManager authenticationManager, UserDetailServiceImpl userDetailService, JwtUtility jwtUtility) {
         this.userRepository = userRepository;
@@ -93,6 +79,20 @@ public class UserServiceImpl implements UserService {
         this.userDetailService = userDetailService;
         this.jwtUtility = jwtUtility;
 
+    }
+
+    public static String toStr(Date date, String format) {
+        return date != null ? DateFormatUtils.format(date, format) : "";
+    }
+
+    private static Map buildModel(UserEntity customer, ResetTokenEntity resetToken) {
+        Map<String, Object> model = new HashMap<>();
+        model.put("time", toStr(new Date(), F_DDMMYYYYHHMM));
+        model.put("name", customer.getName());
+        model.put("email", customer.getEmail());
+        model.put("link", String.format(DOMAIN_CLIENT + "/%s", resetToken.getToken()));
+        model.put("minusToExpired", MINUS_TO_EXPIRED);
+        return model;
     }
 
     public Object authenticateUser(JwtRequest jwtRequest) {
@@ -112,41 +112,45 @@ public class UserServiceImpl implements UserService {
 
             UserEntity loggedUser = this.findUserByUserName(userDetails.getUsername());
 
-            if(!loggedUser.getEnabled()) throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
+            if (!loggedUser.getEnabled()) throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
 
             final String tokenDto = jwtUtility.createToken(loggedUser);
-            JwtResponse jwtResponse  = new JwtResponse();
+            JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setJwtToken(tokenDto);
+            jwtResponse.setExpiresIn((System.currentTimeMillis() + JwtUtility.EXPIRE_DURATION));
 
-            if(loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
+            if (loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
                 jwtResponse.setRole("USER");
-            }
-            else {
+            } else {
                 jwtResponse.setRole("ADMIN");
             }
             responseDTO.setSuccessCode(SuccessCode.LOGIN_SUCCESS);
             responseDTO.setData(jwtResponse);
             return responseDTO;
-        }
-        catch (CustomResponseException ex) {
+        } catch (CustomResponseException ex) {
             throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
-        }
-        catch (BadCredentialsException e) {
-          throw new CustomResponseException(StatusResponseDTO.FAIL_AUTHENTICATION);
+        } catch (BadCredentialsException e) {
+            throw new CustomResponseException(StatusResponseDTO.FAIL_AUTHENTICATION);
         }
 
     }
 
     @Override
     public UserEntity register(AppClientSignUpDTO user) throws Exception {
-        UserRoleEntity userRole = this.userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
-        UserEntity appClient = new UserEntity();
-        appClient.setRoles(List.of(userRole));
-        appClient.setUsername(user.getUsername());
-        appClient.setEmail(user.getEmail());
-        appClient.setPassword(this.passwordEncoder.encode(user.getPassword()));
-        appClient.setEnabled(true);
-        return userRepository.save(appClient);
+        try {
+            UserRoleEntity userRole = this.userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
+            if (!user.getPassword().equals(user.getRePassword()))
+                throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
+            UserEntity appClient = new UserEntity();
+            appClient.setRoles(List.of(userRole));
+            appClient.setUsername(user.getUsername());
+            appClient.setEmail(user.getEmail());
+            appClient.setPassword(this.passwordEncoder.encode(user.getPassword()));
+            appClient.setEnabled(true);
+            return userRepository.save(appClient);
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 
     @Override
@@ -162,51 +166,54 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Object deleteCustomer(Long customerId)  {
-       UserEntity existingUser;
+    public Object deleteCustomer(Long customerId) {
+        UserEntity existingUser;
 
-              if(userRepository.findById(customerId).isPresent()) {
-                  existingUser = userRepository.findById(customerId).get();
-                  if(existingUser.getOrders().size() >0) throw new CustomResponseException(StatusResponseDTO.CUSTOMER_VIOLATION_EXCEPTION);
-                  userRepository.delete(existingUser);
-                  return "Xoá thành công";
-              } else {
-                  throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
-              }
+        if (userRepository.findById(customerId).isPresent()) {
+            existingUser = userRepository.findById(customerId).get();
+            if (existingUser.getOrders().size() > 0)
+                throw new CustomResponseException(StatusResponseDTO.CUSTOMER_VIOLATION_EXCEPTION);
+            userRepository.delete(existingUser);
+            return "Xoá thành công";
+        } else {
+            throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+        }
 
     }
 
     @Override
     public void updateStatus(Long customerId, String status) {
-            Boolean updateStatus = status.equalsIgnoreCase("enabled");
-            UserEntity existingUser;
-            if(userRepository.findById(customerId).isPresent()) {
-                existingUser = userRepository.findById(customerId).get();
-                userRepository.updateStatus(customerId, updateStatus );
+        Boolean updateStatus = status.equalsIgnoreCase("enabled");
+        UserEntity existingUser;
+        if (userRepository.findById(customerId).isPresent()) {
+            existingUser = userRepository.findById(customerId).get();
+            userRepository.updateStatus(customerId, updateStatus);
 
-            } else throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+        } else throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
 
     }
 
+    // use modelMapper instead - update later
     @Override
-    public UserEntity updateInformation(UserRequestDTO userRequest) {
+    public UserEntity updateInformation(UserRequestDTO userRequest) throws Exception {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
-        if(!userRequest.getName().isEmpty())  {
-            user.setName(userRequest.getName());
-        }
-        if(!userRequest.getPhoneNumber().isEmpty()) {
+        try {
+            if (!userRequest.getName().isEmpty() && !Objects.isNull(userRequest.getName())) {
+                user.setName(userRequest.getName());
+            }
+            if (!userRequest.getPhoneNumber().isEmpty() && !Objects.isNull(userRequest.getPhoneNumber())) {
 
-            user.setPhoneNumber(userRequest.getPhoneNumber());
+                user.setPhoneNumber(userRequest.getPhoneNumber());
+            }
+            if (!userRequest.getImgURL().isEmpty() && !Objects.isNull(userRequest.getImgURL())) {
+                user.setImgURL(userRequest.getImgURL());
+            }
+            return userRepository.save(user);
+        } catch (Exception ex) {
+            throw new Exception(ex);
         }
-        if(!userRequest.getImgURL().isEmpty())
-        {
-            user.setImgURL(userRequest.getImgURL());
-        }
-        return userRepository.save(user);
     }
-
-
 
     public UserEntity addNewAddress(AddressRequestDTO requestAddress) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -225,61 +232,28 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-
     @Override
     public UserEntity findUserByUserName(String username) {
         UserEntity user = this.userRepository.findByUsername(username).get();
         return user;
     }
 
-//    @Override
-//    public void sendVerificationEmail(String email, String siteURL) throws Exception {
-//
-//        Optional<UserEntity> existingUser = userRepository.findByEmail(email);
-//
-//        if(existingUser.isPresent()) {
-//            String toAddress = email;
-//            String fromAddress = emailown;
-//            String senderName = "Quản trị viên bamboo";
-//            String subject = "Chỉ cần nhấp chuột để xác nhận";
-//            String content = "<h1>Xác minh địa chỉ email của bạn</h1>" +
-//                    "Bạn vừa  chọn quên mật khẩu với địa chỉ email: [[email]]<br>" +
-//                    "Nhấn nút \"Xác nhận\" để chứng thực địa chỉ email và đặt mật khẩu mới.<br>"
-//                    + "<h3><a href=\"[[URL]]\" target=\"_self\">Xác nhận</a></h3>";
-//            content = content.replace("[[email]]", email);
-//            System.out.println("verifyURL = " + siteURL);
-//            content = content.replace("[[URL]]", siteURL);
-//            MimeMessage message = mailSender.createMimeMessage();
-//            MimeMessageHelper helper = new MimeMessageHelper(message);
-//            helper.setFrom(fromAddress, senderName);
-//            helper.setTo(toAddress);
-//            helper.setSubject(subject);
-//            helper.setText(content, true);
-//            mailSender.send(message);
-//        } else {
-//            throw new NotFoundException("Không tồn tại người dùng với mail này !");
-//        }
-//
-//
-//    }
-
     @Override
-    public ResponseDTO sendVerificationEmail(String email) throws IOException {
-        ResponseDTO response = new ResponseDTO();
-        if(!StringUtils.hasText(email)) {
+    public Object sendVerificationEmail(String email) throws IOException {
+
+        System.out.println("Go into send mail ");
+
+        if (!StringUtils.hasText(email)) {
             // call StatusResponseDTO.EMAIL_NOT_BLANK -> return ("404", "Không tìm thấy dữ liệu") gồm code 404 và message
             throw new CustomResponseException(StatusResponseDTO.EMAIL_NOT_BLANK);
         }
 
-
         UserEntity existingUser;
-
-        if(userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.findByEmail(email).isPresent()) {
             existingUser = userRepository.findByEmail(email).get();
         } else {
             throw new CustomResponseException(StatusResponseDTO.ERROR_NOT_FOUND);
         }
-
         String token = UidUtils.generateRandomString(9);
 
         ResetTokenEntity resetToken = ResetTokenEntity.builder().token(token).userId(existingUser).active(true).createdDate(new Date()).build();
@@ -295,26 +269,12 @@ public class UserServiceImpl implements UserService {
                     .to(existingUser.getEmail())
                     .text(FreeMarkerTemplateUtils.processTemplateIntoString(template, model))
                     .subject(SUBJECT).build();
-        mailService.sendWForgotPassword(rpmd).get();
-            response.setData("mail send to : " + existingUser.getEmail());
-//            response.setSuccessCode(Boolean.TRUE);
+            mailService.sendWForgotPassword(rpmd).get();
         } catch (Exception e) {
             throw new CustomResponseException(StatusResponseDTO.INTERNAL_SERVER);
         }
-
-        return response;
+        return existingUser;
     }
-
-    private static Map buildModel(UserEntity customer, ResetTokenEntity resetToken) {
-        Map<String, Object> model = new HashMap<>();
-        model.put("time", toStr(new Date(), F_DDMMYYYYHHMM));
-        model.put("name", customer.getName());
-        model.put("email", customer.getEmail());
-        model.put("link", String.format(DOMAIN_CLIENT + "/%s", resetToken.getToken()));
-        model.put("minusToExpired", MINUS_TO_EXPIRED);
-        return model;
-    }
-
 
     @Override
     public UserEntity newPassword(NewPasswordRequest newPasswordRequest) {
@@ -323,36 +283,32 @@ public class UserServiceImpl implements UserService {
 
         if (StringUtils.hasText(newPasswordRequest.getNewPassword()) && StringUtils.hasText(newPasswordRequest.getRetypeNewPassword())) {
             if (newPasswordRequest.getNewPassword().equals(newPasswordRequest.getRetypeNewPassword())) {
-                    userExist.setPassword(passwordEncoder.encode(newPasswordRequest.getNewPassword()));
-                    userRepository.save(userExist);
-                    System.out.println("Đổi thành công thành công");
-                    return userExist;
-            }
-            else{
+                userExist.setPassword(passwordEncoder.encode(newPasswordRequest.getNewPassword()));
+                userRepository.save(userExist);
+                System.out.println("Đổi thành công thành công");
+                return userExist;
+            } else {
                 throw new UserPasswordException("Hai mật khẩu không trùng nhau");
             }
-        }
-        else{
+        } else {
             throw new UserPasswordException("Không được để trống");
         }
     }
 
 
-
     @Override
     public Object logoutUser(HttpServletRequest request, HttpServletResponse response) {
-        if(StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")){
-            String token =request.getHeader("Authorization").substring(7);
+        if (StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")) {
+            String token = request.getHeader("Authorization").substring(7);
 
             System.out.println("token = " + token);
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null){
-                System.out.println("Da vao trong nay " + auth );
+            if (auth != null) {
+                System.out.println("Da vao trong nay " + auth);
                 new SecurityContextLogoutHandler().logout(request, response, null);
             }
             return "Logout thành công";
-        }
-        else
+        } else
             return "Không có token";
     }
 
@@ -361,7 +317,8 @@ public class UserServiceImpl implements UserService {
     public Object getUserInformation() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user;
-        if(!userRepository.findByUsername(username).isPresent()) throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+        if (!userRepository.findByUsername(username).isPresent())
+            throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
         else user = userRepository.findByUsername(username).get();
 
         List<Address> addresses = user.getAddresses();

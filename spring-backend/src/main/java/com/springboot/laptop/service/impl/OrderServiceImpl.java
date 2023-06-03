@@ -8,6 +8,7 @@ import com.springboot.laptop.model.dto.request.OrderInfoMail;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
 import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.model.enums.OrderStatus;
+import com.springboot.laptop.model.enums.PaymentMethod;
 import com.springboot.laptop.repository.AddressRepository;
 import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.OrderRepository;
@@ -192,6 +193,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDate(LocalDateTime.now());
         order.setUser(user);
         order.setOrderStatus(OrderStatus.NEW);
+        order.setMethodPayment(PaymentMethod.getPaymentMethod(orderRequest.getMethodPayment()));
 
         // add order detail to the order
         List<OrderDetails> orderDetailList = new ArrayList<>();

@@ -17,6 +17,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/v1/cart")
 public class CartController {
@@ -68,16 +70,9 @@ public class CartController {
     @GetMapping("/all_cart_items")
     public ResponseEntity<?> getAllCartItem() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println("Name is " + username);
-
         UserEntity user = userService.findUserByUserName(username);
-        try {
-            UserCart userCart = user.getCart();
-            return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
-        }
-        catch(NullPointerException ex) {
-            return ResponseEntity.badRequest().body("Chưa có giỏ hàng nào");
-        }
+        UserCart userCart = user.getCart();
+        return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
     }
 
     @Operation(summary = "Thêm / giảm số lượng ",

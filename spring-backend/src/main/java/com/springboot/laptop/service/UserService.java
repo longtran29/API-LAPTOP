@@ -18,9 +18,9 @@ public interface UserService {
     public UserEntity register(AppClientSignUpDTO user) throws Exception;
     public boolean userExists(String username, String email);
     public UserEntity findUserByUserName(String username);
-    public ResponseDTO sendVerificationEmail(String email) throws IOException;
+    public Object sendVerificationEmail(String email) throws IOException;
     public UserEntity newPassword(NewPasswordRequest newPasswordRequest);
-    public UserEntity updateInformation(UserRequestDTO userRequestDTO);
+    public UserEntity updateInformation(UserRequestDTO userRequestDTO) throws Exception;
     public Object resetPassword(ResetPasswordDTO payload) throws Exception;
     public void updateStatus(Long customerId, String status);
     public Object deleteCustomer(Long customerId);

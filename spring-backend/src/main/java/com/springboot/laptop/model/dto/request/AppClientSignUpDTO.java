@@ -14,5 +14,7 @@ public class AppClientSignUpDTO {
     private String email;
     private String password;
 
+    private String rePassword;
+
 
 }

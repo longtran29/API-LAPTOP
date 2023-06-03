@@ -1,6 +1,8 @@
 package com.springboot.laptop.service.impl;
 
+import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.UserRoleEntity;
+import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.UserRoleRepository;
 import com.springboot.laptop.service.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
+
 public class UserRoleServiceImpl implements UserRoleService {
 
     private final UserRoleRepository userRoleRepository;
@@ -20,11 +23,11 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     public UserRoleEntity getUserRoleByEnumName(String name) throws Exception {
         Optional<UserRoleEntity> role = userRoleRepository.findByName(name);
-        if(role != null) {
+        if(!role.isEmpty()) {
             return role.get();
         }
         else {
-            throw new Exception("User role not found");
+            throw new CustomResponseException(StatusResponseDTO.ROLE_NOT_FOUND);
         }
     }
 }
