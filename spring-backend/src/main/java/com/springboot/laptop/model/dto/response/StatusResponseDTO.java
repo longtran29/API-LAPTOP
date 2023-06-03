@@ -14,6 +14,8 @@ public enum StatusResponseDTO {
     ACCOUNT_BEEN_INACTIVATED("404", "Tài khoản của bạn đã bị khoá, vui lòng liên hệ admin"),
     DATA_EMPTY("500", "Vui lòng điền dữ liệu"),
 
+    PRODUCT_OUT_STOCK("500", "Không đủ hàng trong kho. Vui lòng liên hệ quản trị viên để được hỗ trợ"),
+    ROLE_NOT_FOUND("404", "Không tồn tại quyền này trên hệ thống"),
     ORDER_CANCEL_VIOLATION("500", "Đơn hàng đang được giao không thể huỷ"),
     ORDER_REJECTED_VIOLATION("500", "Đơn hàng bị từ chối bởi quản trị viên"),
 

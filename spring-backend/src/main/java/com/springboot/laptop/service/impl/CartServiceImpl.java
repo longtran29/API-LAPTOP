@@ -49,9 +49,12 @@ public class CartServiceImpl implements CartService {
     public UserCart addToCart(Long productId, Long quantity) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
+        ProductEntity product;
+
+        if(quantity > productRepository.findById(productId).get().getProductQuantity()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
+        else product = productRepository.findById(productId).get();
 
         UserCart userCart = null;
-
         if(user.getCart() != null) {
             userCart = user.getCart();
             CartDetails cartDetail = userCart.getCartDetails()
@@ -64,9 +67,6 @@ public class CartServiceImpl implements CartService {
                 cartDetail.setQuantity(cartDetail.getQuantity() + quantity);
                 cartDetail.setModifyDate(LocalDateTime.now());
             } else {
-                ProductEntity product = productRepository.findById(productId)
-                        .orElseThrow(() -> new NoSuchElementException());
-
                 cartDetail = new CartDetails();
                 cartDetail.setProduct(product);
                 cartDetail.setQuantity(quantity);
@@ -74,14 +74,10 @@ public class CartServiceImpl implements CartService {
                 cartDetail.setUserCart(userCart);
                 userCart.getCartDetails().add(cartDetail);
             }
-
         }
         else {
-
             userCart = new UserCart();
             userCart.setUser(user);
-            ProductEntity product = productRepository.findById(productId)
-                    .orElseThrow(() -> new NoSuchElementException());
 
             CartDetails cartDetail = new CartDetails();
             cartDetail.setProduct(product);
@@ -89,10 +85,9 @@ public class CartServiceImpl implements CartService {
             cartDetail.setAddDate(LocalDateTime.now());
             cartDetail.setUserCart(userCart);
             userCart.getCartDetails().add(cartDetail);
-
-
         }
-
+        product.setProductQuantity(product.getProductQuantity() - quantity);
+        productRepository.save(product);
         return cartRepository.save(userCart);
 }
 
@@ -117,7 +112,9 @@ public class CartServiceImpl implements CartService {
     }
 
     public UserCart updateQuantityItem(UserEntity user, Long productId, String type) {
+        ProductEntity product;
         if(!productRepository.findById(productId).isPresent()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND);
+        else product = productRepository.findById(productId).get();
         try {
             UserCart userCart = user.getCart();
             if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
@@ -126,13 +123,21 @@ public class CartServiceImpl implements CartService {
             ) {
 
                 if(cartDetail.getProduct().getId() == productId) {
-                    cartDetail.setQuantity(type.equals("increase") ? cartDetail.getQuantity() +1 : cartDetail.getQuantity()-1 );
+                    if(type.equals("increase")) {
+                        if(product.getProductQuantity() ==  0) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
+                        cartDetail.setQuantity(cartDetail.getQuantity() +1);
+                        product.setProductQuantity(product.getProductQuantity() -1);
+                    } else {
+                        cartDetail.setQuantity(cartDetail.getQuantity()-1);
+                        product.setProductQuantity(product.getProductQuantity() +1);
+                    }
                     cartDetail.setModifyDate(LocalDateTime.now());
                 }
             }
+            productRepository.save(product);
             return cartRepository.save(userCart);
         } catch(NotFoundException ex) {
-            throw new NotFoundException(ex.getMessage());
+            throw ex;
         }
     }
 

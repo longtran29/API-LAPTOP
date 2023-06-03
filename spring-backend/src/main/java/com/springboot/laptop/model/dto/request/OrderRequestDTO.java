@@ -13,4 +13,6 @@ public class OrderRequestDTO {
 
     private Long addressId;
 
+    private String methodPayment;
+
 }

@@ -82,7 +82,7 @@ public class AuthController {
             responseDTO.setSuccessCode(SuccessCode.REIGSTER_SUCCESS);
             return ResponseEntity.ok(responseDTO);
         } catch(Exception ex) {
-            throw new Exception(ex);
+            throw ex;
         }
     }
 

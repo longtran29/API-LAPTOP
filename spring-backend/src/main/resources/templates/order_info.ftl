@@ -124,12 +124,12 @@
                                 <tr>
                                     <td style="padding-bottom:10px">Tổng số lượng sản phẩm đã mua:</td>
                                     <td style="font-weight:bold;text-align:right;padding-bottom:10px">
-                                        ${TOTAL_AMOUT}₫</td>
+                                        ${TOTAL_AMOUT} cái </td>
                                 </tr>
                                 <tr style="border-top:1px solid #e5e9ec">
                                     <td style="padding-top:10px">Thành tiền</td>
                                     <td style="font-weight:bold;text-align:right;font-size:16px;padding-top:10px">
-                                        ${TOTAL_PRICE}₫</td>
+                                        ${TOTAL_PRICE} VND </td>
                                 </tr>
                                 </tbody>
                             </table>

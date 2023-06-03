@@ -137,16 +137,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity register(AppClientSignUpDTO user) throws Exception {
-        UserRoleEntity userRole = this.userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
-        if (!user.getPassword().equals(user.getRePassword()))
-            throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
-        UserEntity appClient = new UserEntity();
-        appClient.setRoles(List.of(userRole));
-        appClient.setUsername(user.getUsername());
-        appClient.setEmail(user.getEmail());
-        appClient.setPassword(this.passwordEncoder.encode(user.getPassword()));
-        appClient.setEnabled(true);
-        return userRepository.save(appClient);
+        try {
+            UserRoleEntity userRole = this.userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
+            if (!user.getPassword().equals(user.getRePassword()))
+                throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
+            UserEntity appClient = new UserEntity();
+            appClient.setRoles(List.of(userRole));
+            appClient.setUsername(user.getUsername());
+            appClient.setEmail(user.getEmail());
+            appClient.setPassword(this.passwordEncoder.encode(user.getPassword()));
+            appClient.setEnabled(true);
+            return userRepository.save(appClient);
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 
     @Override
