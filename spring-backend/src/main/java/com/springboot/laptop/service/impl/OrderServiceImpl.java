@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Service
@@ -94,6 +91,10 @@ public class OrderServiceImpl implements OrderService {
             throw new CustomResponseException(StatusResponseDTO.ORDER_CANCEL_VIOLATION);
         }
         if(order.getOrderStatus().equals(OrderStatus.REJECTED)) throw new CustomResponseException(StatusResponseDTO.ORDER_REJECTED_VIOLATION);
+        if(order.getOrderStatus().equals(OrderStatus.CANCELED)) throw new CustomResponseException(StatusResponseDTO.ORDER_CANCELED_VIOLATION);
+        if(order.getOrderStatus().equals(OrderStatus.DELIVERED)) throw new CustomResponseException(StatusResponseDTO.ORDER_DELIVERED_VIOLATION);
+        if(order.getOrderStatus().equals(OrderStatus.SHIPPED)) throw new CustomResponseException(StatusResponseDTO.ORDER_SHIPPED_VIOLATION);
+
         order.setOrderStatus(OrderStatus.CANCELED);
         return orderRepository.save(order);
     }
@@ -179,14 +180,14 @@ public class OrderServiceImpl implements OrderService {
     public Order checkout(OrderRequestDTO orderRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
-
-
         UserCart userCart = user.getCart();
+        if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_EXIST);
         List<CartDetails> cartDetailList = userCart.getCartDetails();
-
-        Address userAddress = addressRepository.findById(orderRequest.getAddressId()).get();
-
-
+        Address userAddress;
+        if(addressRepository.findById(orderRequest.getAddressId()).isEmpty()) {
+            throw new CustomResponseException(StatusResponseDTO.ADDRESS_NOT_FOUND);
+        }
+        userAddress = addressRepository.findById(orderRequest.getAddressId()).get();
 
         Order order = new Order();
         order.setAddress(userAddress);

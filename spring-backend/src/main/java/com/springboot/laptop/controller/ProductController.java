@@ -40,8 +40,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Thêm sản phẩm ",
-            description = "Thêm mới sản phẩm vào cơ sở dữ liệu",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Thêm mới sản phẩm vào cơ sở dữ liệu",
             responses = {
                     @ApiResponse(description = "Thêm thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -54,6 +53,7 @@ public class ProductController {
             })
     // check authority base on SecurityContextHolder
     @PostMapping
+    @SecurityRequirement(name = "bearerAuth")
     public Object createProduct(@RequestBody ProductDTO product) throws ParseException {
         return productServiceImpl.createOne(product);
 
@@ -114,7 +114,8 @@ public class ProductController {
     }
 
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/active")
     public ResponseEntity<?> getAllProducts() {
         return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getAllProduct(), HttpStatus.OK);
@@ -126,8 +127,7 @@ public class ProductController {
     }
 
     @Operation(summary = "Xoá sản phẩm",
-            description = "Xoá sản phẩm",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Xoá sản phẩm",
             responses = {
                     @ApiResponse(description = "Xoá thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -140,10 +140,13 @@ public class ProductController {
             })
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public Object deleteProduct(@PathVariable("productId") Long productId) {
         ResponseDTO responseDTO = new ResponseDTO();
         try {
             productServiceImpl.deleteProduct(productId);
+            responseDTO.setData("Xoá thành công");
+            responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
             return ResponseEntity.ok().body(responseDTO);
         } catch (DataIntegrityViolationException ex) {
             throw new CustomResponseException(StatusResponseDTO.PRODUCT_VIOLATION_EXCEPTION);
@@ -165,13 +168,13 @@ public class ProductController {
             })
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{productId}")
+    @SecurityRequirement(name = "bearerAuth")
     public Object updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ParseException {
         return productServiceImpl.updateProduct(productId, product);
     }
 
     @Operation(summary = "Cập nhật trạng thái ",
-            description = "Cập nhật trạng thái của sản phẩm",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Cập nhật trạng thái của sản phẩm",
             responses = {
                     @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -184,13 +187,15 @@ public class ProductController {
             })
     @PutMapping("/{productId}/{status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateStatus(@PathVariable Long productId, @PathVariable String status ) {
         // note : not using operator "=="
         ResponseDTO responseDTO = new ResponseDTO();
         try {
             productServiceImpl.updateStatus(productId, status);
-            return ResponseEntity.status(HttpStatus.OK).body("Cập nhật trạng thái thành công");
-
+            responseDTO.setData("Cập nhật trang thái thành công !");
+            responseDTO.setSuccessCode(SuccessCode.UPDATE_PRODUCT_SUCCESS);
+            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
         } catch (CustomResponseException ex ) {
             responseDTO.setData(ex.getReason());
             return ResponseEntity.badRequest().body(responseDTO);

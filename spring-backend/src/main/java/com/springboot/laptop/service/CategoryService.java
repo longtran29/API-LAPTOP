@@ -11,7 +11,7 @@ public interface CategoryService {
     public Object createOne(CategoryRequestDTO category) ;
     public CategoryEntity findById(Long categoryId);
     public List<CategoryEntity> getAll();
-    public Object updateOne(Long cateId, CategoryEntity updateCategory);
-    public Object updateStatus(Long cateId, Boolean status);
+    public Object updateOne(Long cateId, CategoryRequestDTO updateCategory);
+    public void updateStatus(Long cateId, Boolean status);
     public void deleteOne(Long cateId) throws Exception;
 }

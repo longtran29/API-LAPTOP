@@ -18,13 +18,20 @@ public enum StatusResponseDTO {
     ROLE_NOT_FOUND("404", "Không tồn tại quyền này trên hệ thống"),
     ORDER_CANCEL_VIOLATION("500", "Đơn hàng đang được giao không thể huỷ"),
     ORDER_REJECTED_VIOLATION("500", "Đơn hàng bị từ chối bởi quản trị viên"),
+    ORDER_CANCELED_VIOLATION("500", "Đơn hàng này đã được huỷ"),
+    ORDER_DELIVERED_VIOLATION("500", "Đơn hàng đã được thanh toán rồi"),
+    ORDER_SHIPPED_VIOLATION("500", "Đơn hàng này đang được shipper giao "),
 
     CUSTOMER_VIOLATION_EXCEPTION("500", "Khách hàng đã có đơn hàng "),
+    CART_NOT_EXIST("500", "Không có sản phẩm nào trong giỏ hàng"),
 
-    DATA_VALIDATION("500", "Vui lòng nhập đầy đủ dữ liệu "),
-    BRAND_CONSTRAINT_EXCEPTION("500", "Hãng sản xuất có danh mục đang được kính doanh"),
+    VALUE_NOT_VALID("500", "Giá tri bạn nhập không hợp lệ"),
+
+    INFORMATION_IS_MISSING("500", "Vui lòng nhập đầy đủ dữ liệu"),
+    BRAND_CONSTRAINT_EXCEPTION("500", "Thương hiệu đang kinh doanh sản phẩm  "),
     CATEGORY_VIOLATION_EXCEPTION("500", "Danh mục có sản phẩm đang được kinh doanh"),
     FAIL_AUTHENTICATION("404", "Tên đăng nhập hoặc mật khẩu sai !"),
+    ADDRESS_NOT_FOUND("404", "Không tìm thấy địa chỉ này !"),
 
     RESET_PASSWORD_FAILED("400", "Đổi mật khẩu không thành công"),
 

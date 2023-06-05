@@ -59,8 +59,7 @@ public class CategoryController {
     }
 
     @Operation(summary = "Tạo danh mục mới",
-            description = "Tạo một danh mục mới",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Tạo một danh mục mới",
             responses = {
                     @ApiResponse(description = "Tạo thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -73,6 +72,7 @@ public class CategoryController {
             })
     @PostMapping("/new")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public Object createCategory(@RequestBody CategoryRequestDTO categoryDto) {
         return categoryServiceImpl.createOne(categoryDto);
     }
@@ -95,8 +95,7 @@ public class CategoryController {
     }
 
     @Operation(summary = "Cập nhật danh mục",
-            description = "Cập nhật danh mục",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Cập nhật danh mục",
             responses = {
                     @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -109,7 +108,8 @@ public class CategoryController {
             })
     @PutMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public Object updateCate(@PathVariable Long cateId, @RequestBody CategoryEntity category )  {
+    @SecurityRequirement(name = "bearerAuth")
+    public Object updateCate(@PathVariable Long cateId, @RequestBody CategoryRequestDTO category )  {
         return categoryServiceImpl.updateOne(cateId, category);
     }
 
@@ -128,17 +128,25 @@ public class CategoryController {
             })
     @PutMapping("/{cateId}/{cate_status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public Object updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
         // note : not using operator "=="
         Boolean category_status =cate_status.equalsIgnoreCase("enabled");
-        return categoryServiceImpl.updateStatus(cateId, category_status);
+        ResponseDTO response = new ResponseDTO();
+        try {
+            categoryServiceImpl.updateStatus(cateId, category_status);
+            response.setData("Cập nhẩt thành công");
+            return ResponseEntity.ok().body(response);
+        } catch (Exception ex) {
+            response.setData(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
     }
 
 
     @Operation(summary = "Xoá danh mục ",
-            description = "Xoá danh mục",security = {
-            @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
+            description = "Xoá danh mục",
             responses = {
                     @ApiResponse(description = "Xoá thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -151,6 +159,7 @@ public class CategoryController {
             })
     @DeleteMapping("/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> deleteCategory(@PathVariable Long cateId) throws Exception {
         ResponseDTO responseDTO = new ResponseDTO();
         try {

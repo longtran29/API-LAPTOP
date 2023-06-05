@@ -86,7 +86,10 @@ public class CartServiceImpl implements CartService {
             cartDetail.setUserCart(userCart);
             userCart.getCartDetails().add(cartDetail);
         }
-        product.setProductQuantity(product.getProductQuantity() - quantity);
+
+        long remainingStock = product.getProductQuantity() - quantity;
+        product.setProductQuantity(remainingStock);
+        if(remainingStock == 0) product.setInStock(false);
         productRepository.save(product);
         return cartRepository.save(userCart);
 }
@@ -127,6 +130,7 @@ public class CartServiceImpl implements CartService {
                         if(product.getProductQuantity() ==  0) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
                         cartDetail.setQuantity(cartDetail.getQuantity() +1);
                         product.setProductQuantity(product.getProductQuantity() -1);
+                        if(product.getProductQuantity() -1 == 0 ) product.setInStock(false);
                     } else {
                         cartDetail.setQuantity(cartDetail.getQuantity()-1);
                         product.setProductQuantity(product.getProductQuantity() +1);

@@ -26,6 +26,8 @@ public class ProductEntity extends BaseEntity {
     @ManyToOne
     @JoinColumn(name="brand_id")
     private BrandEntity brand;
+
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
     private boolean inStock;
     private Date creationDate;

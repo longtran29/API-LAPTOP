@@ -23,6 +23,7 @@ import freemarker.template.Configuration;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -168,17 +169,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public Object deleteCustomer(Long customerId) {
         UserEntity existingUser;
-
-        if (userRepository.findById(customerId).isPresent()) {
-            existingUser = userRepository.findById(customerId).get();
-            if (existingUser.getOrders().size() > 0)
-                throw new CustomResponseException(StatusResponseDTO.CUSTOMER_VIOLATION_EXCEPTION);
-            userRepository.delete(existingUser);
-            return "Xoá thành công";
-        } else {
-            throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
-        }
-
+        existingUser = userRepository.findById(customerId).get();
+        userRepository.delete(existingUser);
+        return "Xoá thành công";
     }
 
     @Override
