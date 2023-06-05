@@ -87,8 +87,7 @@ public class BrandController {
     }
 
     @Operation(summary = "Tạo thương hiệu mới",
-            description = "Tạo một thương hiệu mới",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Tạo một thương hiệu mới",
             responses = {
                     @ApiResponse(description = "Tạo thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -101,14 +100,14 @@ public class BrandController {
             })
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public Object createBrand(@RequestBody BrandRequestDTO newBrand) {
         return brandServiceImpl.createOne(newBrand);
     }
 
 
     @Operation(summary = "Xoá thương hiệu",
-            description = "Xoá một thương hiệu",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Xoá một thương hiệu",
             responses = {
                     @ApiResponse(description = "Xoá thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -121,13 +120,13 @@ public class BrandController {
             })
     @DeleteMapping("/{brandId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public Object deleteBrand(@PathVariable Long brandId) {
        return brandServiceImpl.deleteOne(brandId);
     }
 
     @Operation(summary = "Cập nhật thương hiệu",
-            description = "Cập nhật thương hiệu",security = {
-            @SecurityRequirement(name = "bearer-key") },
+            description = "Cập nhật thương hiệu",
             responses = {
                     @ApiResponse(description = "Cập nhật thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -140,6 +139,7 @@ public class BrandController {
             })
     @PutMapping("/{brandId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateBrand(@PathVariable Long brandId, @RequestBody BrandRequestDTO updateBrand ){
         ResponseDTO responseDTO = new ResponseDTO();
         BrandEntity updatedBrand;

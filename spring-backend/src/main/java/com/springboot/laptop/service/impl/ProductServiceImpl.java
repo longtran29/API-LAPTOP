@@ -64,8 +64,8 @@ public class ProductServiceImpl implements ProductService {
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
             CategoryEntity category;
-            if(product.getName() == null || product.getOriginal_price() == null || product.getDiscount_percent() == null || product.getBrandId() == null || product.getProductQty() == null || product.getDescription() == null)
-                throw new CustomResponseException(StatusResponseDTO.DATA_VALIDATION);
+            if( product.getDiscount_percent() == null || product.getName() == "" || product.getOriginal_price() == null || product.getProductQty() == null || product.getDescription() == "")
+                throw new CustomResponseException(StatusResponseDTO.INFORMATION_IS_MISSING);
             if(categoryRepository.findById(Long.valueOf(product.getCategoryId())).isPresent()) {
                 category = categoryRepository.findById(Long.valueOf(product.getCategoryId())).get();
             } else {
@@ -126,22 +126,41 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     public ProductEntity updateProduct(Long productId, ProductDTO updateProduct) throws ParseException {
-        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        if(updateProduct.getName() != null) existingProduct.setName(updateProduct.getName());
-        if(updateProduct.getDescription() != null) existingProduct.setDescription(updateProduct.getDescription());
-        if(updateProduct.getOriginal_price() != null) existingProduct.setOriginal_price(updateProduct.getOriginal_price());
-        if(updateProduct.getDiscount_percent() != null) existingProduct.setDiscount_percent(updateProduct.getDiscount_percent());
-        if(updateProduct.getCategoryId() != null) existingProduct.setCategory(categoryRepository.findById(updateProduct.getCategoryId()).get());
-        if(updateProduct.getBrandId() != null) existingProduct.setBrand(brandRepository.findById(updateProduct.getBrandId()).get());
-        if(updateProduct.getPrimaryImage() != null)existingProduct.setPrimaryImage(updateProduct.getPrimaryImage());
-        if(updateProduct.getProductQty() != null) existingProduct.setProductQuantity(updateProduct.getProductQty());
-        existingProduct .setInStock((updateProduct.isInStock()));
-        existingProduct.setModifiedDate(dateFormat.parse(dateFormat.format(date)));
-        productRepository.save(existingProduct);
+        try {
+            ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+            Date date = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
-        return existingProduct;
+            if( updateProduct.getDiscount_percent() == null || updateProduct.getOriginal_price() == null || updateProduct.getProductQty() == null || updateProduct.getName() == "" || updateProduct.getDescription() == "") throw new CustomResponseException(StatusResponseDTO.INFORMATION_IS_MISSING);
+
+            existingProduct.setName(updateProduct.getName());
+            existingProduct.setDescription(updateProduct.getDescription());
+            if(updateProduct.getOriginal_price() > 0.0 ) existingProduct.setOriginal_price(updateProduct.getOriginal_price());
+            else throw new CustomResponseException(StatusResponseDTO.VALUE_NOT_VALID);
+            if(updateProduct.getDiscount_percent() > 0.0 && updateProduct.getDiscount_percent() < 1.0) existingProduct.setDiscount_percent(updateProduct.getDiscount_percent());
+            else throw new CustomResponseException(StatusResponseDTO.VALUE_NOT_VALID);
+            if(updateProduct.getCategoryId() != null) {
+                CategoryEntity category = categoryRepository.findById(updateProduct.getCategoryId()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
+                existingProduct.setCategory(categoryRepository.findById(updateProduct.getCategoryId()).get());
+            }
+            if(updateProduct.getBrandId() != null) {
+                BrandEntity brand = brandRepository.findById(updateProduct.getBrandId()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
+                existingProduct.setBrand(brandRepository.findById(updateProduct.getBrandId()).get());
+            }
+
+            if(! updateProduct.getPrimaryImage().isEmpty()) {        // update check validation with isEmpty not null
+                existingProduct.setPrimaryImage(updateProduct.getPrimaryImage());
+            }
+
+            if(updateProduct.getProductQty() > 0) existingProduct.setProductQuantity(updateProduct.getProductQty());
+            existingProduct .setInStock((updateProduct.isInStock()));
+            existingProduct.setModifiedDate(dateFormat.parse(dateFormat.format(date)));
+            productRepository.save(existingProduct);
+
+            return existingProduct;
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 
     @Override

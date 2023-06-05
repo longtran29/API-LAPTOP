@@ -50,7 +50,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Object updateOne(Long cateId, CategoryEntity updateCategory) {
+    public Object updateOne(Long cateId, CategoryRequestDTO updateCategory) {
 
         if (!categoryRepository.findById(cateId).isPresent()) {
             throw new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND);
@@ -68,12 +68,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Object updateStatus(Long cateId, Boolean status) {
+    public void updateStatus(Long cateId, Boolean status) {
         if (!categoryRepository.findById(cateId).isPresent()) {
             throw new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND);
         } else {
             categoryRepository.updateStatus(cateId, status);
-            return "Cập nhật thành công";
         }
     }
 

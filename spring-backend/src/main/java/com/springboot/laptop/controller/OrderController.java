@@ -10,6 +10,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
+@SecurityRequirement(name = "bearerAuth")
 public class OrderController {
 
     @Autowired

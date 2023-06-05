@@ -21,6 +21,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/v1/cart")
+@SecurityRequirement(name = "bearerAuth")
 public class CartController {
     private CartServiceImpl cartService;
     private UserServiceImpl userService;

@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -120,6 +121,7 @@ public class AuthController {
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
     @PostMapping("/user/addAddress")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> addAddress(@RequestBody AddressRequestDTO requestAddress) {
         UserEntity user = userServiceImpl.addNewAddress(requestAddress);
         return ResponseEntity.ok((getUserInformation()));
@@ -127,6 +129,7 @@ public class AuthController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @GetMapping(value = "/user/information")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> getUserInformation() {
         ResponseDTO responseDTO = new ResponseDTO();
         responseDTO.setData(userServiceImpl.getUserInformation());
@@ -147,12 +150,14 @@ public class AuthController {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @PutMapping("/updateInformation")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateInformation(@RequestBody UserRequestDTO userRequestDTO) throws Exception {
             return ResponseEntity.ok().body(userServiceImpl.updateInformation(userRequestDTO));
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @PostMapping("/resetPassword")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> newPassword(@Valid @RequestBody NewPasswordRequest newPasswordRequest) throws UserPasswordException {
         ResponseDTO response = new ResponseDTO();
 
