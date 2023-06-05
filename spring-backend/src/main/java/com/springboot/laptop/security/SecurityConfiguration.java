@@ -13,6 +13,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -59,6 +60,23 @@ public class SecurityConfiguration {
     }
 
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {          // ignore to use postman http://localhost:8080/swagger-ui/index.html
+        return (web) ->
+                web.ignoring().antMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/v3/**",
+                        "/favicon.ico",
+                        "/health",
+                        "/mappings",
+                        "/info",
+                        "/metrics",
+                        "/metrics/**",
+                        "/");
+    }
+
     @Primary
     @Bean
     public FreeMarkerConfigurationFactoryBean factoryBean() {
@@ -82,6 +100,7 @@ public class SecurityConfiguration {
                 .disable()
                 .authorizeRequests()
                 .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**", "/**/brands/**", "/**/uploadImage", "/**/forgotPassword/**", "/**/reset-password", "/**/register", "/**/orders/create-payment-intent/**").permitAll()
+
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
