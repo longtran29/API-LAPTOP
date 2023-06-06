@@ -121,6 +121,7 @@ public class OrderController {
 
         // Send publishable key and PaymentIntent details to client
         CreatePaymentResponse paymentResponse = new CreatePaymentResponse(public_key, intent.getClientSecret());
+        System.out.println("Client key " + intent.getClientSecret());
 		return paymentResponse;
     }
 
