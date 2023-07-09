@@ -60,8 +60,8 @@ class LaptopApplicationTests {
 	@Test
 	public void addNewRole() {
 		UserRoleEntity userRole = new UserRoleEntity();
-		userRole.setName(UserRoleEnum.ROLE_USER.name());
-		userRole.setDescription("Người dùng");
+		userRole.setName(UserRoleEnum.ROLE_ADMIN.name());
+		userRole.setDescription("Quản trị viên");
 		userRoleRepository.save(userRole);
 	}
 

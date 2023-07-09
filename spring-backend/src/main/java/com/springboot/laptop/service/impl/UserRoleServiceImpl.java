@@ -22,12 +22,6 @@ public class UserRoleServiceImpl implements UserRoleService {
     }
 
     public UserRoleEntity getUserRoleByEnumName(String name) throws Exception {
-        Optional<UserRoleEntity> role = userRoleRepository.findByName(name);
-        if(!role.isEmpty()) {
-            return role.get();
-        }
-        else {
-            throw new CustomResponseException(StatusResponseDTO.ROLE_NOT_FOUND);
-        }
+        return userRoleRepository.findByName(name).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ROLE_NOT_FOUND));
     }
 }

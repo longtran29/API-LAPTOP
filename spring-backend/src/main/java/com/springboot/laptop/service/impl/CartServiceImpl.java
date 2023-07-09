@@ -39,10 +39,8 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public UserCart findCartById(Long cartId) {
-        if(!productRepository.findById(cartId).isPresent()) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
-        else  {
-            return cartRepository.findById(cartId).get();
-        }
+        productRepository.findById(cartId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND));
+        return cartRepository.findById(cartId).get();
     }
 
     @Override
@@ -115,9 +113,7 @@ public class CartServiceImpl implements CartService {
     }
 
     public UserCart updateQuantityItem(UserEntity user, Long productId, String type) {
-        ProductEntity product;
-        if(!productRepository.findById(productId).isPresent()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND);
-        else product = productRepository.findById(productId).get();
+        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
         try {
             UserCart userCart = user.getCart();
             if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
@@ -148,8 +144,8 @@ public class CartServiceImpl implements CartService {
     @Override
     public UserCart removeCartItem(Long productId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).get();
-        if(!productRepository.findById(productId).isPresent()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND);
+        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
         UserCart userCart = user.getCart();
         if(userCart != null) {
             Optional<CartDetails> removeItem = userCart.getCartDetails().stream().filter(item -> item.getProduct().getId() == productId).findFirst();

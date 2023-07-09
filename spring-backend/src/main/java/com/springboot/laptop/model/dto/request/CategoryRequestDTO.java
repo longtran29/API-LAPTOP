@@ -1,15 +1,16 @@
 package com.springboot.laptop.model.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class CategoryRequestDTO {
 
     private String name;
 
     private Boolean enabled;
+
+    private String imageUrl;
 }

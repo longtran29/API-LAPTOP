@@ -1,11 +1,12 @@
 package com.springboot.laptop.utils;
-import com.springboot.laptop.exception.JwtValidationException;
 import com.springboot.laptop.model.UserEntity;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -31,15 +32,15 @@ public class JwtUtility implements Serializable {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e){
-            throw new JwtValidationException("Invalid JWT signature", e);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Invalid JWT signature", e);
         } catch (MalformedJwtException e){
-            throw new JwtValidationException("Invalid format Token", e);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Invalid format Token", e);
         } catch (ExpiredJwtException e){
-            throw new JwtValidationException("Expired JWT token", e);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Expired JWT token", e);
         } catch (UnsupportedJwtException e){
-            throw new JwtValidationException("Unsupported JWT token", e);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT,"Unsupported JWT token", e);
         } catch (IllegalArgumentException e){
-            throw new JwtValidationException("JWT claims string is empty", e);
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "JWT claims string is empty", e);
         }
     }
     public String getUerNameFromToken(String token){

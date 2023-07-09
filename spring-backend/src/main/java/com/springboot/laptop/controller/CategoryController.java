@@ -1,21 +1,18 @@
 package com.springboot.laptop.controller;
 
 
-import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.CategoryEntity;
+import com.springboot.laptop.model.dto.CategoryDTO;
 import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
-import com.springboot.laptop.model.dto.response.ResponseDTO;
-import com.springboot.laptop.model.dto.response.StatusResponseDTO;
-import com.springboot.laptop.service.impl.CategoryServiceImpl;
+import com.springboot.laptop.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,17 +21,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
 public class CategoryController {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
-    private final CategoryServiceImpl categoryServiceImpl;
-
-    @Autowired
-    public CategoryController(CategoryServiceImpl categoryServiceImpl) {
-        this.categoryServiceImpl = categoryServiceImpl;
-    }
-
+    private final CategoryService categoryServiceImpl;
 
     @Operation(summary = "Lấy 1 danh mục",
             description = "Lấy ra 1 danh muc",
@@ -48,14 +40,7 @@ public class CategoryController {
             })
     @GetMapping("/{categoryId}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long categoryId) {
-        ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            responseDTO.setData((categoryServiceImpl.findById(categoryId)));
-            return  ResponseEntity.ok().body(responseDTO);
-        } catch (CustomResponseException ex) {
-            responseDTO.setData(ex.getReason());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDTO);
-        }
+        return ResponseEntity.ok().body(categoryServiceImpl.findById(categoryId));
     }
 
     @Operation(summary = "Tạo danh mục mới",
@@ -70,11 +55,11 @@ public class CategoryController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @PostMapping("/new")
+    @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     public Object createCategory(@RequestBody CategoryRequestDTO categoryDto) {
-        return categoryServiceImpl.createOne(categoryDto);
+        return ResponseEntity.ok().body(categoryServiceImpl.createOne(categoryDto));
     }
 
 
@@ -90,8 +75,7 @@ public class CategoryController {
             })
     @GetMapping
     public ResponseEntity<?> getAllCategories() {
-        List<CategoryEntity> listCates = categoryServiceImpl.getAll();
-        return new ResponseEntity<List<CategoryEntity>>(listCates, HttpStatus.OK );
+        return ResponseEntity.ok().body(categoryServiceImpl.getAll());
     }
 
     @Operation(summary = "Cập nhật danh mục",
@@ -126,21 +110,13 @@ public class CategoryController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @PutMapping("/{cateId}/{cate_status}")
+    @PutMapping("/status/{cateId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @PathVariable String cate_status ) {
+    public ResponseEntity<?> updateStatus(@PathVariable Long cateId, @RequestBody Boolean cate_status ) {
         // note : not using operator "=="
-        Boolean category_status =cate_status.equalsIgnoreCase("enabled");
-        ResponseDTO response = new ResponseDTO();
-        try {
-            categoryServiceImpl.updateStatus(cateId, category_status);
-            response.setData("Cập nhẩt thành công");
-            return ResponseEntity.ok().body(response);
-        } catch (Exception ex) {
-            response.setData(ex.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+//        Boolean category_status = "true".equalsIgnoreCase(cate_status) ? true : false;
+        return ResponseEntity.ok().body(categoryServiceImpl.updateStatus(cateId, cate_status));
 
     }
 
@@ -161,14 +137,12 @@ public class CategoryController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> deleteCategory(@PathVariable Long cateId) throws Exception {
-        ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            categoryServiceImpl.deleteOne(cateId);
-            responseDTO.setData("Xoá thành công");
-        } catch (DataIntegrityViolationException ex) {
-            throw new CustomResponseException(StatusResponseDTO.CATEGORY_VIOLATION_EXCEPTION);
-        }
-        return ResponseEntity.ok().body(responseDTO);
+        return ResponseEntity.ok().body(categoryServiceImpl.deleteOne(cateId));
+    }
+
+    @GetMapping("/products/{categoryId}")
+    public ResponseEntity<?> getProducts(@PathVariable Long categoryId ){
+        return ResponseEntity.ok().body(categoryServiceImpl.getProductsById(categoryId));
     }
 }
 

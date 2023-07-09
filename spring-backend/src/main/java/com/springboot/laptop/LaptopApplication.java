@@ -23,7 +23,7 @@ public class LaptopApplication {
 
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(LaptopApplication.class, args);
-		System.out.println("Application context get all products " + context.getBean(ProductController.class).getActiveProducts());
+//		System.out.println("Application context get all products " + context.getBean(ProductController.class).getActiveProducts());
 	}
 
 }

@@ -1,11 +1,11 @@
 package com.springboot.laptop.controller;
 
 
-import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
-import com.springboot.laptop.model.dto.request.ProductDTO;
-import com.springboot.laptop.model.dto.response.*;
+import com.springboot.laptop.model.dto.CategoryDTO;
+import com.springboot.laptop.model.dto.ProductDTO;
+//import com.springboot.laptop.model.dto.request.ProductDTO;
+import com.springboot.laptop.service.ProductService;
 import com.springboot.laptop.service.impl.CloudinaryService;
 import com.springboot.laptop.service.impl.ProductServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,8 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,17 +25,12 @@ import java.text.ParseException;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/products")
 public class ProductController {
 
-    private final ProductServiceImpl productServiceImpl;
-    private final CloudinaryService cloudinaryService;
+    private final ProductService productServiceImpl;
 
-    @Autowired
-    public ProductController(ProductServiceImpl productServiceImpl, CloudinaryService cloudinaryService) {
-        this.productServiceImpl = productServiceImpl;
-        this.cloudinaryService = cloudinaryService;
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Thêm sản phẩm ",
@@ -55,7 +49,7 @@ public class ProductController {
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
     public Object createProduct(@RequestBody ProductDTO product) throws ParseException {
-        return productServiceImpl.createOne(product);
+        return ResponseEntity.ok().body(productServiceImpl.createOne(product));
 
     }
 
@@ -76,22 +70,6 @@ public class ProductController {
        return productServiceImpl.getOneProduct(productId);
     }
 
-    @Operation(summary = "Tải ảnh lên",
-            description = "Tải ảnh lên cloud",
-            responses = {
-                    @ApiResponse(description = "Tải thành công", responseCode = "200",
-                            content = @Content(schema = @Schema(implementation = CategoryEntity.class))
-                    ),
-                    @ApiResponse(description = "Bad Request", responseCode = "400", content = @Content),
-                    @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
-                    @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
-            })
-    @PostMapping("/upload")
-    public String uploadFile(@Param("file") MultipartFile file) {
-        System.out.println("Da vao uploadFile");
-        String url = cloudinaryService.uploadFile(file);
-        return url;
-    }
 
     @GetMapping("/best-seller")
     public ResponseEntity<?> bestSellerProducts() {
@@ -108,23 +86,16 @@ public class ProductController {
                     @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @GetMapping
+    @GetMapping("active")
     public ResponseEntity<?> getActiveProducts() {
-        return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getActiveProduct(), HttpStatus.OK);
+        return  ResponseEntity.ok().body(productServiceImpl.getActiveProduct());
     }
 
-
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER')")
-    @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/active")
+    @GetMapping
     public ResponseEntity<?> getAllProducts() {
-        return new ResponseEntity<List<ProductResponseDTO>>(productServiceImpl.getAllProduct(), HttpStatus.OK);
+        return ResponseEntity.ok().body(productServiceImpl.getAllProduct());
     }
 
-    @PostMapping("/product_in_category")
-    public ResponseEntity<?> getProductByCategory(@RequestBody CategoryRequestDTO category) {
-        return ResponseEntity.ok().body(productServiceImpl.getProductByCategory(category.getName()));
-    }
 
     @Operation(summary = "Xoá sản phẩm",
             description = "Xoá sản phẩm",
@@ -142,15 +113,7 @@ public class ProductController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     public Object deleteProduct(@PathVariable("productId") Long productId) {
-        ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            productServiceImpl.deleteProduct(productId);
-            responseDTO.setData("Xoá thành công");
-            responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
-            return ResponseEntity.ok().body(responseDTO);
-        } catch (DataIntegrityViolationException ex) {
-            throw new CustomResponseException(StatusResponseDTO.PRODUCT_VIOLATION_EXCEPTION);
-        }
+        return ResponseEntity.ok().body(productServiceImpl.deleteProduct(productId));
     }
 
     @Operation(summary = "Cập nhật sản phẩm ",
@@ -185,21 +148,12 @@ public class ProductController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @PutMapping("/{productId}/{status}")
+    @PutMapping("/status/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@PathVariable Long productId, @PathVariable String status ) {
+    public ResponseEntity<?> updateStatus(@PathVariable Long productId,@RequestBody Boolean cate_status ) {
         // note : not using operator "=="
-        ResponseDTO responseDTO = new ResponseDTO();
-        try {
-            productServiceImpl.updateStatus(productId, status);
-            responseDTO.setData("Cập nhật trang thái thành công !");
-            responseDTO.setSuccessCode(SuccessCode.UPDATE_PRODUCT_SUCCESS);
-            return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
-        } catch (CustomResponseException ex ) {
-            responseDTO.setData(ex.getReason());
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
+        return ResponseEntity.ok().body(productServiceImpl.updateStatus(productId, cate_status));
     }
 
 }

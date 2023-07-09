@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,17 +21,12 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/cart")
-@SecurityRequirement(name = "bearerAuth")
+//@SecurityRequirement(name = "bearerAuth")
 public class CartController {
-    private CartServiceImpl cartService;
-    private UserServiceImpl userService;
-
-    @Autowired
-    public CartController(CartServiceImpl cartService, UserServiceImpl userService) {
-        this.cartService = cartService;
-        this.userService = userService;
-    }
+    private final CartServiceImpl cartService;
+    private final UserServiceImpl userService;
 
 
     @Operation(summary = "Thêm vào giỏ",

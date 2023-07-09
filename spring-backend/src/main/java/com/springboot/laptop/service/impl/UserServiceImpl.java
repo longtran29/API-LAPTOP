@@ -1,11 +1,13 @@
 package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.CustomResponseException;
-import com.springboot.laptop.exception.UserPasswordException;
+import com.springboot.laptop.mapper.UserMapper;
 import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.ResetTokenEntity;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.UserRoleEntity;
+import com.springboot.laptop.model.dto.AddressDTO;
+import com.springboot.laptop.model.dto.UserDTO;
 import com.springboot.laptop.model.dto.request.*;
 import com.springboot.laptop.model.dto.response.*;
 import com.springboot.laptop.model.enums.UserRoleEnum;
@@ -20,10 +22,11 @@ import com.springboot.laptop.utils.JwtUtility;
 import com.springboot.laptop.utils.ResetPasswordUtils;
 import com.springboot.laptop.utils.UidUtils;
 import freemarker.template.Configuration;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -36,6 +39,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +49,7 @@ import java.util.*;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     public static final String F_DDMMYYYYHHMM = "dd/MM/yyyy HH:mm";
@@ -61,26 +66,15 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtility jwtUtility;
+
+    private final UserMapper userMapper;
     @Value("${spring.mail.username}")
     private String emailown;
-    @Autowired
-    private Configuration configuration;
-    @Autowired
-    private JavaMailSender mailSender;
-    @Autowired
-    public UserServiceImpl(Configuration configuration, UserRepository userRepository, PasswordEncoder passwordEncoder, UserRoleServiceImpl userRoleServiceImpl, ResetTokenRepository resetTokenRepository, MailService mailService, AuthenticationManager authenticationManager, UserDetailServiceImpl userDetailService, JwtUtility jwtUtility) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userRoleServiceImpl = userRoleServiceImpl;
-        this.resetTokenRepository = resetTokenRepository;
-        this.mailService = mailService;
-        this.configuration = configuration;
-        this.authenticationManager = authenticationManager;
 
-        this.userDetailService = userDetailService;
-        this.jwtUtility = jwtUtility;
+    private final Configuration configuration;
 
-    }
+    private final JavaMailSender mailSender;
+
 
     public static String toStr(Date date, String format) {
         return date != null ? DateFormatUtils.format(date, format) : "";
@@ -96,22 +90,24 @@ public class UserServiceImpl implements UserService {
         return model;
     }
 
+
+    @Override
     public Object authenticateUser(JwtRequest jwtRequest) {
-        ResponseDTO responseDTO = new ResponseDTO();
+       Map<String, Object> responseDTO = new HashMap<String, Object>();
+       if(!StringUtils.hasText(jwtRequest.getUsername()) || !StringUtils.hasText(jwtRequest.getPassword()))
+           throw new CustomResponseException(StatusResponseDTO.INFORMATION_IS_MISSING);
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             jwtRequest.getUsername(),
-
                             jwtRequest.getPassword()
                     )
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
             final UserDetails userDetails
                     = userDetailService.loadUserByUsername(jwtRequest.getUsername());
 
-            UserEntity loggedUser = this.findUserByUserName(userDetails.getUsername());
+            UserEntity loggedUser = findUserByUserName(userDetails.getUsername());
 
             if (!loggedUser.getEnabled()) throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
 
@@ -125,30 +121,30 @@ public class UserServiceImpl implements UserService {
             } else {
                 jwtResponse.setRole("ADMIN");
             }
-            responseDTO.setSuccessCode(SuccessCode.LOGIN_SUCCESS);
-            responseDTO.setData(jwtResponse);
+            responseDTO.put("loginInformation",jwtResponse );
             return responseDTO;
-        } catch (CustomResponseException ex) {
-            throw new CustomResponseException(StatusResponseDTO.ACCOUNT_BEEN_INACTIVATED);
-        } catch (BadCredentialsException e) {
+        }  catch (BadCredentialsException e) {
             throw new CustomResponseException(StatusResponseDTO.FAIL_AUTHENTICATION);
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tim thấy tài khoản nhé" , e);
         }
 
     }
 
     @Override
-    public UserEntity register(AppClientSignUpDTO user) throws Exception {
+    public UserDTO register(AppClientSignUpDTO user) throws Exception {
+        if (userRepository.existsByUsername(user.getUsername()))
+            throw new CustomResponseException(StatusResponseDTO.USERNAME_IN_USE);
+
+        if (userRepository.existsByEmail(user.getEmail()))
+            throw new CustomResponseException(StatusResponseDTO.EMAIL_IN_USE);
+
+        UserRoleEntity userRole = userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
+        if (!user.getPassword().equals(user.getRePassword()))
+            throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
+        UserEntity appClient = UserEntity.builder().roles(List.of(userRole)).username(user.getUsername()).email(user.getEmail()).password(passwordEncoder.encode(user.getPassword())).enabled(true).build();
+
         try {
-            UserRoleEntity userRole = this.userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
-            if (!user.getPassword().equals(user.getRePassword()))
-                throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
-            UserEntity appClient = new UserEntity();
-            appClient.setRoles(List.of(userRole));
-            appClient.setUsername(user.getUsername());
-            appClient.setEmail(user.getEmail());
-            appClient.setPassword(this.passwordEncoder.encode(user.getPassword()));
-            appClient.setEnabled(true);
-            return userRepository.save(appClient);
+            return userMapper.userToUserDTO(userRepository.save(appClient));
         } catch (Exception ex) {
             throw ex;
         }
@@ -168,91 +164,76 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Object deleteCustomer(Long customerId) {
-        UserEntity existingUser;
-        existingUser = userRepository.findById(customerId).get();
-        userRepository.delete(existingUser);
-        return "Xoá thành công";
+        UserEntity existingUser = userRepository.findById(customerId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        try {
+            userRepository.delete(existingUser);
+            return "Xoá thành công";
+        } catch (Exception ex) {
+            throw ex;
+        }
+
     }
 
     @Override
-    public void updateStatus(Long customerId, String status) {
+    public UserEntity updateStatus(Long customerId, String status) {
         Boolean updateStatus = status.equalsIgnoreCase("enabled");
-        UserEntity existingUser;
-        if (userRepository.findById(customerId).isPresent()) {
-            existingUser = userRepository.findById(customerId).get();
-            userRepository.updateStatus(customerId, updateStatus);
-
-        } else throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+        userRepository.findById(customerId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));;
+        return userRepository.updateStatus(customerId, updateStatus);
 
     }
 
     // use modelMapper instead - update later
     @Override
-    public UserEntity updateInformation(UserRequestDTO userRequest) throws Exception {
+    public UserEntity updateInformation(UserDTO userRequest) throws Exception {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
-        try {
-            if (!userRequest.getName().isEmpty() && !Objects.isNull(userRequest.getName())) {
-                user.setName(userRequest.getName());
-            }
-            if (!userRequest.getPhoneNumber().isEmpty() && !Objects.isNull(userRequest.getPhoneNumber())) {
+        if (!userRequest.getName().isEmpty() && !Objects.isNull(userRequest.getName())) {
+            user.setName(userRequest.getName());
+        }
+        if (!userRequest.getPhoneNumber().isEmpty() && !Objects.isNull(userRequest.getPhoneNumber())) {
 
-                user.setPhoneNumber(userRequest.getPhoneNumber());
-            }
-            if (!userRequest.getImgURL().isEmpty() && !Objects.isNull(userRequest.getImgURL())) {
-                user.setImgURL(userRequest.getImgURL());
-            }
+            user.setPhoneNumber(userRequest.getPhoneNumber());
+        }
+        if (!userRequest.getImgURL().isEmpty() && !Objects.isNull(userRequest.getImgURL())) {
+            user.setImgURL(userRequest.getImgURL());
+        }
+        try {
             return userRepository.save(user);
         } catch (Exception ex) {
-            throw new Exception(ex);
+            throw ex;
         }
     }
 
-    public UserEntity addNewAddress(AddressRequestDTO requestAddress) {
+    @Override
+    public UserEntity addNewAddress(AddressDTO requestDTO) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsername(username).get();
 
         List<Address> userAddress = user.getAddresses();
-        Address newAddress = new Address();
-        newAddress.setAddress(requestAddress.getAddress());
-        newAddress.setCity(requestAddress.getCity());
-        newAddress.setCountry(requestAddress.getCountry());
-        newAddress.setZipcode(requestAddress.getZipcode());
-        newAddress.setPhoneNumber(requestAddress.getPhoneNumber());
-        newAddress.setUser(user);
+        Address newAddress = Address.builder().address(requestDTO.getAddress()).city(requestDTO.getCity()).country(requestDTO.getCountry()).zipcode(requestDTO.getZipcode()).phoneNumber(requestDTO.getPhoneNumber()).user(user).build();
         userAddress.add(newAddress);
-
         return userRepository.save(user);
     }
 
     @Override
     public UserEntity findUserByUserName(String username) {
-        UserEntity user = this.userRepository.findByUsername(username).get();
-        return user;
+        return userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+
     }
 
     @Override
     public Object sendVerificationEmail(String email) throws IOException {
 
-        System.out.println("Go into send mail ");
-
         if (!StringUtils.hasText(email)) {
             // call StatusResponseDTO.EMAIL_NOT_BLANK -> return ("404", "Không tìm thấy dữ liệu") gồm code 404 và message
-            throw new CustomResponseException(StatusResponseDTO.EMAIL_NOT_BLANK);
-        }
+            throw new CustomResponseException(StatusResponseDTO.EMAIL_NOT_BLANK);        }
 
-        UserEntity existingUser;
-        if (userRepository.findByEmail(email).isPresent()) {
-            existingUser = userRepository.findByEmail(email).get();
-        } else {
-            throw new CustomResponseException(StatusResponseDTO.ERROR_NOT_FOUND);
-        }
+        UserEntity existingUser = userRepository.findByEmail(email).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));;
         String token = UidUtils.generateRandomString(9);
 
         ResetTokenEntity resetToken = ResetTokenEntity.builder().token(token).userId(existingUser).active(true).createdDate(new Date()).build();
 
         resetTokenRepository.save(resetToken);
-
 
         freemarker.template.Template template = configuration.getTemplate(RESET_PASSWORD_TEMPLATE_NAME);
 
@@ -272,19 +253,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity newPassword(NewPasswordRequest newPasswordRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity userExist = userRepository.findByUsername(username).get();
+        UserEntity userExist = userExist = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
         if (StringUtils.hasText(newPasswordRequest.getNewPassword()) && StringUtils.hasText(newPasswordRequest.getRetypeNewPassword())) {
             if (newPasswordRequest.getNewPassword().equals(newPasswordRequest.getRetypeNewPassword())) {
                 userExist.setPassword(passwordEncoder.encode(newPasswordRequest.getNewPassword()));
                 userRepository.save(userExist);
-                System.out.println("Đổi thành công thành công");
                 return userExist;
             } else {
-                throw new UserPasswordException("Hai mật khẩu không trùng nhau");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hai mật khẩu không trùng nhau");
             }
         } else {
-            throw new UserPasswordException("Không được để trống");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu không được để trống");
         }
     }
 
@@ -293,11 +273,9 @@ public class UserServiceImpl implements UserService {
     public Object logoutUser(HttpServletRequest request, HttpServletResponse response) {
         if (StringUtils.hasText(request.getHeader("Authorization")) && request.getHeader("Authorization").startsWith("Bearer ")) {
             String token = request.getHeader("Authorization").substring(7);
-
-            System.out.println("token = " + token);
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null) {
-                System.out.println("Da vao trong nay " + auth);
+
                 new SecurityContextLogoutHandler().logout(request, response, null);
             }
             return "Logout thành công";
@@ -309,13 +287,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public Object getUserInformation() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user;
-        if (!userRepository.findByUsername(username).isPresent())
-            throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
-        else user = userRepository.findByUsername(username).get();
-
-        List<Address> addresses = user.getAddresses();
-        return UserInformationDTO.builder().addresses(addresses).username(user.getUsername()).email(user.getEmail()).imgURL(user.getImgURL()).phoneNumber(user.getPhoneNumber()).name(user.getName()).build();
+        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        return userMapper.userToUserDTO(user);
     }
 
     @Override
@@ -332,7 +305,7 @@ public class UserServiceImpl implements UserService {
             resetTokenRepository.save(resetToken);
             return existingUser;
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            throw ex;
         }
     }
 }

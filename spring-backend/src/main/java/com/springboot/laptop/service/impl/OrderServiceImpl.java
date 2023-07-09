@@ -2,7 +2,12 @@ package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.exception.OrderStatusException;
+import com.springboot.laptop.mapper.AddressMapper;
+import com.springboot.laptop.mapper.OrderDetailsMapper;
 import com.springboot.laptop.model.*;
+import com.springboot.laptop.model.dto.OrderDetailsDTO;
+import com.springboot.laptop.model.dto.ProductDTO;
+import com.springboot.laptop.model.dto.UserDTO;
 import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
 import com.springboot.laptop.model.dto.request.OrderInfoMail;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
@@ -17,6 +22,7 @@ import com.springboot.laptop.service.MailService;
 import com.springboot.laptop.service.OrderService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,6 +33,7 @@ import java.util.*;
 
 
 @Service
+@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final UserRepository userRepository;
@@ -35,20 +42,15 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
 
+    private final AddressMapper addressMapper;
+
     private final String ORDER_INFO_TEMPLATE_NAME =  "order_info.ftl";
     private static final String FROM = "BAMBOO STORE<%s>";
     private static final String SUBJECT = "Xác nhận đơn hàng ";
 
-    @Autowired private Configuration configuration;
-    @Autowired private MailService mailService;
-    @Autowired
-    public OrderServiceImpl(UserRepository userRepository, AddressRepository addressRepository, OrderRepository orderRepository, CartRepository cartRepository) {
-        this.userRepository = userRepository;
-        this.addressRepository = addressRepository;
-        this.orderRepository = orderRepository;
-        this.cartRepository = cartRepository;
-
-    }
+    private final  Configuration configuration;
+    private final MailService mailService;
+    private final OrderDetailsMapper orderDetailsMapper;
 
 
     @Override
@@ -58,11 +60,11 @@ public class OrderServiceImpl implements OrderService {
 
         for(Order order : orders) {
             List<OrderDetails> orderDetails = order.getOrderDetails();
-            List<OrderDetailResponseDTO> orderDetailResponseDTOS = new ArrayList<>();
+            List<OrderDetailsDTO> orderDetailResponseDTOS = new ArrayList<>();
             for(OrderDetails orderDetails1 : orderDetails) {
-                orderDetailResponseDTOS.add(OrderDetailResponseDTO.builder().product(ProductResponseDTO.builder().primaryImage(orderDetails1.getProduct().getPrimaryImage()).name(orderDetails1.getProduct().getName()).build()).total(orderDetails1.getTotal()).quantity(orderDetails1.getQuantity()).build());
+                orderDetailResponseDTOS.add(orderDetailsMapper.orderDetailToDTO(orderDetails1));
             }
-            userOrders.add(OrderResponseDTO.builder().user(UserResponseDTO.builder().email(order.getUser().getEmail()).username(order.getUser().getUsername()).name(order.getUser().getName()).build()).orderDate(order.getOrderDate()).id(order.getId()).orderDetails(orderDetailResponseDTOS).total(order.getTotal()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).build());
+            userOrders.add(OrderResponseDTO.builder().user(UserDTO.builder().email(order.getUser().getEmail()).username(order.getUser().getUsername()).name(order.getUser().getName()).build()).orderDate(order.getOrderDate()).id(order.getId()).orderDetails(orderDetailResponseDTOS).total(order.getTotal()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).build());
         }
 
         return userOrders;
@@ -73,20 +75,19 @@ public class OrderServiceImpl implements OrderService {
     public Object getOrderDetails(Long orderId) {
         Order order = this.findById(orderId);
 
-        List<OrderDetailResponseDTO> orderDetails = new ArrayList<>();
+        List<OrderDetailsDTO> orderDetails = new ArrayList<>();
         for (OrderDetails orderDetail : order.getOrderDetails()) {
-            orderDetails.add(OrderDetailResponseDTO.builder().product(ProductResponseDTO.builder().id(orderDetail.getProduct().getId()).primaryImage(orderDetail.getProduct().getPrimaryImage()).name(orderDetail.getProduct().getName()).build()).quantity(orderDetail.getQuantity()).total(orderDetail.getTotal()).build());
+            orderDetails.add(orderDetailsMapper.orderDetailToDTO(orderDetail));
         }
 
-        OrderResponseDTO orderResponse = OrderResponseDTO.builder().id(orderId).user(UserResponseDTO.builder().username(order.getUser().getUsername()).email(order.getUser().getEmail()).build()).orderDate(order.getOrderDate()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).total(order.getTotal()).address(AddressResponseDTO.builder().address(order.getAddress().getAddress()).city(order.getAddress().getCity()).phoneNumber(order.getAddress().getPhoneNumber()).build()).orderDetails(orderDetails).build();
+        OrderResponseDTO orderResponse = OrderResponseDTO.builder().id(orderId).user(UserDTO.builder().username(order.getUser().getUsername()).email(order.getUser().getEmail()).build()).orderDate(order.getOrderDate()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).total(order.getTotal()).address(addressMapper.addressToDTO(order.getAddress())).build();
         return orderResponse;
     }
 
 
     @Override
     public Order cancelOrders(Long orderId) {
-        Order order = orderRepository.findById(orderId).get();
-        if(order == null) throw new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND);
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND));
         if(order.getOrderStatus().equals(OrderStatus.SHIPPED)) {
             throw new CustomResponseException(StatusResponseDTO.ORDER_CANCEL_VIOLATION);
         }
@@ -102,15 +103,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order changeStatus(ChangeStatusDTO changeStatusDTO) {
         OrderStatus status = OrderStatus.getStatus(changeStatusDTO.getStatusName());
+        Order order = orderRepository.findById(changeStatusDTO.getOrderId()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND));
+        order.setOrderStatus(status);
 
-        if(!orderRepository.findById(changeStatusDTO.getOrderId()).isPresent()) {
-            throw new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND);
-        } else {
-            Order order = orderRepository.findById(changeStatusDTO.getOrderId()).get();
-            order.setOrderStatus(status);
-
-            return orderRepository.save(order);
-        }
+        return orderRepository.save(order);
 
     }
 
@@ -118,15 +114,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponseDTO> getUserOrders() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).get();
+        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
         List<Order> userOrder = user.getOrders();
         List<OrderResponseDTO> userOrders = new ArrayList<>();
         for(Order order : userOrder) {
             List<OrderDetails> orderDetails = order.getOrderDetails();
-            List<OrderDetailResponseDTO> orderDetailResponseDTOS = new ArrayList<>();
+            List<OrderDetailsDTO> orderDetailResponseDTOS = new ArrayList<>();
             for(OrderDetails orderDetails1 : orderDetails) {
-                orderDetailResponseDTOS.add(OrderDetailResponseDTO.builder().product(ProductResponseDTO.builder().primaryImage(orderDetails1.getProduct().getPrimaryImage()).name(orderDetails1.getProduct().getName()).build()).total(orderDetails1.getTotal()).quantity(orderDetails1.getQuantity()).build());
+                orderDetailResponseDTOS.add(orderDetailsMapper.orderDetailToDTO(orderDetails1));
             }
             userOrders.add(OrderResponseDTO.builder().orderDate(order.getOrderDate()).id(order.getId()).orderDetails(orderDetailResponseDTOS).total(order.getTotal()).status(order.getOrderStatus().name()).statusName(order.getOrderStatus().getName()).build());
         }
@@ -136,11 +132,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order findById(Long orderId) {
-        if(!orderRepository.findById(orderId).isPresent()) {
-            throw new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND);
-        } else {
-            return orderRepository.findById(orderId).get();
-        }
+        orderRepository.findById(orderId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND));
+        return orderRepository.findById(orderId).get();
     }
 
     @Override
@@ -179,14 +172,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order checkout(OrderRequestDTO orderRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).get();
+        UserEntity user = userRepository.findByUsername(username).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         UserCart userCart = user.getCart();
         if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_EXIST);
         List<CartDetails> cartDetailList = userCart.getCartDetails();
         Address userAddress;
-        if(addressRepository.findById(orderRequest.getAddressId()).isEmpty()) {
-            throw new CustomResponseException(StatusResponseDTO.ADDRESS_NOT_FOUND);
-        }
+        addressRepository.findById(orderRequest.getAddressId()).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.ADDRESS_NOT_FOUND));
         userAddress = addressRepository.findById(orderRequest.getAddressId()).get();
 
         Order order = new Order();

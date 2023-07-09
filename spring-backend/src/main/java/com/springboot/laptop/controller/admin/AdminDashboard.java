@@ -1,8 +1,6 @@
 package com.springboot.laptop.controller.admin;
 
 
-import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
-import com.springboot.laptop.model.dto.response.ResponseDTO;
 import com.springboot.laptop.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

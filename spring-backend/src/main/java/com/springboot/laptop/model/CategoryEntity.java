@@ -16,7 +16,11 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CategoryEntity extends BaseEntity {
+public class CategoryEntity  {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, name = "category_name")
     private String name;
@@ -24,15 +28,27 @@ public class CategoryEntity extends BaseEntity {
     @Column(name="enabled")
     private Boolean enabled;
 
+    private String imageUrl;
+
 
 //    resolve error jackson - arraylist, collection
     @JsonManagedReference(value = "category-products")
-    @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<ProductEntity> products;
 
-    public CategoryEntity(String name, Boolean enabled) {
-        this.name = name;
-        this.enabled = enabled;
-    }
+
+
+//    @ManyToMany(cascade = {CascadeType.MERGE})
+//    @JoinTable(
+//            name="categories_brands",
+//            joinColumns = @JoinColumn(name="category_id", referencedColumnName = "id"),
+//            inverseJoinColumns = @JoinColumn(name="brand_id", referencedColumnName = "id"),
+//
+//            uniqueConstraints={@UniqueConstraint(columnNames={"category_id", "brand_id"})}
+//    )
+    @JsonIgnoreProperties("categories")
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+    private Collection<BrandEntity> brands;
+
+
 }

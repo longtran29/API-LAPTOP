@@ -4,6 +4,7 @@ import com.springboot.laptop.model.dto.request.ChangeStatusDTO;
 import com.springboot.laptop.model.dto.request.OrderRequestDTO;
 import com.springboot.laptop.model.dto.request.PaymentRequestDTo;
 import com.springboot.laptop.model.dto.response.*;
+import com.springboot.laptop.service.OrderService;
 import com.springboot.laptop.service.impl.OrderServiceImpl;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -11,6 +12,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.param.PaymentIntentCreateParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/orders")
 @SecurityRequirement(name = "bearerAuth")
 public class OrderController {
@@ -28,13 +31,7 @@ public class OrderController {
     @Autowired
     private JavaMailSender mailSender;
 
-    private final OrderServiceImpl orderService;
-
-    @Autowired
-    public OrderController(OrderServiceImpl orderService) {
-        this.orderService = orderService;
-    }
-
+    private final OrderService orderService;
 
     @Operation(summary = "API thanh toán")
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
@@ -55,9 +52,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/admin/change_status")
     public ResponseEntity<?> changeStatusOrderAdmin(@RequestBody ChangeStatusDTO changeStatusDTO) {
-        ResponseDTO responseDTO = new ResponseDTO();
-        responseDTO.setData(orderService.changeStatus(changeStatusDTO));
-        return ResponseEntity.ok().body(responseDTO);
+        return ResponseEntity.ok().body(orderService.changeStatus(changeStatusDTO));
     }
 
 
@@ -101,15 +96,6 @@ public class OrderController {
         String public_key = "pk_test_51NEH4zD418vZNZvg2Si23JwSsO7EdrNjIh9JkIfOimNQ4hwn4nhbXuKFLaq8nOjmBns1eWGy7QW3Nnu8iATt7WET000nvU6aAz";
         String private_key = "sk_test_51NEH4zD418vZNZvgwa8aLlDUWPGw4Uvfpu9WMeDlFCGGxxwKepdDUzwtB3oQA6J6bJwpRr5C5PFdGaBsg8Ky7XWF00h8byWwVM";
         Stripe.apiKey = private_key ;
-
-//        List<CartResponseDTO> cartList= paymentRequest.getItems();
-//        float totalPrice = 0;
-//
-//        for (CartResponseDTO cart: cartList
-//             ) {
-//
-//            totalPrice += (cart.getProduct().getOriginal_price()  - (cart.getProduct().getOriginal_price() * cart.getProduct().getDiscount_percent()))* cart.getQuantity();
-//        }
 
         PaymentIntentCreateParams createParams = new
                 PaymentIntentCreateParams.Builder()
