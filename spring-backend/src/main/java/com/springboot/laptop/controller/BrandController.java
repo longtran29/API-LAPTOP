@@ -1,20 +1,18 @@
 package com.springboot.laptop.controller;
 
 
-import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.request.BrandRequestDTO;
-import com.springboot.laptop.model.dto.response.ErrorCode;
-import com.springboot.laptop.model.dto.response.ResponseDTO;
-import com.springboot.laptop.model.dto.response.SuccessCode;
 import com.springboot.laptop.repository.CategoryRepository;
+import com.springboot.laptop.service.BrandService;
 import com.springboot.laptop.service.impl.BrandServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,16 +22,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/brands")
 public class BrandController {
 
-    private final BrandServiceImpl brandServiceImpl;
-    private final CategoryRepository categoryRepository;
-    @Autowired
-    public BrandController(BrandServiceImpl brandServiceImpl, CategoryRepository categoryRepository) {
-        this.brandServiceImpl = brandServiceImpl;
-        this.categoryRepository = categoryRepository;
-    }
+    private final BrandService brandServiceImpl;
 
 
     @Operation(summary = "Các danh mục theo thương hiệu",
@@ -46,12 +39,9 @@ public class BrandController {
                     @ApiResponse(description = "Not Found", responseCode = "404", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @GetMapping("/{brandId}/categories")
+    @GetMapping("/categories/{brandId}")
     public ResponseEntity<?> getCategoriesByBrandId(@PathVariable Long brandId) {
-        ResponseDTO responseDTO = new ResponseDTO();
-        List<CategoryEntity> categories = brandServiceImpl.getAllCateFromBrand(brandId);
-        responseDTO.setData(categories);
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok().body(brandServiceImpl.getAllCateFromBrand(brandId));
     }
 
     @Operation(summary = "Lấy ra thương hiệu theo mã",
@@ -82,8 +72,7 @@ public class BrandController {
             })
     @GetMapping
     public ResponseEntity<?> getAllBrands() {
-        List<BrandEntity> listBrands = brandServiceImpl.getAll();
-        return new ResponseEntity<List<BrandEntity>>(brandServiceImpl.getAll(), HttpStatus.OK );
+        return ResponseEntity.ok().body(brandServiceImpl.getAll());
     }
 
     @Operation(summary = "Tạo thương hiệu mới",
@@ -121,8 +110,8 @@ public class BrandController {
     @DeleteMapping("/{brandId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public Object deleteBrand(@PathVariable Long brandId) {
-       return brandServiceImpl.deleteOne(brandId);
+    public ResponseEntity<?> deleteBrand(@PathVariable Long brandId) {
+        return ResponseEntity.ok().body(brandServiceImpl.deleteOne(brandId));
     }
 
     @Operation(summary = "Cập nhật thương hiệu",
@@ -141,17 +130,13 @@ public class BrandController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateBrand(@PathVariable Long brandId, @RequestBody BrandRequestDTO updateBrand ){
-        ResponseDTO responseDTO = new ResponseDTO();
-        BrandEntity updatedBrand;
-        try {
-            updatedBrand = brandServiceImpl.updateOne(brandId, updateBrand);
-            responseDTO.setData(updatedBrand);
-            responseDTO.setSuccessCode(SuccessCode.UPDATE_CATEGORY_SUCCESS);
-        } catch (CustomResponseException e) {
-            responseDTO.setErrorCode(ErrorCode.DUPLICATED_DATA);
-            return ResponseEntity.badRequest().body(responseDTO);
-        }
-        return new ResponseEntity<BrandEntity>(updatedBrand, HttpStatus.CREATED);
+        return ResponseEntity.ok().body(brandServiceImpl.updateOne(brandId, updateBrand));
     }
+
+    @GetMapping("/products/{brandId}")
+    public ResponseEntity<?> getProducts(@PathVariable Long brandId ){
+        return ResponseEntity.ok().body(brandServiceImpl.getProductsById(brandId));
+    }
+
 
 }

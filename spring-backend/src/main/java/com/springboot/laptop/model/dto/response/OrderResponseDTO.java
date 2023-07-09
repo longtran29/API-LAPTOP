@@ -3,6 +3,9 @@ package com.springboot.laptop.model.dto.response;
 import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.OrderDetails;
 import com.springboot.laptop.model.UserEntity;
+import com.springboot.laptop.model.dto.AddressDTO;
+import com.springboot.laptop.model.dto.OrderDetailsDTO;
+import com.springboot.laptop.model.dto.UserDTO;
 import com.springboot.laptop.model.enums.OrderStatus;
 import lombok.*;
 
@@ -20,9 +23,9 @@ public class OrderResponseDTO {
 
     private Long id;
 
-    private UserResponseDTO user;
+    private UserDTO user;
 
-    private List<OrderDetailResponseDTO> orderDetails;
+    private List<OrderDetailsDTO> orderDetails;
 
     private LocalDateTime orderDate;
 
@@ -33,7 +36,7 @@ public class OrderResponseDTO {
     private Object status;
     private Object statusName;
 
-    private AddressResponseDTO address;
+    private AddressDTO address;
 
 
 }

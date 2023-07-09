@@ -5,15 +5,17 @@ public enum StatusResponseDTO {
     ERROR_NOT_FOUND("404", "Không tìm thấy dữ liệu"),
     INTERNAL_SERVER("500", "Hệ thống đang bị gián đoạn! Xin vui lòng thử lại sau"),
 
+
+    CATEGORY_CONFLICT_BRAND("500", "Danh mục này đang được nhãn hàng kinh doanh"),
+    CATEGORY_CONFLICT_PRODUCTS("500", "Sản phẩm thuộc danh mục này đang được kinh doanh"),
     PASSWORD_NOT_MATCH("500", "Hai mật khẩu không trùng nhau"),
-    USERNAME_IN_USE("500", "Tên người dùng đã tồn tại !"),
+    USERNAME_IN_USE("409", "Tên người dùng đã tồn tại !"),
 
-    EMAIL_IN_USE("500", "Gmail đã được sử dụng !"),
+    EMAIL_IN_USE("409", "Gmail đã được sử dụng !"),
 
-    DUPLICATED_DATA ("500", "Dữ liệu đã bị trùng !"),
+    DUPLICATED_DATA ("409", "Dữ liệu đã bị trùng !"),
     ACCOUNT_BEEN_INACTIVATED("404", "Tài khoản của bạn đã bị khoá, vui lòng liên hệ admin"),
     DATA_EMPTY("500", "Vui lòng điền dữ liệu"),
-
     PRODUCT_OUT_STOCK("500", "Không đủ hàng trong kho. Vui lòng liên hệ quản trị viên để được hỗ trợ"),
     ROLE_NOT_FOUND("404", "Không tồn tại quyền này trên hệ thống"),
     ORDER_CANCEL_VIOLATION("500", "Đơn hàng đang được giao không thể huỷ"),
@@ -27,7 +29,7 @@ public enum StatusResponseDTO {
 
     VALUE_NOT_VALID("500", "Giá tri bạn nhập không hợp lệ"),
 
-    INFORMATION_IS_MISSING("500", "Vui lòng nhập đầy đủ dữ liệu"),
+    INFORMATION_IS_MISSING("500", "Bạn chưa nhập đủ thông tin !"),
     BRAND_CONSTRAINT_EXCEPTION("500", "Thương hiệu đang kinh doanh sản phẩm  "),
     CATEGORY_VIOLATION_EXCEPTION("500", "Danh mục có sản phẩm đang được kinh doanh"),
     FAIL_AUTHENTICATION("404", "Tên đăng nhập hoặc mật khẩu sai !"),
@@ -37,6 +39,11 @@ public enum StatusResponseDTO {
 
     CATEGORY_NOT_FOUND("404", "Không tìm thấy danh mục này"),
     USER_NOT_FOUND("404", "Không tìm thấy khách hàng này"),
+
+    TOKEN_NOT_VALID ("500", "Token không hợp lệ"),
+
+    IMAGE_NOT_FOUND("400", "Không tìm thấy ảnh"),
+
     BRAND_NOT_FOUND("404", "Không tìm thấy hãng sản xuất"),
     PRODUCT_NOT_FOUND("404", "Không tìm thấy sản phẩm"),
     ORDER_NOT_FOUND("404", "Không tìm thấy đơn hàng này"),
@@ -44,10 +51,8 @@ public enum StatusResponseDTO {
     PRODUCT_VIOLATION_EXCEPTION("500", "Sản phẩm trong đơn hàng ")
         ;
 
-
     private final String code;
     private final String message;
-
 
     StatusResponseDTO(String code, String message) {
         this.code = code;

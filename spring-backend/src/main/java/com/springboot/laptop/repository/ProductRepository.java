@@ -12,7 +12,7 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     @Query("UPDATE ProductEntity p SET p.enabled=?2 WHERE p.id = ?1")
-    @Modifying
+    @Modifying(clearAutomatically=true)
     public void updateStatus(Long id, Boolean enabled);
 
 
@@ -23,14 +23,11 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query(value = "SELECT * FROM products p WHERE p.name LIKE %:name%", nativeQuery = true)
     List<ProductEntity> getProductByName(String name);
 
-//    @Query(value = "SELECT p.id, p.name, COUNT(*) FROM OrderDetails od INNER JOIN products p ON od.product_id = p.id GROUP BY product_id HAVING COUNT(*) > 3", nativeQuery = true)
-//    List<ProductEntity> findBestSellerProducts();
-
     @Query(value = "SELECT p.* FROM OrderDetails od INNER JOIN products p ON od.product_id = p.id AND enabled = 1  GROUP BY product_id HAVING COUNT(*) > 3 LIMIT 4", nativeQuery = true)
     List<ProductEntity> findBestSellerProducts();
 
 
-    @Query(value = "select * from products where enabled = 1;", nativeQuery = true)
+    @Query(value = "select * from products where enabled = true;", nativeQuery = true)
     List<ProductEntity> getActiveProducts();
 
 

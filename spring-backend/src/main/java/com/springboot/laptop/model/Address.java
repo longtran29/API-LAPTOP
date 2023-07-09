@@ -3,10 +3,7 @@ package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -18,9 +15,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Address extends BaseEntity {
 
-    @JsonBackReference
+//    @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     private UserEntity user;
 

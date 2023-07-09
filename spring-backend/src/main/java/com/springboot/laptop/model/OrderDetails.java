@@ -17,13 +17,13 @@ import javax.persistence.ManyToOne;
 public class OrderDetails extends  BaseEntity {
 
 
-    @JsonBackReference
+//    @JsonBackReference
     @ManyToOne
     @JoinColumn(name="order_id", referencedColumnName = "id")
     private Order order;
 
 
-    @JsonBackReference
+//    @JsonBackReference
     @ManyToOne
     @JoinColumn(name="product_id", referencedColumnName = "id")
     private ProductEntity product;

@@ -22,8 +22,7 @@ import java.util.List;
 // named the table to  prevent the reversed keyword "order ...by" when querying
 @Table(name="orders")
 public class Order extends  BaseEntity{
-//    @JsonIgnoreProperties("order_user")
-    @JsonBackReference
+//    @JsonBackReference
     @ManyToOne
     @JoinColumn(name= "user_id", referencedColumnName = "id")
     private UserEntity user;

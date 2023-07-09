@@ -3,7 +3,6 @@ package com.springboot.laptop.controller.admin;
 
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.UserEntity;
-import com.springboot.laptop.model.dto.response.ResponseDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -43,26 +42,12 @@ public class UserManagementController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{customerId}/{status}")
     public ResponseEntity<?> updateStatusUser(@PathVariable Long customerId, @PathVariable String status) {
-        ResponseDTO response = new ResponseDTO();
-        try {
-            userService.updateStatus(customerId, status);
-            return ResponseEntity.ok().body("Cập nhật thành công");
-
-        } catch (CustomResponseException ex) {
-            response.setData(ex.getReason());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+        return ResponseEntity.ok().body(userService.updateStatus(customerId, status));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{customerId}")
     public Object deleteUser(@PathVariable Long customerId) throws Exception {
-       try {
-           ResponseDTO response = new ResponseDTO();
-           return userService.deleteCustomer(customerId);
-       } catch (DataIntegrityViolationException ex) {
-           throw new CustomResponseException(StatusResponseDTO.CUSTOMER_VIOLATION_EXCEPTION);
-       }
-
+        return userService.deleteCustomer(customerId);
     }
 }
