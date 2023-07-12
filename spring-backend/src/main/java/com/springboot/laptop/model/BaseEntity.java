@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @MappedSuperclass
 //@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
@@ -18,7 +19,15 @@ public class BaseEntity {
     }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    protected Long id;
+
+    @Column(nullable = true)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdTimestamp;
+
+    @Column(nullable = true)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date modifiedTimestamp;
 
     public Long getId() {
         return id;

@@ -59,8 +59,7 @@ public class BrandServiceImpl implements BrandService {
             CategoryEntity setCategory = categoryRepository.findById(i).get();
             brand.getCategories().add(setCategory);
         }
-        brand.setCreationDate(new Date());
-        brand.setModifiedDate(new Date());
+        brand.setCreatedTimestamp(new Date());
         brandRepository.save(brand);
         return brandRepository.findAll();
     }
@@ -95,7 +94,7 @@ public class BrandServiceImpl implements BrandService {
         }
         brand.setCategories(listCate);
         brand.setName(updateBrand.getBrandName());
-        brand.setModifiedDate(new Date());
+        brand.setModifiedTimestamp(new Date());
         brandRepository.saveAndFlush(brand);
         return brandRepository.findAll();
     }

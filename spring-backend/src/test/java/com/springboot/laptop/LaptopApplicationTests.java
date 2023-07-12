@@ -60,8 +60,8 @@ class LaptopApplicationTests {
 	@Test
 	public void addNewRole() {
 		UserRoleEntity userRole = new UserRoleEntity();
-		userRole.setName(UserRoleEnum.ROLE_ADMIN.name());
-		userRole.setDescription("Quản trị viên");
+		userRole.setName(UserRoleEnum.ROLE_USER);
+		userRole.setDescription("Khach hang");
 		userRoleRepository.save(userRole);
 	}
 
@@ -92,8 +92,8 @@ class LaptopApplicationTests {
 	public void addNewUser() {
 		UserEntity appClient = new UserEntity();
 		List<UserRoleEntity> listRoles = new ArrayList<>();
-		if (userRoleRepository.findByName("ROLE_ADMIN").isPresent()) {
-			UserRoleEntity role = userRoleRepository.findByName("ROLE_ADMIN").get();
+		if (userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).isPresent()) {
+			UserRoleEntity role = userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).get();
 			listRoles.add(role);
 		}
 		appClient.setRoles(listRoles);
@@ -103,6 +103,31 @@ class LaptopApplicationTests {
 		appClient.setPassword(passwordEncoder.encode("123456"));
 		userRepository.save(appClient);
 	}
+
+
+	@Test
+	public void addNewUser3() {
+		UserEntity appClient = new UserEntity();
+		List<UserRoleEntity> listRoles = new ArrayList<>();
+		if (userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).isPresent()) {
+			UserRoleEntity role = userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).get();
+			listRoles.add(role);
+		}
+		appClient.setRoles(listRoles);
+		appClient.setUsername("long2");
+		appClient.setEmail("long2003@gmail.com");
+		appClient.setEnabled(true);
+		appClient.setPassword(passwordEncoder.encode("123456"));
+		userRepository.save(appClient);
+	}
+
+//	@Test
+//	public void whenNullName_thenOneConstraintViolation() {
+//		UserEntity user = new UserEntity(null);
+//		Set<ConstraintViolation<UserNotNull>> violations = validator.validate(user);
+//
+//		assertThat(violations.size()).isEqualTo(1);
+//	}
 
 	@Test
 	public void getPendingOrders() {

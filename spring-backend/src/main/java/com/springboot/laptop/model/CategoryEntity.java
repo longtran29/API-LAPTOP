@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.util.Collection;
 
 @Entity
@@ -15,37 +16,24 @@ import java.util.Collection;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class CategoryEntity  {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+//@Builder
+public class CategoryEntity extends  BaseEntity  {
 
     @Column(nullable = false, name = "category_name")
+    @NotEmpty(message = "Category name must be not empty")
     private String name;
 
     @Column(name="enabled")
     private Boolean enabled;
 
+    @NotEmpty(message = "Image must be not empty")
     private String imageUrl;
-
 
 //    resolve error jackson - arraylist, collection
     @JsonManagedReference(value = "category-products")
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<ProductEntity> products;
 
-
-
-//    @ManyToMany(cascade = {CascadeType.MERGE})
-//    @JoinTable(
-//            name="categories_brands",
-//            joinColumns = @JoinColumn(name="category_id", referencedColumnName = "id"),
-//            inverseJoinColumns = @JoinColumn(name="brand_id", referencedColumnName = "id"),
-//
-//            uniqueConstraints={@UniqueConstraint(columnNames={"category_id", "brand_id"})}
-//    )
     @JsonIgnoreProperties("categories")
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
     private Collection<BrandEntity> brands;

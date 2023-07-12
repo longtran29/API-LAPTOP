@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Min;
 
 @Entity
 @Data
@@ -28,7 +29,9 @@ public class OrderDetails extends  BaseEntity {
     @JoinColumn(name="product_id", referencedColumnName = "id")
     private ProductEntity product;
 
+    @Min(1)
     private Long quantity;
+
     private float total;
 
 }

@@ -10,7 +10,7 @@ public class CategoryRequestDTO {
 
     private String name;
 
-    private Boolean enabled;
+    private Boolean enabled = true;
 
     private String imageUrl;
 }

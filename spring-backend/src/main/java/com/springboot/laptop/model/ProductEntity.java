@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.util.Date;
 
 @Entity
@@ -13,19 +14,18 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductEntity  {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class ProductEntity extends  BaseEntity  {
 
-
+    @NotEmpty(message = "Product name must be not empty")
     private String name;
 
-
+    @NotEmpty(message = "You must upload image")
     private String primaryImage;
 
     private boolean enabled;
+
     private Float original_price;
+
     private Float discount_percent;
 
     @JsonBackReference(value = "brand-products")
@@ -33,11 +33,10 @@ public class ProductEntity  {
     @JoinColumn(name="brand_id")
     private BrandEntity brand;
 
-//    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
     private boolean inStock;
-    private Date creationDate;
-    private Date modifiedDate;
+
 
 //    many instances of ProductEntity can be associated with one instance of CategoryEntity, a product belongs to
 //    only one category

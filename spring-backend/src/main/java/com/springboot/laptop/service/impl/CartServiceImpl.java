@@ -12,6 +12,7 @@ import com.springboot.laptop.repository.CartRepository;
 import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.service.CartService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,20 +22,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class CartServiceImpl implements CartService {
 
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final CartDetailRepository cartDetailRepository;
-
-    @Autowired
-    public CartServiceImpl(UserRepository userRepository, CartRepository cartRepository, ProductRepository productRepository, CartDetailRepository cartDetailRepository) {
-        this.userRepository = userRepository;
-        this.cartRepository = cartRepository;
-        this.productRepository = productRepository;
-        this.cartDetailRepository = cartDetailRepository;
-    }
 
 
     @Override
@@ -63,12 +57,12 @@ public class CartServiceImpl implements CartService {
 
             if (cartDetail != null) {
                 cartDetail.setQuantity(cartDetail.getQuantity() + quantity);
-                cartDetail.setModifyDate(LocalDateTime.now());
+                cartDetail.setModifiedTimestamp(new Date());
             } else {
                 cartDetail = new CartDetails();
                 cartDetail.setProduct(product);
                 cartDetail.setQuantity(quantity);
-                cartDetail.setAddDate(LocalDateTime.now());
+                cartDetail.setCreatedTimestamp(new Date());
                 cartDetail.setUserCart(userCart);
                 userCart.getCartDetails().add(cartDetail);
             }
@@ -80,7 +74,7 @@ public class CartServiceImpl implements CartService {
             CartDetails cartDetail = new CartDetails();
             cartDetail.setProduct(product);
             cartDetail.setQuantity(quantity);
-            cartDetail.setAddDate(LocalDateTime.now());
+            cartDetail.setCreatedTimestamp(new Date());
             cartDetail.setUserCart(userCart);
             userCart.getCartDetails().add(cartDetail);
         }
@@ -131,7 +125,7 @@ public class CartServiceImpl implements CartService {
                         cartDetail.setQuantity(cartDetail.getQuantity()-1);
                         product.setProductQuantity(product.getProductQuantity() +1);
                     }
-                    cartDetail.setModifyDate(LocalDateTime.now());
+                    cartDetail.setModifiedTimestamp(new Date());
                 }
             }
             productRepository.save(product);

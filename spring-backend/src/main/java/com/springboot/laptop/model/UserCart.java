@@ -19,8 +19,8 @@ public class UserCart extends BaseEntity {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private UserEntity user;
 
-    @JsonManagedReference
 //    option if need bidirection, the JPA use annotation to get list cartDetails associated with userCar
+    @JsonManagedReference
     @OneToMany(mappedBy = "userCart", cascade = CascadeType.ALL)
     private List<CartDetails> cartDetails = new ArrayList<>();
 

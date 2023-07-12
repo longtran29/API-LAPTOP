@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,11 +37,12 @@ public class CategoryServiceImpl implements CategoryService {
     public Object createOne(CategoryRequestDTO category) {
         if(categoryRepository.findByName(category.getName().replaceAll("\\s+", " ")).isPresent())
             throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
-        CategoryEntity createdCategory = new CategoryEntity();
-        createdCategory.setEnabled(true);
-        createdCategory.setName(category.getName());
-        createdCategory.setImageUrl(category.getImageUrl());
-        categoryRepository.save(createdCategory);
+        CategoryDTO saveCate = new CategoryDTO();
+        saveCate.setEnabled(true);
+        saveCate.setName(category.getName());
+        saveCate.setImageUrl(category.getImageUrl());
+        saveCate.setCreatedTimestamp(new Date());
+        categoryRepository.save(categoryMapper.dtoCateToEntity(saveCate));
         return categoryRepository.findAll();
     }
 
@@ -69,6 +71,7 @@ public class CategoryServiceImpl implements CategoryService {
             cateUpdate.setName(updateCategory.getName());
             cateUpdate.setEnabled(updateCategory.getEnabled());
             cateUpdate.setImageUrl(updateCategory.getImageUrl());
+            cateUpdate.setModifiedTimestamp(new Date());
             categoryRepository.save(cateUpdate);
             return categoryRepository.findAll();
         }

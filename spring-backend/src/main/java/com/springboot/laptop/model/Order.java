@@ -8,9 +8,11 @@ import com.springboot.laptop.model.enums.PaymentMethod;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -30,10 +32,16 @@ public class Order extends  BaseEntity{
     @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetails> orderDetails = new ArrayList<>();
-    private LocalDateTime orderDate;
+
+    @Temporal(TemporalType.DATE)
+    private Date orderDate;
+
     private float total;
-    @Enumerated
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status")
     OrderStatus orderStatus;
+
     @JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL)
     private Address address;

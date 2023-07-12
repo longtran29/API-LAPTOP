@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,27 +20,19 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class BrandEntity extends BaseEntity {
 
+    @NotEmpty(message = "Brand name must be not empty")
     private String name;
 
 
-    private Date creationDate;
-    private Date modifiedDate;
-
-
-
-//    @JsonManagedReference(value="brands-categories")
-@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    //    @JsonManagedReference(value="brands-categories")
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(
             name="categories_brands",
             joinColumns = @JoinColumn(name="brand_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name="category_id", referencedColumnName = "id")
-//            uniqueConstraints={@UniqueConstraint(columnNames={"brand_id", "category_id"})}
     )
     @JsonIgnoreProperties("brands")
     private List<CategoryEntity> categories = new ArrayList<>();
-
-
-
 
     //    resolve error jackson - arraylist, collection
     @JsonManagedReference(value = "brand-products")

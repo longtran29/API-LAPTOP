@@ -21,16 +21,11 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRoleEntity extends BaseEntity {
-    @Column(length= 40, nullable = false, unique = true)
-    private String name; // ROLE_USER, ROLE_ADMIN
+//    @Column(length= 40, nullable = false, unique = true)
+    @Enumerated(EnumType.STRING)
+    private UserRoleEnum name; // ROLE_USER, ROLE_ADMIN
 
     private String description;
-
-    @Override
-    public String toString() {
-        return this.name;
-    }
-
 
     @ManyToMany(mappedBy = "roles")
     private List<UserEntity> users = new ArrayList<>();

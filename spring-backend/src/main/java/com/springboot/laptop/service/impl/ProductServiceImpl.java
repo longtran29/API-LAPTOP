@@ -84,7 +84,8 @@ public class ProductServiceImpl implements ProductService {
         brandRepository.findById(Long.valueOf(product.getBrand())).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
 
         ProductEntity newProduct = productMapper.productDTOToProduct(product);
-        newProduct.setCreationDate(dateFormat.parse(dateFormat.format(date)));
+//        newProduct.setCreatedTimestamp(dateFormat.parse(dateFormat.format(date)));
+        newProduct.setCreatedTimestamp(new Date());
         productRepository.save(newProduct);
         return productRepository.findAll().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
     }
@@ -93,7 +94,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Object updateProduct(Long productId, ProductDTO updateProduct) throws ParseException {
         try {
-            ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+            productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
             Date date = new Date();
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
@@ -101,7 +102,9 @@ public class ProductServiceImpl implements ProductService {
                 throw new RuntimeException("Giá trị bạn nhập không hợp lệ");
             updateProduct.setId(productId);
             updateProduct.setModifiedDate(date);
-            productRepository.save(productMapper.productDTOToProduct(updateProduct));
+            ProductEntity saveProduct = productMapper.productDTOToProduct(updateProduct);
+            saveProduct.setId(updateProduct.getId());
+            productRepository.save(saveProduct);
             return productRepository.findAll().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
 
         } catch (Exception ex) {

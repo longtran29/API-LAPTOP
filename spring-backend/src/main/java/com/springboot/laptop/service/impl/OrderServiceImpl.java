@@ -182,7 +182,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = new Order();
         order.setAddress(userAddress);
-        order.setOrderDate(LocalDateTime.now());
+        order.setOrderDate(new Date());
         order.setUser(user);
         order.setOrderStatus(OrderStatus.NEW);
         order.setMethodPayment(PaymentMethod.getPaymentMethod(orderRequest.getMethodPayment()));

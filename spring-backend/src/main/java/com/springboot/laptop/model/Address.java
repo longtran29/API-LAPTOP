@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,15 +21,22 @@ import java.util.List;
 @Builder
 public class Address extends BaseEntity {
 
-//    @JsonBackReference
     @ManyToOne(fetch = FetchType.EAGER)
     private UserEntity user;
 
+    @NotEmpty(message = "Address must be not empty")
     private String address;
+
+    @NotEmpty(message = "City must be not empty")
     private String city;
+
+    @NotEmpty(message = "Country must be not empty")
     private String country;
+
+    @NotEmpty(message = "Zipcode must be not empty")
     private String zipcode;
 
+    @NotNull
     private String phoneNumber;
 
     @JsonManagedReference

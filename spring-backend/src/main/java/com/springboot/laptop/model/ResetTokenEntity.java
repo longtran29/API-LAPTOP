@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.util.Date;
 
 @Entity
@@ -17,6 +18,7 @@ import java.util.Date;
 @Builder
 public class ResetTokenEntity extends BaseEntity {
 
+    @NotEmpty(message = "Token must be provided")
     private String token;
 
     @ManyToOne

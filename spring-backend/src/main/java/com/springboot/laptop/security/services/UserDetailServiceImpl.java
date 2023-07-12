@@ -40,7 +40,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
     private UserDetails mapToUserDetails(UserEntity userEntity) {
 
         List<GrantedAuthority> authorities = userEntity.getRoles().stream()
-                .map(ur -> new SimpleGrantedAuthority(ur.getName())).collect(Collectors.toList());
+                .map(ur -> new SimpleGrantedAuthority(ur.getName().name())).collect(Collectors.toList());
         return new User(
                 userEntity.getUsername(),
                 userEntity.getPassword(),

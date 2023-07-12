@@ -11,6 +11,7 @@ import lombok.*;
 
 import javax.persistence.Enumerated;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 
@@ -27,7 +28,7 @@ public class OrderResponseDTO {
 
     private List<OrderDetailsDTO> orderDetails;
 
-    private LocalDateTime orderDate;
+    private Date orderDate;
 
     private float total;
 

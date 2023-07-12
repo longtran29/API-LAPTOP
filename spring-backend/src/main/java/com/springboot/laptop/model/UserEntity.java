@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +21,16 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class UserEntity extends BaseEntity {
-
+    @NotBlank(message = "Username must be not empty")
     private String username;
+
+    @NotBlank(message = "Product name must be not empty")
     private String password;
+
+    @NotBlank(message = "Email must be not empty")
+    @Email
     private String email;
+
     private String name;
     private String phoneNumber;
 

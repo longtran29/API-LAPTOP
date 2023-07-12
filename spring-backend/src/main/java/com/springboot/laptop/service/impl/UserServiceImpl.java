@@ -138,7 +138,7 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(user.getEmail()))
             throw new CustomResponseException(StatusResponseDTO.EMAIL_IN_USE);
 
-        UserRoleEntity userRole = userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER.name());
+        UserRoleEntity userRole = userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER);
         if (!user.getPassword().equals(user.getRePassword()))
             throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
         UserEntity appClient = UserEntity.builder().roles(List.of(userRole)).username(user.getUsername()).email(user.getEmail()).password(passwordEncoder.encode(user.getPassword())).enabled(true).build();
