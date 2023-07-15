@@ -35,6 +35,24 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+<!--		<dependency>-->
+<!--			<groupId>junit</groupId>-->
+<!--			<artifactId>junit</artifactId>-->
+<!--			<version>4.13.2</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+
+<!--&lt;!&ndash;		assertJ test dep&ndash;&gt;-->
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/org.assertj/assertj-core &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>org.assertj</groupId>-->
+<!--			<artifactId>assertj-core</artifactId>-->
+<!--			<version>3.24.2</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+
+
 		<dependency>
 			<groupId>com.cloudinary</groupId>
 			<artifactId>cloudinary-http44</artifactId>

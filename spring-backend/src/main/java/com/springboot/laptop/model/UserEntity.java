@@ -45,6 +45,9 @@ public class UserEntity extends BaseEntity {
     )
     private List<UserRoleEntity> roles = new ArrayList<>();
 
+    @JsonManagedReference(value = "user-article")
+    @OneToMany(mappedBy = "uploadedBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ArticleEntity> articles = new ArrayList<>();
 
     @JsonIgnore
     @OneToOne(mappedBy = "user")
