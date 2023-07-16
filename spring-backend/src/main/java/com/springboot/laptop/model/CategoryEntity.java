@@ -29,6 +29,10 @@ public class CategoryEntity extends  BaseEntity  {
     @NotEmpty(message = "Image must be not empty")
     private String imageUrl;
 
+    public CategoryEntity(String name) {
+        this.name = name;
+    }
+
 //    resolve error jackson - arraylist, collection
     @JsonManagedReference(value = "category-products")
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
