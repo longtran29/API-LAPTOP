@@ -9,6 +9,7 @@ import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.Collection;
+import java.util.Objects;
 
 @Entity
 @Table(name = "categories")
@@ -29,10 +30,6 @@ public class CategoryEntity extends  BaseEntity  {
     @NotEmpty(message = "Image must be not empty")
     private String imageUrl;
 
-    public CategoryEntity(String name) {
-        this.name = name;
-    }
-
 //    resolve error jackson - arraylist, collection
     @JsonManagedReference(value = "category-products")
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -46,4 +43,17 @@ public class CategoryEntity extends  BaseEntity  {
         this.name = name;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        CategoryEntity category = (CategoryEntity) o;
+        return Objects.equals(name, category.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), name);
+    }
 }

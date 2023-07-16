@@ -2,9 +2,11 @@ package com.springboot.laptop.dao;
 
 import com.springboot.laptop.model.CategoryEntity;
 
+import java.util.List;
+
 public interface CategoryDAO {
 
-//    CategoryEntity findById(Long cateId);
+    List<CategoryEntity> findAllCate();
 
     CategoryEntity getById(Long id);
 

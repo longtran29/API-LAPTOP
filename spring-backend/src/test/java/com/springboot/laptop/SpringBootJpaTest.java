@@ -13,6 +13,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @DataJpaTest
@@ -32,10 +34,11 @@ public class SpringBootJpaTest {
 
 
     @Test
+    @Rollback(false)
     void testJpaTestSplice() {
         long countBefore = categoryRepository.count();
 
-        categoryRepository.save(new CategoryEntity("Dien thoai di dong 2023"));
+        categoryRepository.save(new CategoryEntity("Laptop macbook 2023"));
 
         long countAfter = categoryRepository.count();
 
@@ -73,6 +76,13 @@ public class SpringBootJpaTest {
         System.out.println("Value save category " + cate.getId() + " " + cate.getName() );
         assertThat(cate).isNotNull();
 
+    }
+
+    @Test
+    void getAllCates() {
+        List<CategoryEntity> listCate = cateDAO.findAllCate();
+
+        assertThat(listCate.size()).isEqualTo(3);
     }
 
 }
