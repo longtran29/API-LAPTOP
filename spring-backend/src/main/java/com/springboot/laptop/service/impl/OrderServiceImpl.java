@@ -28,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -169,6 +170,7 @@ public class OrderServiceImpl implements OrderService {
         return map;
     }
 
+    @Transactional
     @Override
     public Order checkout(OrderRequestDTO orderRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -15,10 +15,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Modifying(clearAutomatically=true)
     public void updateStatus(Long id, Boolean enabled);
 
-
     @Query(value = "SELECT * FROM products WHERE original_price < :price", nativeQuery = true)
     public List<ProductEntity> getProductsWithMaxPrice(Long price);
-
 
     @Query(value = "SELECT * FROM products p WHERE p.name LIKE %:name%", nativeQuery = true)
     List<ProductEntity> getProductByName(String name);
@@ -26,9 +24,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query(value = "SELECT p.* FROM OrderDetails od INNER JOIN products p ON od.product_id = p.id AND enabled = 1  GROUP BY product_id HAVING COUNT(*) > 3 LIMIT 4", nativeQuery = true)
     List<ProductEntity> findBestSellerProducts();
 
-
     @Query(value = "select * from products where enabled = true;", nativeQuery = true)
     List<ProductEntity> getActiveProducts();
-
-
 }

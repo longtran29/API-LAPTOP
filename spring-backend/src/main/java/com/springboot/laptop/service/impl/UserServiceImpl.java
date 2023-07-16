@@ -296,7 +296,7 @@ public class UserServiceImpl implements UserService {
         try {
             ResetPasswordUtils.validConstraint(payload);
 
-            ResetTokenEntity resetToken = resetTokenRepository.findByToken(payload.getToken());
+            ResetTokenEntity resetToken = resetTokenRepository.findByToken(payload.getToken()).get();
             UserEntity existingUser = userRepository.findById(resetToken.getUserId().getId()).get();
 
             existingUser.setPassword(passwordEncoder.encode(payload.getNewPassword()));

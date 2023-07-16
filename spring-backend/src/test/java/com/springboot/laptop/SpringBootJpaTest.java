@@ -2,16 +2,14 @@ package com.springboot.laptop;
 
 import com.springboot.laptop.dao.CategoryDAO;
 //import com.springboot.laptop.dao.CategoryDAOImpl;
-import com.springboot.laptop.dao.CategoryDAOImpl2;
+import com.springboot.laptop.dao.CategoryDAOImpl;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.Rollback;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -20,7 +18,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 //@ComponentScan(basePackages = {"com.springboot.laptop.dao"})
 //@Import(CategoryDAOImpl.class)
-@Import(CategoryDAOImpl2.class)
+@Import(CategoryDAOImpl.class)
 public class SpringBootJpaTest {
 
     @Autowired
@@ -61,6 +59,18 @@ public class SpringBootJpaTest {
 
         CategoryEntity author = cateDAO.getById(10L);
 
+        System.out.println("Value cate is " + author.getId() + " " + author.getName());
+        assertThat(author).isNotNull();
+
+    }
+
+
+    @Test
+    void getCategoryByName() {
+
+        CategoryEntity author = cateDAO.findCategoryByName("Dien thoai di dong 2023");
+
+        System.out.println("Value cate is " + author.getId() + " " + author.getName());
         assertThat(author).isNotNull();
 
     }
@@ -68,10 +78,11 @@ public class SpringBootJpaTest {
     @Test
     void testSaveCategory() {
 
-        CategoryEntity cate = cateDAO.saveCategory( new CategoryEntity("Dien thoai vui"));
+        CategoryEntity cate = cateDAO.saveCategory( new CategoryEntity("Dien thoai gia si 2023"));
 
         System.out.println("Value save category " + cate.getId() + " " + cate.getName() );
         assertThat(cate).isNotNull();
+        assertThat(cate.getId()).isNotNull();
 
     }
 

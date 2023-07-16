@@ -9,12 +9,4 @@ import javax.transaction.Transactional;
 
 @Repository
 public interface CartRepository extends JpaRepository<UserCart, Long> {
-
-
-
-    // annotation - delete cart and associated cart details
-    @Transactional
-    void deleteById(Long id);
-
-
 }
