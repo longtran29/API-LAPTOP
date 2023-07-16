@@ -38,5 +38,8 @@ public class CategoryEntity extends  BaseEntity  {
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
     private Collection<BrandEntity> brands;
 
+    public CategoryEntity(String name) {
+        this.name = name;
+    }
 
 }

@@ -1,7 +1,8 @@
 package com.springboot.laptop;
 
 import com.springboot.laptop.dao.CategoryDAO;
-import com.springboot.laptop.dao.CategoryDAOImpl;
+//import com.springboot.laptop.dao.CategoryDAOImpl;
+import com.springboot.laptop.dao.CategoryDAOImpl2;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
@@ -16,9 +17,10 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Rollback(false)
+
 //@ComponentScan(basePackages = {"com.springboot.laptop.dao"})
-@Import(CategoryDAOImpl.class)
+//@Import(CategoryDAOImpl.class)
+@Import(CategoryDAOImpl2.class)
 public class SpringBootJpaTest {
 
     @Autowired
@@ -43,12 +45,33 @@ public class SpringBootJpaTest {
 
     }
 
-    @Test
-    void testGetCateogry() {
+//    @Test
+//    void testGetCateogry() {
+//
+//        CategoryEntity author = cateDAO.findById(10L);
+//
+//        assertThat(author).isNotNull();
+//
+//    }
 
-        CategoryEntity author = cateDAO.findById(10L);
+
+
+    @Test
+    void testGetCategoryById() {
+
+        CategoryEntity author = cateDAO.getById(10L);
 
         assertThat(author).isNotNull();
+
+    }
+
+    @Test
+    void testSaveCategory() {
+
+        CategoryEntity cate = cateDAO.saveCategory( new CategoryEntity("Dien thoai vui"));
+
+        System.out.println("Value save category " + cate.getId() + " " + cate.getName() );
+        assertThat(cate).isNotNull();
 
     }
 
