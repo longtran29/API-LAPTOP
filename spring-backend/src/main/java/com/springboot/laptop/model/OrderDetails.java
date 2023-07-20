@@ -1,17 +1,18 @@
 package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.Min;
 
 @Entity
-@Data
+@Setter
+@Getter
+@Table(name="order_detail")
 @NoArgsConstructor
 @AllArgsConstructor
 

@@ -23,7 +23,7 @@ public class ReviewEntity extends BaseEntity {
 
     private int votes;
 
-    @Column(nullable = false)
+    @Column(name="review_time",nullable = false)
     private Date reviewTime;
 
     @ManyToOne

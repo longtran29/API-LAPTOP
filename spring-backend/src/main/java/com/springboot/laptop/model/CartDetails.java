@@ -2,16 +2,16 @@ package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
+@Table(name="cart_detail")
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartDetails extends  BaseEntity{
@@ -24,8 +24,6 @@ public class CartDetails extends  BaseEntity{
     @ManyToOne
     @JoinColumn(name="cart_id", referencedColumnName = "id")
     private UserCart userCart;
-
-
 
     @JsonBackReference
     @ManyToOne

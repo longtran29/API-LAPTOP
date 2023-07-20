@@ -10,6 +10,7 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
+@Table(name = "user_cart")
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserCart extends BaseEntity {
@@ -23,6 +24,4 @@ public class UserCart extends BaseEntity {
     @JsonManagedReference
     @OneToMany(mappedBy = "userCart", cascade = CascadeType.ALL)
     private List<CartDetails> cartDetails = new ArrayList<>();
-
-
 }

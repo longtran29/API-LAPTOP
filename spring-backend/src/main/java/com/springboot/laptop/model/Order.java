@@ -34,6 +34,7 @@ public class Order extends  BaseEntity{
     private List<OrderDetails> orderDetails = new ArrayList<>();
 
     @Temporal(TemporalType.DATE)
+    @Column(name = "order_date")
     private Date orderDate;
 
     private float total;

@@ -21,6 +21,7 @@ public class ProductEntity extends  BaseEntity  {
     private String name;
 
     @NotEmpty(message = "You must upload image")
+    @Column(name="primary_image")
     private String primaryImage;
 
     private boolean enabled;
@@ -34,8 +35,9 @@ public class ProductEntity extends  BaseEntity  {
     @JoinColumn(name="brand_id")
     private BrandEntity brand;
 
-    @Column(columnDefinition = "LONGTEXT")
     private String description;
+
+    @Column(name = "in_stock")
     private boolean inStock;
 
 
