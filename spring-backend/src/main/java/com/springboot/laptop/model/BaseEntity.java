@@ -21,11 +21,11 @@ public class BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
 
-    @Column(nullable = true)
+    @Column(name ="created_timestamp",nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdTimestamp;
 
-    @Column(nullable = true)
+    @Column(name ="modified_timestamp",nullable = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedTimestamp;
 

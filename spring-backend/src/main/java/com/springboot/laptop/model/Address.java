@@ -36,7 +36,7 @@ public class Address extends BaseEntity {
     @NotEmpty(message = "Zipcode must be not empty")
     private String zipcode;
 
-    @NotNull
+    @Column(name="phone_number", nullable = false)
     private String phoneNumber;
 
     @JsonManagedReference

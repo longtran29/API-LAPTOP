@@ -20,7 +20,6 @@ public class ArticleEntity extends BaseEntity {
     @Column(nullable = false, name = "title")
     private String title;
 
-    @Column(columnDefinition = "LONGTEXT")
     private String content;
 
     @JsonBackReference(value = "user-article")
@@ -36,4 +35,8 @@ public class ArticleEntity extends BaseEntity {
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImage> images = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "badge_id")
+    private Badge badge;
 }

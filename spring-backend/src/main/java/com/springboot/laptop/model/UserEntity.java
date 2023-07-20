@@ -32,8 +32,11 @@ public class UserEntity extends BaseEntity {
     private String email;
 
     private String name;
+
+    @Column(name="phone_number")
     private String phoneNumber;
 
+    @Column(name="imgurl")
     private String imgURL;
 
     @JsonIgnore

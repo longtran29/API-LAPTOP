@@ -20,6 +20,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
 import com.stripe.param.PaymentIntentCreateParams;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -40,6 +43,7 @@ class LaptopApplicationTests {
 	@Test
 	void contextLoads() {
 	}
+
 
 	@Autowired
 	private TestEntityManager entityManager;
@@ -98,38 +102,21 @@ class LaptopApplicationTests {
 	}
 
 
-	@Test
-	public void addNewUser() {
-		UserEntity appClient = new UserEntity();
-		List<UserRoleEntity> listRoles = new ArrayList<>();
-		if (userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).isPresent()) {
-			UserRoleEntity role = userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).get();
-			listRoles.add(role);
-		}
-		appClient.setRoles(listRoles);
-		appClient.setUsername("admin");
-		appClient.setEmail("admin2001@gmail.com");
-		appClient.setEnabled(true);
-		appClient.setPassword(passwordEncoder.encode("123456"));
-		userRepository.save(appClient);
-	}
-
-
-	@Test
-	public void addNewUser3() {
-		UserEntity appClient = new UserEntity();
-		List<UserRoleEntity> listRoles = new ArrayList<>();
-		if (userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).isPresent()) {
-			UserRoleEntity role = userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).get();
-			listRoles.add(role);
-		}
-		appClient.setRoles(listRoles);
-		appClient.setUsername("long2");
-		appClient.setEmail("long2003@gmail.com");
-		appClient.setEnabled(true);
-		appClient.setPassword(passwordEncoder.encode("123456"));
-		userRepository.save(appClient);
-	}
+//	@Test
+//	public void addNewUser() {
+//		UserEntity appClient = new UserEntity();
+//		List<UserRoleEntity> listRoles = new ArrayList<>();
+//		if (userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).isPresent()) {
+//			UserRoleEntity role = userRoleRepository.findByName(UserRoleEnum.ROLE_ADMIN).get();
+//			listRoles.add(role);
+//		}
+//		appClient.setRoles(listRoles);
+//		appClient.setUsername("admin");
+//		appClient.setEmail("admin2001@gmail.com");
+//		appClient.setEnabled(true);
+//		appClient.setPassword(passwordEncoder.encode("123456"));
+//		userRepository.save(appClient);
+//	}
 
 
 //	@Test

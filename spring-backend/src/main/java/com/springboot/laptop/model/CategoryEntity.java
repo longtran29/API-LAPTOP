@@ -27,6 +27,7 @@ public class CategoryEntity extends  BaseEntity  {
     private Boolean enabled;
 
     @NotEmpty(message = "Image must be not empty")
+    @Column(name="image_url")
     private String imageUrl;
 
     public CategoryEntity(String name) {
