@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./API-LAPTOP/spring-backend
+        working-directory:  ${{ github.workspace }}/../../spring-backend
 
     steps:
     - uses: actions/checkout@v3
