@@ -45,7 +45,7 @@ jobs:
       run: mvn spring-boot:build-image
 
     - name: Push Docker image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/shop_laptop
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/demo_spring_app
 #      run: mvn clean install -e
 #          mvn spring-boot:build-image -e
 #          docker push ${{ secrets.DOCKERHUB_USERNAME }}/shop_laptop
