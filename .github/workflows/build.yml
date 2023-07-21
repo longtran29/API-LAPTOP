@@ -39,6 +39,6 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
     - name: Build and push Docker image
-      run: mvn clean install
-          mvn spring-boot:build-image
+      run: mvn clean install -e
+          mvn spring-boot:build-image -e
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/shop_laptop
