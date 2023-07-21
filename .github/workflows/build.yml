@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ../../spring-backend
+        working-directory: ../spring-backend
 
     steps:
     - uses: actions/checkout@v3
