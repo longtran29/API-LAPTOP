@@ -6,22 +6,16 @@ import com.springboot.laptop.mapper.CategoryMapper;
 import com.springboot.laptop.mapper.ProductMapper;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.CategoryDTO;
-import com.springboot.laptop.model.dto.ProductDTO;
 import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -31,19 +25,17 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final ProductMapper productMapper;
-    private final EntityManager entityManager;
 
     @Override
     public Object createOne(CategoryRequestDTO category) {
-        if(categoryRepository.findByName(category.getName().replaceAll("\\s+", " ")).isPresent())
+        if (categoryRepository.findByName(category.getName().replaceAll("\\s+", " ")).isPresent())
             throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
         CategoryDTO saveCate = new CategoryDTO();
         saveCate.setEnabled(true);
         saveCate.setName(category.getName());
         saveCate.setImageUrl(category.getImageUrl());
         saveCate.setCreatedTimestamp(new Date());
-        categoryRepository.save(categoryMapper.dtoCateToEntity(saveCate));
-        return categoryRepository.findAll();
+        return categoryRepository.save(categoryMapper.dtoCateToEntity(saveCate));
     }
 
     @Override
@@ -55,7 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryDTO> getAll() {
         List<CategoryDTO> returnedCates = new ArrayList<>();
-        categoryRepository.findAll().stream().forEach(cate -> returnedCates.add(categoryMapper.cateEntityToDTO(cate)));
+        categoryRepository.findAll().forEach(cate -> returnedCates.add(categoryMapper.cateEntityToDTO(cate)));
         return returnedCates;
     }
 
@@ -64,16 +56,20 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryRepository.findById(cateId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
         Optional<CategoryEntity> existingCategory = categoryRepository.findByName(updateCategory.getName().replaceAll("\\s+", " "));
-        if (existingCategory.isPresent() && existingCategory.get().getId() != cateId) {
+        if (existingCategory.isPresent() && !Objects.equals(existingCategory.get().getId(), cateId)) {
             throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
         } else {
-            CategoryEntity cateUpdate = categoryRepository.findById(cateId).get();
-            cateUpdate.setName(updateCategory.getName());
-            cateUpdate.setEnabled(updateCategory.getEnabled());
-            cateUpdate.setImageUrl(updateCategory.getImageUrl());
-            cateUpdate.setModifiedTimestamp(new Date());
-            categoryRepository.save(cateUpdate);
-            return categoryRepository.findAll();
+            if (categoryRepository.findById(cateId).isPresent()) {
+                CategoryEntity cateUpdate = categoryRepository.findById(cateId).get();
+                cateUpdate.setName(updateCategory.getName());
+                cateUpdate.setEnabled(updateCategory.getEnabled());
+                cateUpdate.setImageUrl(updateCategory.getImageUrl());
+                cateUpdate.setModifiedTimestamp(new Date());
+                return categoryRepository.save(cateUpdate);
+            } else {
+                throw new RuntimeException("Không tìm thấy danh mục này");
+            }
+
         }
 
     }
@@ -93,18 +89,21 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Object deleteOne(Long cateId) throws DataIntegrityViolationException {
         CategoryEntity existingCategory = categoryRepository.findById(cateId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
-        if(existingCategory.getProducts().size() > 0) throw new CustomResponseException(StatusResponseDTO.CATEGORY_CONFLICT_PRODUCTS);
-        if(existingCategory.getBrands().size() > 0) throw new CustomResponseException(StatusResponseDTO.CATEGORY_CONFLICT_BRAND);
+        if (existingCategory.getProducts().size() > 0)
+            throw new CustomResponseException(StatusResponseDTO.CATEGORY_CONFLICT_PRODUCTS);
+        if (existingCategory.getBrands().size() > 0)
+            throw new CustomResponseException(StatusResponseDTO.CATEGORY_CONFLICT_BRAND);
         categoryRepository.delete(existingCategory);
-        return categoryRepository.findAll();
+        return "Delete successfully";
     }
 
     @Override
     public Object getProductsById(Long categoryId) {
-        CategoryEntity existingCategory = categoryRepository.findById(categoryId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
-        List<ProductDTO> returnedProds = new ArrayList<>();
-        // using stream() before call forEach() methods to loop through list and can call add() method on an object
-        existingCategory.getProducts().stream().forEach(product -> returnedProds.add(productMapper.productToProductDTO(product)));
-        return returnedProds;
+//        CategoryEntity existingCategory = categoryRepository.findById(categoryId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
+//        List<ProductDTO> returnedProds = new ArrayList<>();
+//        // using stream() before call forEach() methods to loop through list and can call add() method on an object
+//        existingCategory.getProducts().forEach(product -> returnedProds.add(productMapper.productToProductDTO(product)));
+//        return returnedProds;
+        return null;
     }
 }

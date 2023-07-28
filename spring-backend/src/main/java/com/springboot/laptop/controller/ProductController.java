@@ -5,6 +5,7 @@ import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.CategoryDTO;
 import com.springboot.laptop.model.dto.ProductDTO;
 //import com.springboot.laptop.model.dto.request.ProductDTO;
+import com.springboot.laptop.model.dto.response.ProductResponseDTO;
 import com.springboot.laptop.service.ProductService;
 import com.springboot.laptop.service.impl.CloudinaryService;
 import com.springboot.laptop.service.impl.ProductServiceImpl;
@@ -45,11 +46,13 @@ public class ProductController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    // check authority base on SecurityContextHolder
-    @PostMapping
+    @PostMapping(consumes = {   "multipart/form-data" })
     @SecurityRequirement(name = "bearerAuth")
-    public Object createProduct(@RequestBody ProductDTO product) throws ParseException {
-        return ResponseEntity.ok().body(productServiceImpl.createOne(product));
+    public Object createProduct(@RequestPart("product")  ProductDTO product,
+        @RequestParam(value = "primaryImage", required = false) MultipartFile mainImageMultipart,
+        @RequestParam(value = "extraImage", required = false) MultipartFile[] extraImageMultiparts
+                                ) throws ParseException {
+        return ResponseEntity.ok().body(productServiceImpl.createOne(product, mainImageMultipart,extraImageMultiparts ));
 
     }
 
@@ -130,10 +133,14 @@ public class ProductController {
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PutMapping("/{productId}")
+    @PutMapping(path = "/{productId}",consumes = {   "multipart/form-data" })
     @SecurityRequirement(name = "bearerAuth")
-    public Object updateProduct(@PathVariable Long productId, @RequestBody ProductDTO product) throws ParseException {
-        return productServiceImpl.updateProduct(productId, product);
+    public Object updateObject(@PathVariable Long productId, @RequestPart("product") ProductDTO product,
+                                @RequestParam(value = "primaryImage", required = false) MultipartFile mainImageMultipart,
+                                @RequestParam(value = "extraImage", required = false) MultipartFile[] extraImageMultiparts
+    ) throws Exception {
+        return ResponseEntity.ok().body(productServiceImpl.updateProduct(productId, product, mainImageMultipart,extraImageMultiparts ));
+
     }
 
     @Operation(summary = "Cập nhật trạng thái ",
@@ -151,8 +158,7 @@ public class ProductController {
     @PutMapping("/status/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@PathVariable Long productId,@RequestBody Boolean cate_status ) {
-        // note : not using operator "=="
+    public ResponseEntity<?> updateStatus(@PathVariable Long productId,@RequestBody boolean cate_status ) {
         return ResponseEntity.ok().body(productServiceImpl.updateStatus(productId, cate_status));
     }
 

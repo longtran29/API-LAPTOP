@@ -152,8 +152,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean userExists(String username, String email) {
-        Optional<UserEntity> byUsername = this.userRepository.findByUsername(username);
-        Optional<UserEntity> byEmail = this.userRepository.findByEmail(email);
+        Optional<UserEntity> byUsername = userRepository.findByUsernameIgnoreCase(username);
+        Optional<UserEntity> byEmail = userRepository.findByEmail(email);
         return byUsername.isPresent() || byEmail.isPresent();
     }
 
@@ -186,7 +186,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity updateInformation(UserDTO userRequest) throws Exception {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).get();
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).get();
         if (!userRequest.getName().isEmpty() && !Objects.isNull(userRequest.getName())) {
             user.setName(userRequest.getName());
         }
@@ -207,7 +207,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity addNewAddress(AddressDTO requestDTO) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).get();
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).get();
 
         List<Address> userAddress = user.getAddresses();
         Address newAddress = Address.builder().address(requestDTO.getAddress()).city(requestDTO.getCity()).country(requestDTO.getCountry()).zipcode(requestDTO.getZipcode()).phoneNumber(requestDTO.getPhoneNumber()).user(user).build();
@@ -217,7 +217,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEntity findUserByUserName(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        return userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
     }
 
@@ -253,7 +253,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity newPassword(NewPasswordRequest newPasswordRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity userExist = userExist = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        UserEntity userExist = userExist = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
         if (StringUtils.hasText(newPasswordRequest.getNewPassword()) && StringUtils.hasText(newPasswordRequest.getRetypeNewPassword())) {
             if (newPasswordRequest.getNewPassword().equals(newPasswordRequest.getRetypeNewPassword())) {
@@ -287,7 +287,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Object getUserInformation() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         return userMapper.userToUserDTO(user);
     }
 

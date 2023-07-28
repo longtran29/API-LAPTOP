@@ -1,10 +1,13 @@
 package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.CustomResponseException;
+import com.springboot.laptop.mapper.CartMapper;
+import com.springboot.laptop.mapper.ProductMapper;
 import com.springboot.laptop.model.CartDetails;
 import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.UserCart;
 import com.springboot.laptop.model.UserEntity;
+import com.springboot.laptop.model.dto.UserCartDTO;
 import com.springboot.laptop.model.dto.response.CartResponseDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.CartDetailRepository;
@@ -29,116 +32,87 @@ public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final CartDetailRepository cartDetailRepository;
+    private final CartMapper cartMapper;
+    private final ProductMapper productMapper;
 
 
     @Override
-    public UserCart findCartById(Long cartId) {
+    public UserCartDTO findCartById(Long cartId) {
         productRepository.findById(cartId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND));
-        return cartRepository.findById(cartId).get();
+        return cartMapper.cartToDTO(cartRepository.findById(cartId).get());
     }
 
     @Override
-    public UserCart addToCart(Long productId, Long quantity) {
+    public UserCartDTO addToCart(Long productId, Long quantity) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).get();
-        ProductEntity product;
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CUSTOMER_NOT_FOUND));
+        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
 
-        if(quantity > productRepository.findById(productId).get().getProductQuantity()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
-        else product = productRepository.findById(productId).get();
+        if(quantity > existingProduct.getProductQuantity()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
 
-        UserCart userCart = null;
+        UserCart userCart;
+        CartDetails cartDetail = null;
         if(user.getCart() != null) {
             userCart = user.getCart();
-            CartDetails cartDetail = userCart.getCartDetails()
+            cartDetail = userCart.getCartDetails()
                     .stream()
                     .filter(cd -> cd.getProduct().getId().equals(productId))
                     .findFirst()
                     .orElse(null);
-
-            if (cartDetail != null) {
-                cartDetail.setQuantity(cartDetail.getQuantity() + quantity);
-                cartDetail.setModifiedTimestamp(new Date());
-            } else {
-                cartDetail = new CartDetails();
-                cartDetail.setProduct(product);
-                cartDetail.setQuantity(quantity);
-                cartDetail.setCreatedTimestamp(new Date());
-                cartDetail.setUserCart(userCart);
-                userCart.getCartDetails().add(cartDetail);
-            }
         }
         else {
             userCart = new UserCart();
+            userCart.setCreatedTimestamp(new Date());
             userCart.setUser(user);
-
-            CartDetails cartDetail = new CartDetails();
-            cartDetail.setProduct(product);
+        }
+        if (cartDetail != null) {
+            cartDetail.setQuantity(cartDetail.getQuantity() + quantity);
+            cartDetail.setModifiedTimestamp(new Date());
+        } else {
+            cartDetail = new CartDetails();
+            cartDetail.setProduct(existingProduct);
             cartDetail.setQuantity(quantity);
             cartDetail.setCreatedTimestamp(new Date());
             cartDetail.setUserCart(userCart);
             userCart.getCartDetails().add(cartDetail);
+            userCart.setModifiedTimestamp(new Date());
         }
 
-        long remainingStock = product.getProductQuantity() - quantity;
-        product.setProductQuantity(remainingStock);
-        if(remainingStock == 0) product.setInStock(false);
-        productRepository.save(product);
-        return cartRepository.save(userCart);
+
+        long remainingStock = existingProduct.getProductQuantity() - quantity;
+        existingProduct.setProductQuantity(remainingStock);
+        if(remainingStock == 0) existingProduct.setInStock(false);
+        productRepository.save(existingProduct);
+        return cartMapper.cartToDTO(cartRepository.save(userCart));
 }
 
 
     @Override
-    public List<CartResponseDTO> getAllCartDetails(UserCart userCart) {
+    public List<CartResponseDTO> getAllCartDetails() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        UserCart userCart = user.getCart();
 
         List<CartResponseDTO> listCart = new ArrayList<>();
         try {
             for(CartDetails cartDetail : userCart.getCartDetails()) {
                 CartResponseDTO cart = new CartResponseDTO();
                 cart.setQuantity(cartDetail.getQuantity());
-                cart.setProduct(productRepository.findById(cartDetail.getProduct().getId()).orElse(null));
+                cart.setProduct(productMapper.productToProductDTO(productRepository.findById(cartDetail.getProduct().getId()).orElse(null)));
                 listCart.add(cart);
             }
             return listCart;
 
-        } catch (NullPointerException ex) {
-            return listCart;
-        }
-
-    }
-
-    public UserCart updateQuantityItem(UserEntity user, Long productId, String type) {
-        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        try {
-            UserCart userCart = user.getCart();
-            if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
-            List<CartDetails> listCart = userCart.getCartDetails();
-            for (CartDetails cartDetail: listCart
-            ) {
-
-                if(cartDetail.getProduct().getId() == productId) {
-                    if(type.equals("increase")) {
-                        if(product.getProductQuantity() ==  0) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
-                        cartDetail.setQuantity(cartDetail.getQuantity() +1);
-                        product.setProductQuantity(product.getProductQuantity() -1);
-                        if(product.getProductQuantity() -1 == 0 ) product.setInStock(false);
-                    } else {
-                        cartDetail.setQuantity(cartDetail.getQuantity()-1);
-                        product.setProductQuantity(product.getProductQuantity() +1);
-                    }
-                    cartDetail.setModifiedTimestamp(new Date());
-                }
-            }
-            productRepository.save(product);
-            return cartRepository.save(userCart);
-        } catch(NotFoundException ex) {
-            throw ex;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
+
 
     @Override
-    public UserCart removeCartItem(Long productId) {
+    public UserCartDTO removeCartItem(Long productId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
         UserCart userCart = user.getCart();
         if(userCart != null) {
@@ -152,7 +126,38 @@ public class CartServiceImpl implements CartService {
         else {
             throw new NoSuchElementException();
         }
-        return cartRepository.save(userCart);
+        return cartMapper.cartToDTO(cartRepository.save(userCart));
+    }
+
+    @Override
+    public UserCartDTO updateQuantityItem(Long productId, String type) {
+        UserEntity user = userRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND) );
+        ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+        try {
+            UserCart userCart = user.getCart();
+            if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
+            List<CartDetails> listCart = userCart.getCartDetails();
+            for (CartDetails cartDetail: listCart
+            ) {
+
+                if(Objects.equals(cartDetail.getProduct().getId(), productId)) {
+                    if(type.equals("increase")) {
+                        if(product.getProductQuantity() ==  0) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
+                        cartDetail.setQuantity(cartDetail.getQuantity() +1);
+                        product.setProductQuantity(product.getProductQuantity() -1);
+                        if(product.getProductQuantity() -1 == 0 ) product.setInStock(false);
+                    } else {
+                        cartDetail.setQuantity(cartDetail.getQuantity()-1);
+                        product.setProductQuantity(product.getProductQuantity() +1);
+                    }
+                    cartDetail.setModifiedTimestamp(new Date());
+                }
+            }
+            productRepository.save(product);
+            return cartMapper.cartToDTO(cartRepository.save(userCart));
+        } catch(NotFoundException ex) {
+            throw ex;
+        }
     }
 
 }

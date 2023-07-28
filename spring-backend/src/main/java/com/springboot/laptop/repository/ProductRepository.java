@@ -13,7 +13,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     @Query("UPDATE ProductEntity p SET p.enabled=?2 WHERE p.id = ?1")
     @Modifying(clearAutomatically=true)
-    public void updateStatus(Long id, Boolean enabled);
+    public void updateStatus(Long id, boolean enabled);
 
 
     @Query(value = "SELECT * FROM products WHERE original_price < :price", nativeQuery = true)

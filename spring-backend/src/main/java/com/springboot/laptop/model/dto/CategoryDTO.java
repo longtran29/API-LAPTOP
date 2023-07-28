@@ -29,8 +29,8 @@ public class CategoryDTO {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdTimestamp;
 
-    private Collection<ProductEntity> products = new ArrayList<>();
-
-    private Collection<BrandEntity> brands = new ArrayList<>();
+//    private Collection<ProductEntity> products = new ArrayList<>();
+//
+//    private Collection<BrandEntity> brands = new ArrayList<>();
 
 }

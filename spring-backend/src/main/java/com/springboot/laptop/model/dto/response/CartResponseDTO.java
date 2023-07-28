@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CartResponseDTO {
 
-    private ProductEntity product;
+    private ProductResponseDTO product;
     private Long quantity;
 }

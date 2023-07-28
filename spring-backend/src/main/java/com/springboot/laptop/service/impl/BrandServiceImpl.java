@@ -7,24 +7,19 @@ import com.springboot.laptop.mapper.CategoryMapper;
 import com.springboot.laptop.mapper.ProductMapper;
 import com.springboot.laptop.model.BrandEntity;
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.ProductEntity;
 import com.springboot.laptop.model.dto.BrandDTO;
 import com.springboot.laptop.model.dto.CategoryDTO;
-import com.springboot.laptop.model.dto.ProductDTO;
 import com.springboot.laptop.model.dto.request.BrandRequestDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
-import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.service.BrandService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,9 +36,8 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public List<BrandEntity> getAll() {
-        // we also can try -catch here
-        return brandRepository.findAll();
+    public List<BrandDTO> getAllBrand() {
+        return brandRepository.findAll().stream().map(brandMapper::entityToDTO).collect(Collectors.toList());
     }
 
 
@@ -60,20 +54,19 @@ public class BrandServiceImpl implements BrandService {
             brand.getCategories().add(setCategory);
         }
         brand.setCreatedTimestamp(new Date());
-        brandRepository.save(brand);
-        return brandRepository.findAll();
+        return brandMapper.entityToDTO(brandRepository.save(brand));
     }
 
     @Override
     public Object deleteOne(Long brandId) {
-            BrandEntity brand = brandRepository.findById(brandId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
-            try {
-                brandRepository.delete(brand);
-            }
-            catch (Exception ex) {
-                throw new CustomResponseException(StatusResponseDTO.BRAND_CONSTRAINT_EXCEPTION);
-            }
-            return brandRepository.findAll();
+    BrandEntity brand = brandRepository.findById(brandId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
+        try {
+            brandRepository.delete(brand);
+        }
+        catch (Exception ex) {
+            throw new CustomResponseException(StatusResponseDTO.BRAND_CONSTRAINT_EXCEPTION);
+        }
+        return "Delete successfully";
     }
 
     @Override
@@ -85,37 +78,24 @@ public class BrandServiceImpl implements BrandService {
             existedBrand =  brandRepository.findByName(updateBrand.getBrandName()).get();
             if(existedBrand.getId() != brandId)
                 throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
-        }
-        List<CategoryEntity> listCate = new ArrayList<>();
-
-        for(Long i : updateBrand.getCateIds()) {
-            CategoryEntity refCate = categoryRepository.findById(i).get();
-            listCate.add(refCate);
-        }
-        brand.setCategories(listCate);
+        }brand.setCategories(updateBrand.getCateIds().stream().map(cateId -> categoryRepository.findById(cateId).get()).collect(Collectors.toList()));
         brand.setName(updateBrand.getBrandName());
         brand.setModifiedTimestamp(new Date());
-        brandRepository.saveAndFlush(brand);
-        return brandRepository.findAll();
+        return brandMapper.entityToDTO(brandRepository.saveAndFlush(brand));
     }
 
     @Override
     public List<CategoryDTO> getAllCateFromBrand(Long brandId) {
         brandRepository.findById(brandId).orElseThrow(() ->  new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
-        List<CategoryDTO> returnedCategory = new ArrayList<>();
-        brandRepository.findById(brandId).get().getCategories().stream().forEach(category -> returnedCategory.add(categoryMapper.cateEntityToDTO(category)));
-        return returnedCategory;
+        return brandRepository.findById(brandId).get().getCategories().stream().map(categoryMapper::cateEntityToDTO).collect(Collectors.toList());
     }
 
     @Override
     public Object getProductsById(Long brandId) {
-
         // return the value if present
         BrandEntity brand = brandRepository.findById(brandId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
-        List<ProductDTO> returnedProds = new ArrayList<>();
-        // using stream() before call forEach() methods to loop through list and can call add() method on an object
-        brand.getProducts().stream().forEach(product -> returnedProds.add(productMapper.productToProductDTO(product)));
-        return returnedProds;
+        // using stream() before call forEach() / map() methods to loop through list -> execute add() method
+        return brand.getProducts().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
     }
 
 }

@@ -72,7 +72,7 @@ public class BrandController {
             })
     @GetMapping
     public ResponseEntity<?> getAllBrands() {
-        return ResponseEntity.ok().body(brandServiceImpl.getAll());
+        return ResponseEntity.ok().body(brandServiceImpl.getAllBrand());
     }
 
     @Operation(summary = "Tạo thương hiệu mới",
