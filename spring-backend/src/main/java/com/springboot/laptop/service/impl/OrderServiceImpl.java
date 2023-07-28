@@ -114,7 +114,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponseDTO> getUserOrders() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
         List<Order> userOrder = user.getOrders();
         List<OrderResponseDTO> userOrders = new ArrayList<>();
@@ -172,7 +172,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order checkout(OrderRequestDTO orderRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         UserCart userCart = user.getCart();
         if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_EXIST);
         List<CartDetails> cartDetailList = userCart.getCartDetails();

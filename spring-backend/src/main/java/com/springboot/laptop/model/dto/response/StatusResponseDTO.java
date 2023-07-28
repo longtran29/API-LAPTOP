@@ -25,6 +25,8 @@ public enum StatusResponseDTO {
     ORDER_SHIPPED_VIOLATION("500", "Đơn hàng này đang được shipper giao "),
 
     CUSTOMER_VIOLATION_EXCEPTION("500", "Khách hàng đã có đơn hàng "),
+
+    CUSTOMER_NOT_FOUND("404", "Không tồn tại người dùng này "),
     CART_NOT_EXIST("500", "Không có sản phẩm nào trong giỏ hàng"),
 
     VALUE_NOT_VALID("500", "Giá tri bạn nhập không hợp lệ"),

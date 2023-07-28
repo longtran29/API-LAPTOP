@@ -1,7 +1,7 @@
 package com.springboot.laptop.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,30 +9,26 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "product_details")
+@Table(name = "product_images")
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
-public class ProductDetail  {
-
+public class ProductImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    private Long id;
 
-    @Column(nullable = false, length = 255)
-    private String name;
-
-    @Column(nullable = false, length = 255)
-    private String value;
-
-    public ProductDetail(String name, String value) {
-        this.name = name;
-        this.value = value;
-    }
+    @Column(name = "name", nullable = false)
+        private String imageProduct;
 
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductEntity product;
+
+    public ProductImage(String imageUrl) {
+        this.imageProduct = imageUrl;
+    }
 }

@@ -1,32 +1,26 @@
 package com.springboot.laptop.controller;
-
 import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.UserCart;
-import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.request.CartRequestDTO;
-import com.springboot.laptop.service.impl.CartServiceImpl;
-import com.springboot.laptop.service.impl.UserServiceImpl;
+import com.springboot.laptop.service.CartService;
+import com.springboot.laptop.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
+
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/cart")
-//@SecurityRequirement(name = "bearerAuth")
 public class CartController {
-    private final CartServiceImpl cartService;
-    private final UserServiceImpl userService;
+    private final CartService cartService;
+    private final UserService userService;
 
 
     @Operation(summary = "Thêm vào giỏ",
@@ -45,8 +39,7 @@ public class CartController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
     @PostMapping("/add_to_cart")
     public Object addProductToCart(@RequestBody CartRequestDTO cartRequest) throws Exception {
-        UserCart userCart = cartService.addToCart(cartRequest.getProductId(), cartRequest.getQuantity());
-        return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
+        return ResponseEntity.ok().body(cartService.addToCart(cartRequest.getProductId(), cartRequest.getQuantity()));
     }
 
 
@@ -66,16 +59,12 @@ public class CartController {
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping("/all_cart_items")
     public ResponseEntity<?> getAllCartItem() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userService.findUserByUserName(username);
-        UserCart userCart = user.getCart();
-        return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
+        return ResponseEntity.ok().body(cartService.getAllCartDetails());
     }
 
     @Operation(summary = "Thêm / giảm số lượng ",
             description = "Thêm hoặc giảm số lượng sản phẩm trong giỏ hàng",security = {
             @SecurityRequirement(name = "bearer-key") },
-//            tags = {"Category"},
             responses = {
                     @ApiResponse(description = "Thành công", responseCode = "200",
                             content = @Content(schema = @Schema(implementation = CategoryEntity.class))
@@ -89,17 +78,8 @@ public class CartController {
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @PutMapping("/update/{productId}/{type}")
     public ResponseEntity<?> updateQuantityItem(@PathVariable Long productId, @PathVariable String type) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userService.findUserByUserName(username);
+        return ResponseEntity.ok().body(cartService.updateQuantityItem(productId, type));
 
-       try {
-           UserCart userCart = cartService.updateQuantityItem(user, productId, type);
-
-           return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
-
-       } catch (Exception ex) {
-           return ResponseEntity.badRequest().body(ex.getMessage());
-       }
     }
 
 
@@ -120,7 +100,6 @@ public class CartController {
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @DeleteMapping("/remove/{productId}")
     public ResponseEntity<?> removeCartItem(@PathVariable Long productId) {
-        UserCart userCart = cartService.removeCartItem(productId);
-       return ResponseEntity.ok().body(cartService.getAllCartDetails(userCart));
+       return ResponseEntity.ok().body(cartService.removeCartItem(productId));
     }
 }

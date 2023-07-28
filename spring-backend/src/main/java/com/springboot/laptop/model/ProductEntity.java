@@ -6,7 +6,9 @@ import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "products")
@@ -53,4 +55,7 @@ public class ProductEntity extends  BaseEntity  {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductDetail> details = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProductImage> images = new HashSet<>();
 }

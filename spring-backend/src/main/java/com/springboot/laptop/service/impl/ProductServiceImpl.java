@@ -2,25 +2,26 @@ package com.springboot.laptop.service.impl;
 
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.mapper.ProductMapper;
-import com.springboot.laptop.model.BrandEntity;
-import com.springboot.laptop.model.CategoryEntity;
-import com.springboot.laptop.model.ProductEntity;
+import com.springboot.laptop.model.*;
 //import com.springboot.laptop.model.dto.request.ProductDTO;
 import com.springboot.laptop.model.dto.ProductDTO;
+import com.springboot.laptop.model.dto.request.ProductDetailDTO;
+import com.springboot.laptop.model.dto.response.ProductResponseDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
+import com.springboot.laptop.repository.ProductDetailRepository;
 import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,24 +36,49 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
 
     private final ProductMapper productMapper;
+    private final CloudinaryService cloudinaryService;
+    private final ProductDetailRepository productDetailRepository;
 
     @Override
     public Object getOneProduct(Long productId)  {
-        productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        return productMapper.productToProductDTO(productRepository.findById(productId).get());
+        ProductEntity existingProduct =  productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm này rồi "));
+        return productMapper.productToProductDTO(existingProduct);
     }
+
     @Override
-    public Object updateStatus(Long productId, Boolean productStatus) {
-        productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        try {
-            productRepository.updateStatus(productId, productStatus);
-        } catch (Exception ex) {
-            throw ex;
+    public Object createOne(ProductDTO product, MultipartFile mainImageMultipart, MultipartFile[] extraImageMultiparts) throws ParseException {
+
+        ProductEntity convertEntity = productMapper.convertProductDTO(product);
+        CategoryEntity foundCate = categoryRepository.findById(product.getCategory()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
+        convertEntity.setCategory(foundCate);
+        BrandEntity foundBrand = brandRepository.findById(product.getBrand()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
+        convertEntity.setBrand(foundBrand);
+        convertEntity.setCreatedTimestamp(new Date());
+        List<ProductDetailDTO> updateDetail = product.getDetails();;
+
+        convertEntity.setDetails(new ArrayList<>());
+        for (ProductDetailDTO productDetailDTO : updateDetail) {
+
+            ProductDetail newDetail = new ProductDetail(productDetailDTO.getName(), productDetailDTO.getValue());
+            newDetail.setProduct(convertEntity);
+            convertEntity.getDetails().add(newDetail);
         }
-        List<ProductEntity> products =  productRepository.findAll();
-        List<ProductDTO> returnedProds = new ArrayList<>();
-        products.forEach(product -> returnedProds.add(productMapper.productToProductDTO(product)));
-        return returnedProds;
+
+        convertEntity.setPrimaryImage(cloudinaryService.uploadFile(mainImageMultipart));
+        convertEntity.setImages(new HashSet<>());
+        for (MultipartFile extraImageMultipart : extraImageMultiparts) {
+            ProductImage newImage = new ProductImage(cloudinaryService.uploadFile(extraImageMultipart));
+            newImage.setProduct(convertEntity);
+            convertEntity.getImages().add(newImage);
+        }
+        return productRepository.save(convertEntity);
+    }
+
+    @Override
+    public Object updateStatus(Long productId, boolean  productStatus) {
+        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+        existingProduct.setEnabled(productStatus);
+        return productMapper.productToProductDTO(productRepository.save(existingProduct));
     }
 
     @Override
@@ -61,62 +87,76 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDTO> getActiveProduct() {
-        List<ProductEntity> products =  productRepository.getActiveProducts() ;
-        List<ProductDTO> returnedProds = new ArrayList<>();
-        products.forEach(product -> returnedProds.add(productMapper.productToProductDTO(product)));
-        return returnedProds;
+    public List<ProductResponseDTO> getActiveProduct() {
+     return productRepository.getActiveProducts().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
     }
 
     @Override
-    public List<ProductDTO> getAllProduct() {
+    public List<ProductResponseDTO> getAllProduct() {
         return productRepository.findAll().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
     }
 
     @Override
-    public Object createOne(ProductDTO product) throws ParseException {
-        Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        if(product.getPrimaryImage().isBlank()) throw new CustomResponseException(StatusResponseDTO.IMAGE_NOT_FOUND);
-        if( product.getDiscount_percent() == null || product.getName() == "" || product.getOriginal_price() == null || product.getProductQuantity() == null || product.getDescription() == "")
-            throw new CustomResponseException(StatusResponseDTO.INFORMATION_IS_MISSING);
-        categoryRepository.findById(Long.valueOf(product.getCategory())).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
-        brandRepository.findById(Long.valueOf(product.getBrand())).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
+    public Object updateProduct(Long productId, ProductDTO updateProduct, MultipartFile mainImageMultipart,MultipartFile[] extraImageMultiparts) throws Exception {
 
-        ProductEntity newProduct = productMapper.productDTOToProduct(product);
-//        newProduct.setCreatedTimestamp(dateFormat.parse(dateFormat.format(date)));
-        newProduct.setCreatedTimestamp(new Date());
-        productRepository.save(newProduct);
-        return productRepository.findAll().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
-    }
-
-
-    @Override
-    public Object updateProduct(Long productId, ProductDTO updateProduct) throws ParseException {
         try {
-            productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-            Date date = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
-            if(updateProduct.getDiscount_percent() > 1.0 || updateProduct.getDiscount_percent() < 0.0 || updateProduct.getProductQuantity() < 0 || updateProduct.getOriginal_price() < 0.0)
-                throw new RuntimeException("Giá trị bạn nhập không hợp lệ");
-            updateProduct.setId(productId);
-            updateProduct.setModifiedDate(date);
-            ProductEntity saveProduct = productMapper.productDTOToProduct(updateProduct);
-            saveProduct.setId(updateProduct.getId());
-            productRepository.save(saveProduct);
-            return productRepository.findAll().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
+            if(updateProduct.isEmpty()) throw new RuntimeException("Vui long nhap day du thong tin");
 
+            ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() ->  new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+
+            existingProduct.setName(updateProduct.getName());
+            existingProduct.setEnabled(updateProduct.isEnabled());
+            existingProduct.setOriginal_price(updateProduct.getOriginal_price());
+            existingProduct.setDiscount_percent(updateProduct.getDiscount_percent());
+            existingProduct.setDescription(updateProduct.getDescription());
+            existingProduct.setInStock(updateProduct.isInStock());
+            existingProduct.setModifiedTimestamp(new Date());
+            existingProduct.setProductQuantity(updateProduct.getProductQuantity());
+            existingProduct.setCategory(categoryRepository.findById(updateProduct.getCategory()).get());
+
+
+            if(mainImageMultipart != null) existingProduct.setPrimaryImage(cloudinaryService.uploadFile(mainImageMultipart));
+
+
+            for (int i =0; i< updateProduct.getDetails().size(); i++) {
+
+                if(updateProduct.getDetails().get(i).getId() == null) {
+                    ProductDetail newDetail = new ProductDetail();
+                    newDetail.setName(updateProduct.getDetails().get(i).getName());
+                    newDetail.setValue(updateProduct.getDetails().get(i).getValue());
+                    newDetail.setProduct(existingProduct);
+                    existingProduct.getDetails().add(newDetail);
+
+                }
+
+            }
+
+            if(extraImageMultiparts != null) {
+
+                for (MultipartFile extraImageMultipart : extraImageMultiparts) {
+                    ProductImage newImage = new ProductImage(cloudinaryService.uploadFile(extraImageMultipart));
+                    newImage.setProduct(existingProduct);
+                    existingProduct.getImages().add(newImage);
+                }
+            }
+
+            return productMapper.productToProductDTO(productRepository.save(existingProduct));
         } catch (Exception ex) {
-            throw ex;
+            throw new Exception(ex);
         }
+
     }
 
     @Override
     public Object deleteProduct(Long productId)  {
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        productRepository.delete(existingProduct);
-        return productRepository.findAll().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
+        try {
+            productRepository.delete(existingProduct);
+            return "Delete successfully!";
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
 

@@ -171,6 +171,7 @@
 	</dependencyManagement>
 
 	<build>
+		<finalName>spring-boot-tech-shop</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

@@ -1,22 +1,23 @@
-package com.springboot.laptop.model.dto;
+package com.springboot.laptop.model.dto.response;
 
+import com.springboot.laptop.model.dto.BrandDTO;
+import com.springboot.laptop.model.dto.CategoryDTO;
+import com.springboot.laptop.model.dto.ImageDTO;
 import com.springboot.laptop.model.dto.request.ProductDetailDTO;
-import lombok.*;
-
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
-@Data
-public class ProductDTO {
+public class ProductResponseDTO {
 
-    public  ProductDTO () {}
 
     private Long id;
 
@@ -32,17 +33,11 @@ public class ProductDTO {
     private Date modifiedDate;
 
     private List<ProductDetailDTO> details;
-    private Long category;
+    private CategoryDTO category;
 
-    private Long brand;
+    private BrandDTO brand;
 
     private Long productQuantity;
 
-    private List<ImageDTO> images;
-
-    public boolean isEmpty() {
-        return (Objects.equals(this.name, "") || Objects.equals(this.description, "") || this.original_price == null || this.discount_percent == null ||
-                this.productQuantity == null );
-
-    }
+    private Set<ImageDTO> images;
 }

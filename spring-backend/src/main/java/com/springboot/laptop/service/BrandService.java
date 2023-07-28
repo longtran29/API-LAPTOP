@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface BrandService {
     public Object findById(Long brandId);
-    public List<BrandEntity> getAll();
+    public List<BrandDTO> getAllBrand();
     public Object createOne(BrandRequestDTO createBrand) ;
     public Object deleteOne(Long brandId);
     public Object updateOne(Long brandId, BrandRequestDTO updateBrand);

@@ -30,7 +30,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 //    create custom userdetail Service -  load user from db and validate password
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
+        UserEntity userEntity = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
         System.out.println("User entity in loadUserByUsername " + userEntity);
         return mapToUserDetails(userEntity);
     }
