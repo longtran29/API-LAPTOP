@@ -23,8 +23,7 @@ public class UserDTO {
     private String imgURL;
     private Boolean enabled;
 
-    private List<Address> addresses = new ArrayList<>();
+    private List<AddressDTO> addresses ;
 
-
-    private List<Order> orders = new ArrayList<>();
+    private List<Order> orders ;
 }

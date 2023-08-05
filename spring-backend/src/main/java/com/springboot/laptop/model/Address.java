@@ -2,6 +2,7 @@ package com.springboot.laptop.model;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class Address extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore             // prevent json bind when get the user information
     private UserEntity user;
 
     @NotEmpty(message = "Address must be not empty")
@@ -41,6 +43,7 @@ public class Address extends BaseEntity {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "address")
+
     List<Order> orders = new ArrayList<>();
 
 }

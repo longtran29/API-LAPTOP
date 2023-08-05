@@ -17,6 +17,7 @@ import com.springboot.laptop.repository.ResetTokenRepository;
 import com.springboot.laptop.repository.UserRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.service.MailService;
+import com.springboot.laptop.service.UserRoleService;
 import com.springboot.laptop.service.UserService;
 import com.springboot.laptop.utils.JwtUtility;
 import com.springboot.laptop.utils.ResetPasswordUtils;
@@ -24,7 +25,6 @@ import com.springboot.laptop.utils.UidUtils;
 import freemarker.template.Configuration;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
     private static final long MINUS_TO_EXPIRED = 10;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserRoleServiceImpl userRoleServiceImpl;
+    private final UserRoleService userRoleServiceImpl;
     private final ResetTokenRepository resetTokenRepository;
     private final MailService mailService;
     private final AuthenticationManager authenticationManager;
@@ -125,7 +125,6 @@ public class UserServiceImpl implements UserService {
             return responseDTO;
         }  catch (BadCredentialsException e) {
             throw new CustomResponseException(StatusResponseDTO.FAIL_AUTHENTICATION);
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tim thấy tài khoản nhé" , e);
         }
 
     }
@@ -138,9 +137,11 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(user.getEmail()))
             throw new CustomResponseException(StatusResponseDTO.EMAIL_IN_USE);
 
-        UserRoleEntity userRole = userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER);
         if (!user.getPassword().equals(user.getRePassword()))
             throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MATCH);
+
+        UserRoleEntity userRole = userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER);
+
         UserEntity appClient = UserEntity.builder().roles(List.of(userRole)).username(user.getUsername()).email(user.getEmail()).password(passwordEncoder.encode(user.getPassword())).enabled(true).build();
 
         try {
@@ -212,7 +213,8 @@ public class UserServiceImpl implements UserService {
         List<Address> userAddress = user.getAddresses();
         Address newAddress = Address.builder().address(requestDTO.getAddress()).city(requestDTO.getCity()).country(requestDTO.getCountry()).zipcode(requestDTO.getZipcode()).phoneNumber(requestDTO.getPhoneNumber()).user(user).build();
         userAddress.add(newAddress);
-        return userRepository.save(user);
+        return (userRepository.save(user));
+
     }
 
     @Override

@@ -4,8 +4,10 @@ package com.springboot.laptop.controller.admin;
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
-import com.springboot.laptop.service.impl.UserServiceImpl;
+//import com.springboot.laptop.service.impl.UserServiceImpl;
+import com.springboot.laptop.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -18,24 +20,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/user")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
 public class UserManagementController {
 
-
-    private final UserServiceImpl userService;
-
-    @Autowired
-    public UserManagementController(UserServiceImpl userService) {
-        this.userService = userService;
-    }
-
-
-
+    private final UserService userService;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/list")
     public ResponseEntity<?> managementUser() {
-        List<UserEntity> users = userService.getAll();
-        return ResponseEntity.ok().body(users);
+        return ResponseEntity.ok().body(userService.getAll());
     }
 
 

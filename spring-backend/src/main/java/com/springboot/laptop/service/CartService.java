@@ -17,6 +17,6 @@ public interface CartService {
 
     public UserCartDTO updateQuantityItem(Long productId, String type);
 
-    public UserCartDTO removeCartItem(Long productId);
+    public Object removeCartItem(Long productId);
 
 }

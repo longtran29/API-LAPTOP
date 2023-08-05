@@ -15,7 +15,6 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class ProductDetail  {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;

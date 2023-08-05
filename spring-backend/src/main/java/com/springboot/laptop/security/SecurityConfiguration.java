@@ -99,7 +99,7 @@ public class SecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeRequests()
-                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**", "/**/brands/**", "/**/uploadImage", "/**/forgotPassword/**", "/**/reset-password", "/**/register", "/**/orders/create-payment-intent/**", "/**/upload/**").permitAll()
+                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**", "/**/brands/**", "/**/uploadImage", "/**/forgotPassword/**", "/**/reset-password", "/**/register", "/**/orders/create-payment-intent/**", "/**/upload/**", "/**/success/**", "/**/create_order/**").permitAll()
 
                 .anyRequest().authenticated()
                 .and().exceptionHandling()

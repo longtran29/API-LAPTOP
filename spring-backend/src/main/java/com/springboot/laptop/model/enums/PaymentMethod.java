@@ -3,7 +3,9 @@ package com.springboot.laptop.model.enums;
 public enum PaymentMethod {
 
     CASH("Tiền mặt"),
-    CREDIT_CARD("Thẻ tín dụng");
+    CREDIT_CARD("Thẻ tín dụng"),
+
+    PAY_PAL("Thẻ paypal");
 
     private final String name;
 
