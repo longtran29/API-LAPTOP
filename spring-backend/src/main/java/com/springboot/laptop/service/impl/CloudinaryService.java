@@ -19,7 +19,6 @@ public class CloudinaryService {
         try {
             File uploadedFile = convertMultiPartToFile(file);
             Map uploadResult = cloudinaryConfig.cloudinaryConfig().uploader().upload(uploadedFile, ObjectUtils.emptyMap());
-            System.out.println("Url uploaded " + uploadResult.get("url").toString());
             return  uploadResult.get("url").toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -28,9 +27,6 @@ public class CloudinaryService {
 
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
         File convFile = new File(file.getOriginalFilename());
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(file.getBytes());
-        fos.close();
         return convFile;
     }
 

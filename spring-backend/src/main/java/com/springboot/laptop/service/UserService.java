@@ -1,5 +1,6 @@
 package com.springboot.laptop.service;
 
+import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.AddressDTO;
 import com.springboot.laptop.model.dto.UserDTO;

@@ -92,25 +92,19 @@ public class CartServiceImpl implements CartService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         UserCart userCart = user.getCart();
-
         List<CartResponseDTO> listCart = new ArrayList<>();
-        try {
-            for(CartDetails cartDetail : userCart.getCartDetails()) {
-                CartResponseDTO cart = new CartResponseDTO();
-                cart.setQuantity(cartDetail.getQuantity());
-                cart.setProduct(productMapper.productToProductDTO(productRepository.findById(cartDetail.getProduct().getId()).orElse(null)));
-                listCart.add(cart);
-            }
-            return listCart;
+        if (userCart != null) {
 
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            userCart.getCartDetails().forEach(cartDetail -> {
+                listCart.add(CartResponseDTO.builder().quantity(cartDetail.getQuantity()).product(productMapper.productToProductDTO(productRepository.findById(cartDetail.getProduct().getId()).orElse(null))).build());
+            });
+
         }
+        return listCart;
     }
 
-
     @Override
-    public UserCartDTO removeCartItem(Long productId) {
+    public Object removeCartItem(Long productId) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
@@ -126,7 +120,7 @@ public class CartServiceImpl implements CartService {
         else {
             throw new NoSuchElementException();
         }
-        return cartMapper.cartToDTO(cartRepository.save(userCart));
+        return "Xóa thành công";
     }
 
     @Override
@@ -147,8 +141,12 @@ public class CartServiceImpl implements CartService {
                         product.setProductQuantity(product.getProductQuantity() -1);
                         if(product.getProductQuantity() -1 == 0 ) product.setInStock(false);
                     } else {
-                        cartDetail.setQuantity(cartDetail.getQuantity()-1);
-                        product.setProductQuantity(product.getProductQuantity() +1);
+                        if(cartDetail.getQuantity() == 1) {
+                            removeCartItem(productId);
+                        } else {
+                            cartDetail.setQuantity(cartDetail.getQuantity()-1);
+                            product.setProductQuantity(product.getProductQuantity() +1);
+                        }
                     }
                     cartDetail.setModifiedTimestamp(new Date());
                 }
