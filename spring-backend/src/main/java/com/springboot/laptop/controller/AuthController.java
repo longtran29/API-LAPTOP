@@ -33,9 +33,6 @@ import java.io.IOException;
 @RequestMapping("/api/v1")
 public class AuthController {
     private final UserService userService;
-    private final CloudinaryService cloudinaryService;
-
-
 
     @Operation(summary = "Đăng ký ",
             description = "Đăng ký tài khoản mới",
@@ -82,8 +79,7 @@ public class AuthController {
     @PostMapping("/user/addAddress")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> addAddress(@RequestBody AddressDTO requestAddress) {
-        UserEntity user = userService.addNewAddress(requestAddress);
-        return ResponseEntity.ok((getUserInformation()));
+        return ResponseEntity.ok().body(userService.addNewAddress(requestAddress));
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
@@ -97,12 +93,6 @@ public class AuthController {
     @GetMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
        return ResponseEntity.ok(userService.logoutUser(request,response));
-    }
-
-    @PostMapping("/upload")
-    public String uploadFile(@Param("file") MultipartFile file) {
-        String url = cloudinaryService.uploadFile(file);
-        return url;
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
