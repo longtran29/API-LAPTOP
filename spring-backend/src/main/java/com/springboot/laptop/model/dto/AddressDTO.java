@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 @Builder
 public class AddressDTO {
-
+    private Long id;
 
     private String address;
     private String city;

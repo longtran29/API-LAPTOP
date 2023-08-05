@@ -19,7 +19,6 @@ public class CartDetails extends  BaseEntity{
     @Min(1)
     private Long quantity;
 
-
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name="cart_id", referencedColumnName = "id")

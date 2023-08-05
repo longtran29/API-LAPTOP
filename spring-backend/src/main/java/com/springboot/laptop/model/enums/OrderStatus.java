@@ -2,6 +2,10 @@ package com.springboot.laptop.model.enums;
 
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 public enum OrderStatus {
     NEW("Chờ xác nhận"),
     SHIPPED("Đang giao hàng"),
@@ -14,7 +18,6 @@ public enum OrderStatus {
 
     private final String name;
 
-
     public static OrderStatus getStatus(String statusName) {
         if(statusName == null || statusName.trim().length()== 0) {
             return null;
@@ -26,6 +29,10 @@ public enum OrderStatus {
             }
             return null;
         }
+    }
+
+    public static boolean checkExists(String updatedStatus) {
+        return Arrays.stream(OrderStatus.values()).anyMatch(status -> status.getName().equals(updatedStatus));
     }
     OrderStatus(String name) {
         this.name = name;

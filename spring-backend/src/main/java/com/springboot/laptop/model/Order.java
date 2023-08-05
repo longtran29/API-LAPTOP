@@ -1,6 +1,7 @@
 package com.springboot.laptop.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.springboot.laptop.model.enums.OrderStatus;
@@ -23,10 +24,19 @@ import java.util.List;
 
 // named the table to  prevent the reversed keyword "order ...by" when querying
 @Table(name="orders")
-public class Order extends  BaseEntity{
-//    @JsonBackReference
+public class Order{
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
+
+    @Column(name ="created_timestamp",nullable = true)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdTimestamp;
+
     @ManyToOne
     @JoinColumn(name= "user_id", referencedColumnName = "id")
+    @JsonIgnore
     private UserEntity user;
 
     @JsonManagedReference

@@ -1,5 +1,6 @@
 package com.springboot.laptop.model.dto.request;
 
+import com.springboot.laptop.model.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,5 +11,5 @@ import lombok.Setter;
 public class ChangeStatusDTO {
 
     private Long orderId;
-    private  String statusName;
+    private String status;
 }

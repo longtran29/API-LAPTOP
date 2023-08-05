@@ -4,8 +4,6 @@ public enum StatusResponseDTO {
     EMAIL_NOT_BLANK("400", "Email không được để trống"),
     ERROR_NOT_FOUND("404", "Không tìm thấy dữ liệu"),
     INTERNAL_SERVER("500", "Hệ thống đang bị gián đoạn! Xin vui lòng thử lại sau"),
-
-
     CATEGORY_CONFLICT_BRAND("500", "Danh mục này đang được nhãn hàng kinh doanh"),
     CATEGORY_CONFLICT_PRODUCTS("500", "Sản phẩm thuộc danh mục này đang được kinh doanh"),
     PASSWORD_NOT_MATCH("500", "Hai mật khẩu không trùng nhau"),
