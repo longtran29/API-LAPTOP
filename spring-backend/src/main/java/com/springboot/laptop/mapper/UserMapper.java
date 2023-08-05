@@ -1,6 +1,5 @@
 package com.springboot.laptop.mapper;
 
-
 import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.dto.UserDTO;
 import org.mapstruct.Mapper;
