@@ -81,34 +81,34 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Object getOrderDetails(Long orderId) {
+    public Object getOrderDetails(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         return orderMapper.orderToDTO(order);
     }
-
     @Override
-    public Order cancelOrders(Long orderId) {
+    public Object cancelOrders(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND));
-        if(order.getOrderStatus().equals(OrderStatus.SHIPPED)) {
+        if(order.getOrderStatus().equals(OrderStatus.SHIPPED) || order.getOrderStatus().equals(OrderStatus.ON_THE_WAY)) {
             throw new CustomResponseException(StatusResponseDTO.ORDER_CANCEL_VIOLATION);
         }
-        if(order.getOrderStatus().equals(OrderStatus.REJECTED)) throw new CustomResponseException(StatusResponseDTO.ORDER_REJECTED_VIOLATION);
         if(order.getOrderStatus().equals(OrderStatus.CANCELED)) throw new CustomResponseException(StatusResponseDTO.ORDER_CANCELED_VIOLATION);
         if(order.getOrderStatus().equals(OrderStatus.DELIVERED)) throw new CustomResponseException(StatusResponseDTO.ORDER_DELIVERED_VIOLATION);
         order.setOrderStatus(OrderStatus.CANCELED);
-        return orderRepository.save(order);
+        return orderMapper.orderToDTO(orderRepository.save(order));
     }
 
     @Override
     public OrderResponseDTO changeStatus(ChangeStatusDTO changeStatusDTO) {
-        OrderStatus status = OrderStatus.getStatus(changeStatusDTO.getStatus());
-        if(status == null) throw new RuntimeException("Not valid order status");
+        try {
+        OrderStatus status = OrderStatus.valueOfCode(changeStatusDTO.getStatus());
+            Order order = orderRepository.findById(changeStatusDTO.getOrderId()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND));
+            order.setOrderStatus(status);
 
-//        boolean isExist = OrderStatus.checkExists(changeStatusDTO.getStatus());
-//        if(!isExist) throw new RuntimeException("Not valid order status");
-        Order order = orderRepository.findById(changeStatusDTO.getOrderId()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND));
-        order.setOrderStatus(status);
-        return orderMapper.orderToDTO(orderRepository.save(order));
+            return orderMapper.orderToDTO(orderRepository.save(order));
+
+        } catch(Exception ex) {
+            throw ex;
+        }
     }
 
 
@@ -126,7 +126,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order findById(Long orderId) {
+    public Order findById(String orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.ORDER_NOT_FOUND));
     }
 

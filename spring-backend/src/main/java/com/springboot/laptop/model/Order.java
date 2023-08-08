@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.model.enums.PaymentMethod;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -27,8 +28,11 @@ import java.util.List;
 public class Order{
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+//    @GeneratedValue(strategy = GenerationType.AUTO, generator = "order_generator")
+    @GeneratedValue(generator = "orderIdGenerator")
+    @GenericGenerator(name = "orderIdGenerator",
+            strategy = "com.springboot.laptop.utils.OrderGenerator")
+    private String id;
 
     @Column(name ="created_timestamp",nullable = true)
     @Temporal(TemporalType.TIMESTAMP)

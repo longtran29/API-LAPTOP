@@ -1,0 +1,13 @@
+ALTER TABLE order_detail
+DROP CONSTRAINT fk_order_detail_on_order CASCADE;
+
+ALTER TABLE orders DROP COLUMN id;
+
+ALTER TABLE orders ADD id VARCHAR(255) NOT NULL PRIMARY KEY;
+
+ALTER TABLE order_detail DROP COLUMN order_id;
+
+ALTER TABLE order_detail ADD order_id VARCHAR(255);
+
+
+ALTER TABLE order_detail ADD CONSTRAINT FK_ORDER_DETAIL_ON_ORDER FOREIGN KEY (order_id) REFERENCES orders (id);

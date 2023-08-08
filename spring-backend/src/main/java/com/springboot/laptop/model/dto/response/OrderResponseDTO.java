@@ -23,7 +23,7 @@ import java.util.List;
 @Builder
 public class OrderResponseDTO {
 
-    private Long id;
+    private String id;
 
     private UserDTO user;
 

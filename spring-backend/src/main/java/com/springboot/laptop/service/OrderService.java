@@ -15,11 +15,11 @@ public interface OrderService {
 
     public List<OrderResponseDTO> getOrders();
 
-    public Order cancelOrders(Long orderId);
+    public Object cancelOrders(String orderId);
     public OrderResponseDTO changeStatus(ChangeStatusDTO changeStatusDTO);
     public List<OrderResponseDTO> getUserOrders();
 
-    public Order findById(Long orderId);
+    public Order findById(String orderId);
 
     Order saveOrder(Long addressId, PaymentMethod paymentMethod);
 
@@ -27,6 +27,6 @@ public interface OrderService {
 
     public Object sendMail4Order(OrderCompleted order);
 
-    public Object getOrderDetails(Long orderId) ;
+    public Object getOrderDetails(String orderId) ;
 
 }
