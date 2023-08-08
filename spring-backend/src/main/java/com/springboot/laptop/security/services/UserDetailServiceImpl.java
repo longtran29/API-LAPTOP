@@ -19,13 +19,8 @@ import java.util.stream.Collectors;
 @Service
 public class UserDetailServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
-
     @Autowired
-    public UserDetailServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
+    private  UserRepository userRepository;
 
 //    create custom userdetail Service -  load user from db and validate password
     @Override
