@@ -34,6 +34,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -56,10 +58,9 @@ public class UserServiceImpl implements UserService {
     private static final String RESET_PASSWORD_TEMPLATE_NAME = "reset_password.ftl";
     private static final String FROM = "Laptop Store<%s>";
     private static final String SUBJECT = "QUÊN MẬT KHẨU";
-    private static final String DOMAIN_CLIENT = "http://localhost:3000/reset-password";
+    private static final String DOMAIN_CLIENT = "http://localhost:3000/account/reset-password";
     private static final long MINUS_TO_EXPIRED = 10;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserRoleService userRoleServiceImpl;
     private final ResetTokenRepository resetTokenRepository;
     private final MailService mailService;
@@ -74,6 +75,8 @@ public class UserServiceImpl implements UserService {
     private final Configuration configuration;
 
     private final JavaMailSender mailSender;
+
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
     public static String toStr(Date date, String format) {
@@ -159,8 +162,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserEntity> getAll() {
-        return userRepository.findAll();
+    public List<UserDTO> getAll() {
+        return userRepository.findAll().stream().map(userMapper::userToUserDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -176,26 +179,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity updateStatus(Long customerId, String status) {
-        Boolean updateStatus = status.equalsIgnoreCase("enabled");
-        userRepository.findById(customerId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));;
-        return userRepository.updateStatus(customerId, updateStatus);
-
+    public Object updateStatus(Long customerId, String status) {
+        try {
+            Boolean updateStatus = status.equalsIgnoreCase("enabled");
+            userRepository.findById(customerId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));;
+            userRepository.updateStatus(customerId, updateStatus);
+            return "Successfully";
+        } catch (Exception ex) {
+            throw ex;
+        }
     }
 
     // use modelMapper instead - update later
     @Override
-    public UserEntity updateInformation(UserDTO userRequest) throws Exception {
+    public UserEntity updateInformation(UpdateInformationDTO userRequest) throws Exception {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsernameIgnoreCase(username).get();
-        if (!userRequest.getName().isEmpty() && !Objects.isNull(userRequest.getName())) {
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+
+        if (!Objects.isNull(userRequest.getName())) {
             user.setName(userRequest.getName());
         }
-        if (!userRequest.getPhoneNumber().isEmpty() && !Objects.isNull(userRequest.getPhoneNumber())) {
+        if (!Objects.isNull(userRequest.getPhoneNumber())) {
 
             user.setPhoneNumber(userRequest.getPhoneNumber());
         }
-        if (!userRequest.getImgURL().isEmpty() && !Objects.isNull(userRequest.getImgURL())) {
+        if (!Objects.isNull(userRequest.getImgURL())) {
             user.setImgURL(userRequest.getImgURL());
         }
         try {
@@ -227,7 +235,6 @@ public class UserServiceImpl implements UserService {
     public Object sendVerificationEmail(String email) throws IOException {
 
         if (!StringUtils.hasText(email)) {
-            // call StatusResponseDTO.EMAIL_NOT_BLANK -> return ("404", "Không tìm thấy dữ liệu") gồm code 404 và message
             throw new CustomResponseException(StatusResponseDTO.EMAIL_NOT_BLANK);        }
 
         UserEntity existingUser = userRepository.findByEmail(email).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));;
@@ -253,21 +260,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity newPassword(NewPasswordRequest newPasswordRequest) {
+    public Object updatePassword(NewPasswordRequest newPasswordRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity userExist = userExist = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        UserEntity userExist  = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
-        if (StringUtils.hasText(newPasswordRequest.getNewPassword()) && StringUtils.hasText(newPasswordRequest.getRetypeNewPassword())) {
-            if (newPasswordRequest.getNewPassword().equals(newPasswordRequest.getRetypeNewPassword())) {
-                userExist.setPassword(passwordEncoder.encode(newPasswordRequest.getNewPassword()));
-                userRepository.save(userExist);
-                return userExist;
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hai mật khẩu không trùng nhau");
-            }
-        } else {
+        if(!passwordEncoder.matches(newPasswordRequest.getOldPassword(), userExist.getPassword())) throw new RuntimeException("Mật khẩu cũ không đúng !");
+
+        if(!StringUtils.hasText(newPasswordRequest.getNewPassword()) || !StringUtils.hasText(newPasswordRequest.getRetypeNewPassword()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu không được để trống");
-        }
+
+        if (!newPasswordRequest.getNewPassword().equals(newPasswordRequest.getRetypeNewPassword()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hai mật khẩu không trùng nhau");
+        userExist.setPassword(passwordEncoder.encode(newPasswordRequest.getNewPassword()));
+        return userMapper.userToUserDTO(userRepository.save(userExist));
+
     }
 
 
@@ -298,10 +304,11 @@ public class UserServiceImpl implements UserService {
         try {
             ResetPasswordUtils.validConstraint(payload);
 
-            ResetTokenEntity resetToken = resetTokenRepository.findByToken(payload.getToken());
+            ResetTokenEntity resetToken = resetTokenRepository.findByToken(payload.getToken()).orElseThrow(() -> new RuntimeException("Token is not valid !"));
+            if(!payload.getPassword().equals(payload.getRetypePassword())) throw new RuntimeException("Password is not matching");
             UserEntity existingUser = userRepository.findById(resetToken.getUserId().getId()).get();
 
-            existingUser.setPassword(passwordEncoder.encode(payload.getNewPassword()));
+            existingUser.setPassword(passwordEncoder.encode(payload.getPassword()));
 
             resetToken.setActive(false);
             resetTokenRepository.save(resetToken);

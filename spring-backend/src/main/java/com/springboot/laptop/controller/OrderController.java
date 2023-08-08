@@ -50,25 +50,10 @@ public class OrderController {
         return ResponseEntity.ok().body(orderService.checkout(orderRequest));
     }
 
-    @Operation(summary = "API lấy tất cả đơn hàng cho quản trị viên")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/admin/get_all_orders")
-    public ResponseEntity<?> manageOrders4Admin() {
-        return ResponseEntity.ok().body(orderService.getOrders());
-    }
-
-    @Operation(summary = "API cập nhật trang thái đơn hàng - chỉ cho quản trị viên")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PutMapping("/admin/change_status")
-    public ResponseEntity<?> changeStatusOrderAdmin(@RequestBody ChangeStatusDTO changeStatusDTO) {
-        return ResponseEntity.ok().body(orderService.changeStatus(changeStatusDTO));
-    }
-
-
     @Operation(summary = "API hủy đơn hàng")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    @PostMapping("/cancel_order/{orderId}")
-    public Object cancelOrders(@PathVariable Long orderId) {
+    @PutMapping("/cancel_order/{orderId}")
+    public Object cancelOrders(@PathVariable String orderId) {
        return ResponseEntity.ok().body(orderService.cancelOrders(orderId));
     }
 
@@ -80,19 +65,18 @@ public class OrderController {
     }
 
 
-    @Operation(summary = "API xem chi tiết đơn hàng")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/admin/{orderId}")
-    public ResponseEntity<?> getOrderDetail(@PathVariable Long orderId) {
-        return ResponseEntity.ok().body(orderService.getOrderDetails(orderId));
-    }
-
     @Operation(summary = "API gủi mail thông báo đơn hàng")
-    @PostMapping("/sendOrderNotification")
-    public ResponseEntity<?> sendOrderNotification(@RequestBody OrderCompleted order) {
+    @PostMapping("/send_order_detail")
+    public ResponseEntity<?> getOrderDetail(@RequestBody OrderCompleted order) {
         return ResponseEntity.ok().body(orderService.sendMail4Order(order));
     }
 
+    @Operation(summary = "API xem chi tiết đơn hàng")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @GetMapping("/detail/{orderId}")
+    public ResponseEntity<?> getOrderDetail(@PathVariable String orderId) {
+        return ResponseEntity.ok().body(orderService.getOrderDetails(orderId));
+    }
 
     // REMOVED - PLACED BY PAYPAL
 //    @PostMapping(value = "/create-payment-intent", consumes={"application/json"})

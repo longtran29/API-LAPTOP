@@ -20,5 +20,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     @Query("UPDATE UserEntity p SET p.enabled=?2 WHERE p.id = ?1")
     @Modifying(clearAutomatically=true)
-    public UserEntity updateStatus(Long id, Boolean enabled);
+    public void updateStatus(Long id, Boolean enabled);
 }

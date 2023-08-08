@@ -10,6 +10,6 @@ import lombok.Setter;
 @Setter
 public class ChangeStatusDTO {
 
-    private Long orderId;
+    private String orderId;
     private String status;
 }

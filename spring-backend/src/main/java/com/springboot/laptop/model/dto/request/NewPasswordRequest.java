@@ -11,8 +11,13 @@ import javax.validation.constraints.NotBlank;
 @Setter
 @Builder
 public class NewPasswordRequest {
+
+    @NotBlank(message = "Vui lòng nhập mật khẩu cũ")
+    private String oldPassword;
+
     @NotBlank(message = "Vui lòng nhập password ")
     private String newPassword;
+
     @NotBlank(message = "Vui lòng nhập xác nhận password")
     private String retypeNewPassword;
 }

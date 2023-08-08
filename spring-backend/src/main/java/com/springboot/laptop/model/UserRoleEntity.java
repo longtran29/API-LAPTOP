@@ -2,6 +2,7 @@ package com.springboot.laptop.model;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.springboot.laptop.model.enums.UserRoleEnum;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class UserRoleEntity extends BaseEntity {
 
     private String description;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "roles")
     private List<UserEntity> users = new ArrayList<>();
 }

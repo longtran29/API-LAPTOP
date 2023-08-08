@@ -96,25 +96,25 @@ public class AuthController {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    @PutMapping("/updateInformation")
+    @PutMapping("/user/update_profile")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateInformation(@RequestBody UserDTO userRequestDTO) throws Exception {
+    public ResponseEntity<?> updateInformation(@RequestBody UpdateInformationDTO userRequestDTO) throws Exception {
             return ResponseEntity.ok().body(userService.updateInformation(userRequestDTO));
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    @PostMapping("/resetPassword")
+    @PutMapping("/user/update_password")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> newPassword(@Valid @RequestBody NewPasswordRequest newPasswordRequest)  {
-        return ResponseEntity.ok().body((userService.newPassword(newPasswordRequest)));
+        return ResponseEntity.ok().body((userService.updatePassword(newPasswordRequest)));
     }
 
-    @GetMapping("/forgotPassword/{email}")
+    @GetMapping("/forgot_password/{email}")
     public ResponseEntity<?> forgetPassword(@PathVariable("email") String email) throws IOException {
         return ResponseEntity.status(HttpStatus.OK).body(userService.sendVerificationEmail(email));
     }
 
-    @PostMapping("/reset-password")
+    @PostMapping("/reset_password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO payload) throws Exception {
         return ResponseEntity.ok().body(userService.resetPassword(payload));
     }

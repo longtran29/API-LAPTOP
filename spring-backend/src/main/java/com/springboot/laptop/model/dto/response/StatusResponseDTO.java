@@ -2,7 +2,6 @@ package com.springboot.laptop.model.dto.response;
 
 public enum StatusResponseDTO {
     EMAIL_NOT_BLANK("400", "Email không được để trống"),
-    ERROR_NOT_FOUND("404", "Không tìm thấy dữ liệu"),
     INTERNAL_SERVER("500", "Hệ thống đang bị gián đoạn! Xin vui lòng thử lại sau"),
     CATEGORY_CONFLICT_BRAND("500", "Danh mục này đang được nhãn hàng kinh doanh"),
     CATEGORY_CONFLICT_PRODUCTS("500", "Sản phẩm thuộc danh mục này đang được kinh doanh"),
@@ -16,18 +15,12 @@ public enum StatusResponseDTO {
     DATA_EMPTY("500", "Vui lòng điền dữ liệu"),
     PRODUCT_OUT_STOCK("500", "Không đủ hàng trong kho. Vui lòng liên hệ quản trị viên để được hỗ trợ"),
     ROLE_NOT_FOUND("404", "Không tồn tại quyền này trên hệ thống"),
-    ORDER_CANCEL_VIOLATION("500", "Đơn hàng đang được giao không thể huỷ"),
-    ORDER_REJECTED_VIOLATION("500", "Đơn hàng bị từ chối bởi quản trị viên"),
-    ORDER_CANCELED_VIOLATION("500", "Đơn hàng này đã được huỷ"),
-    ORDER_DELIVERED_VIOLATION("500", "Đơn hàng đã được thanh toán rồi"),
-    ORDER_SHIPPED_VIOLATION("500", "Đơn hàng này đang được shipper giao "),
-
-    CUSTOMER_VIOLATION_EXCEPTION("500", "Khách hàng đã có đơn hàng "),
-
+    ORDER_CANCEL_VIOLATION("500", "Đơn hàng đã được tiến hành đi giao không thể huỷ"),
+    ORDER_CANCELED_VIOLATION("500", "Đơn hàng đã được huỷ rồi"),
+    ORDER_DELIVERED_VIOLATION("500", "Đơn hàng đã được giao thành công rồi"),
     CUSTOMER_NOT_FOUND("404", "Không tồn tại người dùng này "),
     CART_NOT_EXIST("500", "Không có sản phẩm nào trong giỏ hàng"),
 
-    VALUE_NOT_VALID("500", "Giá tri bạn nhập không hợp lệ"),
 
     INFORMATION_IS_MISSING("500", "Bạn chưa nhập đủ thông tin !"),
     BRAND_CONSTRAINT_EXCEPTION("500", "Thương hiệu đang kinh doanh sản phẩm  "),
@@ -39,11 +32,6 @@ public enum StatusResponseDTO {
 
     CATEGORY_NOT_FOUND("404", "Không tìm thấy danh mục này"),
     USER_NOT_FOUND("404", "Không tìm thấy khách hàng này"),
-
-    TOKEN_NOT_VALID ("500", "Token không hợp lệ"),
-
-    IMAGE_NOT_FOUND("400", "Không tìm thấy ảnh"),
-
     BRAND_NOT_FOUND("404", "Không tìm thấy hãng sản xuất"),
     PRODUCT_NOT_FOUND("404", "Không tìm thấy sản phẩm"),
     ORDER_NOT_FOUND("404", "Không tìm thấy đơn hàng này"),

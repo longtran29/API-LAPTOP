@@ -2,6 +2,7 @@ package com.springboot.laptop.model.dto;
 
 import com.springboot.laptop.model.Address;
 import com.springboot.laptop.model.Order;
+import com.springboot.laptop.model.UserRoleEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,4 +27,6 @@ public class UserDTO {
     private List<AddressDTO> addresses ;
 
     private List<Order> orders ;
+
+    private List<UserRoleEntity> roles;
 }

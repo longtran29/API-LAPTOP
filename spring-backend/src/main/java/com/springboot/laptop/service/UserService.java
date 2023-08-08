@@ -17,13 +17,13 @@ public interface UserService {
     public boolean userExists(String username, String email);
     public UserEntity findUserByUserName(String username);
     public Object sendVerificationEmail(String email) throws IOException;
-    public UserEntity newPassword(NewPasswordRequest newPasswordRequest);
-    public UserEntity updateInformation(UserDTO userRequestDTO) throws Exception;
+    public Object updatePassword(NewPasswordRequest newPasswordRequest);
+    public UserEntity updateInformation(UpdateInformationDTO userRequestDTO) throws Exception;
     public Object resetPassword(ResetPasswordDTO payload) throws Exception;
-    public UserEntity updateStatus(Long customerId, String status);
+    public Object updateStatus(Long customerId, String status);
     public Object deleteCustomer(Long customerId);
 
-    public List<UserEntity> getAll();
+    public List<UserDTO> getAll();
 
     public Object getUserInformation();
 

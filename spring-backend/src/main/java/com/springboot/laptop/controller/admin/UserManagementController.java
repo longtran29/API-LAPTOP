@@ -39,7 +39,7 @@ public class UserManagementController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @DeleteMapping("/{customerId}")
+    @DeleteMapping("/remove/{customerId}")
     public Object deleteUser(@PathVariable Long customerId) throws Exception {
         return userService.deleteCustomer(customerId);
     }

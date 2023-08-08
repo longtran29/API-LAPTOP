@@ -26,18 +26,15 @@ public class ResetPasswordUtils {
     }
 
     public static void validConstraint(ResetPasswordDTO payload) throws Exception {
-        if(!StringUtils.hasText(payload.getToken()) || !StringUtils.hasText(payload.getNewPassword())) {
+        if(!StringUtils.hasText(payload.getToken()) || !StringUtils.hasText(payload.getPassword()) || !StringUtils.hasText(payload.getRetypePassword())) {
             throw new CustomResponseException((StatusResponseDTO.RESET_PASSWORD_FAILED));
         }
-        ResetTokenEntity resetToken = resetTokenRepository.findByToken(payload.getToken());
-        if(resetToken == null ) throw new CustomResponseException((StatusResponseDTO.RESET_PASSWORD_FAILED));
-
-
+        ResetTokenEntity resetToken = resetTokenRepository.findByToken(payload.getToken()).orElseThrow(() -> new RuntimeException("Token is not valid"));
         // check expiration
         LocalDateTime createdDate = DateUtils.dateToLocalDateTime(resetToken.getCreatedDate());
         createdDate = createdDate.plusMinutes(10L); // the symbol "L" states for long type
         if(createdDate.isBefore(LocalDateTime.now())) {
-            throw new CustomResponseException(StatusResponseDTO.RESET_PASSWORD_FAILED);
+            throw new RuntimeException("Token has been expired !");
         }
 
     }
