@@ -57,7 +57,7 @@ public class Order{
     @Column(name = "order_status")
     OrderStatus orderStatus;
 
-    @JsonBackReference
+//    @JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL)
     private Address address;
 
