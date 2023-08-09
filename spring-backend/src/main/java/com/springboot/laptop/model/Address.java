@@ -41,9 +41,10 @@ public class Address extends BaseEntity {
     @Column(name="phone_number", nullable = false)
     private String phoneNumber;
 
-//    @JsonManagedReference
+    //    @JsonManagedReference
     @JsonIgnore
     @OneToMany(mappedBy = "address")
     List<Order> orders = new ArrayList<>();
+
 
 }
