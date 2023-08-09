@@ -83,7 +83,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Object getOrderDetails(String orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
-        return orderMapper.orderToDTO(order);
+        return order;
+        // return orderMapper.orderToDTO(order);
     }
     @Override
     public Object cancelOrders(String orderId) {
