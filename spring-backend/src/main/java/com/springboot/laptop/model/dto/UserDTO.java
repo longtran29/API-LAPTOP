@@ -7,7 +7,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -20,6 +24,9 @@ public class UserDTO {
     private String email;
     private String name;
     private String phoneNumber;
+
+    @Temporal(TemporalType.DATE)
+    private Date createdTimestamp;
 
     private String imgURL;
     private Boolean enabled;

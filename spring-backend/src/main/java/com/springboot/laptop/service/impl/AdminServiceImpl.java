@@ -3,6 +3,7 @@ package com.springboot.laptop.service.impl;
 import com.springboot.laptop.model.dto.response.CategoryRevenueDto;
 import com.springboot.laptop.model.dto.response.DashboardDTO;
 import com.springboot.laptop.model.dto.response.ReportDTO;
+import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.repository.OrderRepository;
 import com.springboot.laptop.service.AdminService;
 import com.springboot.laptop.utils.JpaUtils;
@@ -26,14 +27,14 @@ public class AdminServiceImpl implements AdminService {
 
         DashboardDTO dto = new DashboardDTO();
 
-        report.setPending(orderRepository.countNewOrders(0));
-        report.setCancel(orderRepository.countRejectAndCancelToday());
+        report.setPending(orderRepository.countNewOrders(OrderStatus.NEW.toString()));
+        report.setCancel(orderRepository.countCancelToday(OrderStatus.CANCELED.toString()));
         report.setToday(orderRepository.totalRevenueToday());
-        report.setWeek(orderRepository.totalRevenueThisWeek());
+        report.setWeek(orderRepository.sumTotalForDeliveredOrdersThisWeek());
 
         List<Object[]> objects = orderRepository.getCategoryRevenue();
         dto.setCategory(objects.stream().map(obj -> CategoryRevenueDto.builder()
-                .id(JpaUtils.getString(obj[0]))
+                .id(JpaUtils.getLong(obj[0]))
                 .name(JpaUtils.getString(obj[1]))
                 .revenue(JpaUtils.getLong(obj[2]))
                 .build()).collect(Collectors.toList()));

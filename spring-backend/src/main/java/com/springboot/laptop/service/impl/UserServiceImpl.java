@@ -146,6 +146,7 @@ public class UserServiceImpl implements UserService {
         UserRoleEntity userRole = userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.ROLE_USER);
 
         UserEntity appClient = UserEntity.builder().roles(List.of(userRole)).username(user.getUsername()).email(user.getEmail()).password(passwordEncoder.encode(user.getPassword())).enabled(true).build();
+        appClient.setCreatedTimestamp(new Date());
 
         try {
             return userMapper.userToUserDTO(userRepository.save(appClient));
