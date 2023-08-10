@@ -8,16 +8,16 @@ import com.springboot.laptop.model.dto.ProductDTO;
 import com.springboot.laptop.model.dto.request.ProductDetailDTO;
 import com.springboot.laptop.model.dto.response.ProductResponseDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
-import com.springboot.laptop.repository.BrandRepository;
-import com.springboot.laptop.repository.CategoryRepository;
-import com.springboot.laptop.repository.ProductDetailRepository;
-import com.springboot.laptop.repository.ProductRepository;
+import com.springboot.laptop.repository.*;
 import com.springboot.laptop.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.postgresql.util.PSQLException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,7 +37,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper;
     private final CloudinaryService cloudinaryService;
-    private final ProductDetailRepository productDetailRepository;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
     @Override
     public Object getOneProduct(Long productId)  {
@@ -151,12 +152,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Object deleteProduct(Long productId)  {
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        try {
-            productRepository.delete(existingProduct);
-            return "Delete successfully!";
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        boolean isProductInUse = orderDetailRepository.findAll().stream()
+                .anyMatch(orderDetail -> orderDetail.getProduct().getId().equals(existingProduct.getId()));
+        if(isProductInUse) throw new RuntimeException("Sản phẩm đang được kinh doanh");
+        productRepository.delete(existingProduct);
+
+        return "Delete successfully!";
     }
 }
 
