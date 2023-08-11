@@ -11,7 +11,11 @@ import java.util.Date;
 @Table(name = "reviews")
 @Getter
 @Setter
-public class ReviewEntity extends BaseEntity {
+public class ReviewEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    protected Long id;
 
     @Column(length = 128, nullable = false)
     private String headline;

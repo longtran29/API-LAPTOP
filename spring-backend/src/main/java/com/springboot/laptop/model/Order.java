@@ -34,10 +34,6 @@ public class Order{
             strategy = "com.springboot.laptop.utils.OrderGenerator")
     private String id;
 
-    @Column(name ="created_timestamp",nullable = true)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdTimestamp;
-
     @ManyToOne
     @JoinColumn(name= "user_id", referencedColumnName = "id")
     @JsonIgnore

@@ -20,10 +20,6 @@ public class ResetTokenEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
 
-    @Column(name ="created_timestamp",nullable = true)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdTimestamp;
-
     @NotEmpty(message = "Token must be provided")
     private String token;
 

@@ -182,7 +182,7 @@ public class OrderServiceImpl implements OrderService {
         order.setUser(user);
         order.setOrderStatus(OrderStatus.NEW);
         order.setMethodPayment(paymentMethod);
-        order.setCreatedTimestamp(new Date());
+        order.setOrderDate(new Date());
 
         // add order detail to the order
         List<OrderDetails> orderDetailList = new ArrayList<>();

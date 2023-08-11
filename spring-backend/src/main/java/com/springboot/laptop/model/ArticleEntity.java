@@ -27,12 +27,6 @@ public class ArticleEntity extends BaseEntity {
     @JoinColumn(name = "user_id")
     private UserEntity uploadedBy;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostImage> images = new ArrayList<>();
 
