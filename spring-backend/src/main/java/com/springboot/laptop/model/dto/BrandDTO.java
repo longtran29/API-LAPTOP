@@ -30,7 +30,7 @@ public class BrandDTO {
     @Temporal(TemporalType.TIMESTAMP)
     private Date modifiedTimestamp;
 
-//    private List<CategoryEntity> categories;
+    private List<CategoryDTO> categories;
 //
 //    private List<ProductEntity> products;
 }
