@@ -119,10 +119,11 @@ public class UserServiceImpl implements UserService {
             jwtResponse.setJwtToken(tokenDto);
             jwtResponse.setExpiresIn((System.currentTimeMillis() + JwtUtility.EXPIRE_DURATION));
 
-            if (loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_USER.name()))) {
-                jwtResponse.setRole("USER");
-            } else {
+            boolean checkRole = loggedUser.getRoles().stream().anyMatch(role -> role.getName().equals(UserRoleEnum.ROLE_ADMIN));
+            if(checkRole)
                 jwtResponse.setRole("ADMIN");
+             else {
+                jwtResponse.setRole("USER");
             }
             responseDTO.put("loginInformation",jwtResponse );
             return responseDTO;
