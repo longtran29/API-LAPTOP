@@ -11,13 +11,10 @@ import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.*;
 import com.springboot.laptop.service.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.postgresql.util.PSQLException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -76,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Object updateStatus(Long productId, boolean  productStatus) {
+    public Object updateStatus(Long productId, boolean productStatus) {
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
         existingProduct.setEnabled(productStatus);
         return productMapper.productToProductDTO(productRepository.save(existingProduct));

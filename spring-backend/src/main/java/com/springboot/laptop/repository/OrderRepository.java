@@ -1,6 +1,7 @@
 package com.springboot.laptop.repository;
 
 import com.springboot.laptop.model.Order;
+import com.springboot.laptop.model.UserEntity;
 import com.springboot.laptop.model.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     @Query(value = "SELECT COUNT(*) FROM orders WHERE order_status = ?1", nativeQuery = true)
     Integer countNewOrders(String orderStatus);
 
+
+    List<Order> findByUser(UserEntity user);
 
     /*
     current_date - built-in function

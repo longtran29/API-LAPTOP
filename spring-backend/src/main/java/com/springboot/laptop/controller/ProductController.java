@@ -158,8 +158,8 @@ public class ProductController {
     @PutMapping("/status/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@PathVariable Long productId,@RequestBody boolean cate_status ) {
-        return ResponseEntity.ok().body(productServiceImpl.updateStatus(productId, cate_status));
+    public ResponseEntity<?> updateStatus(@PathVariable("productId") Long productId,@PathVariable("status") boolean productStats ) {
+        return ResponseEntity.ok().body(productServiceImpl.updateStatus(productId, productStats));
     }
 
 }

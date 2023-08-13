@@ -16,6 +16,4 @@ public interface CategoryService {
     public Object updateOne(Long cateId, CategoryRequestDTO updateCategory);
     public Object updateStatus(Long cateId, Boolean status);
     public Object deleteOne(Long cateId) throws DataIntegrityViolationException;
-
-    Object getProductsById(Long categoryId);
 }

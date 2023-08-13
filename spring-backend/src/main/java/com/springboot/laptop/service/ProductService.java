@@ -20,7 +20,7 @@ public interface ProductService {
 
     public List<ProductResponseDTO> getAllProduct();
 
-    Object updateStatus(Long productId, boolean  productStatus);
+    Object updateStatus(Long productId, boolean productStatus);
 
     public List<ProductEntity> getBestSellingProducts();
 }

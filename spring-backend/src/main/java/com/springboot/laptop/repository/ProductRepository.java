@@ -27,7 +27,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findBestSellerProducts();
 
 
-    @Query(value = "select * from products where enabled = true;", nativeQuery = true)
+    @Query(value ="select * from products inner join categories ON categories.id = products.category_id " +
+            "where products.enabled = true and categories.enabled = true", nativeQuery = true)
     List<ProductEntity> getActiveProducts();
 
 

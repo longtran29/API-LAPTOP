@@ -97,13 +97,4 @@ public class CategoryServiceImpl implements CategoryService {
         return "Delete successfully";
     }
 
-    @Override
-    public Object getProductsById(Long categoryId) {
-//        CategoryEntity existingCategory = categoryRepository.findById(categoryId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
-//        List<ProductDTO> returnedProds = new ArrayList<>();
-//        // using stream() before call forEach() methods to loop through list and can call add() method on an object
-//        existingCategory.getProducts().forEach(product -> returnedProds.add(productMapper.productToProductDTO(product)));
-//        return returnedProds;
-        return null;
-    }
 }

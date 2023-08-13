@@ -140,9 +140,5 @@ public class CategoryController {
         return ResponseEntity.ok().body(categoryServiceImpl.deleteOne(cateId));
     }
 
-    @GetMapping("/products/{categoryId}")
-    public ResponseEntity<?> getProducts(@PathVariable Long categoryId ){
-        return ResponseEntity.ok().body(categoryServiceImpl.getProductsById(categoryId));
-    }
 }
 
