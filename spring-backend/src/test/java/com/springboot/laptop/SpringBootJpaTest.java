@@ -33,6 +33,16 @@
 //    @Autowired
 //    CategoryDAO cateDAO;
 //
+////    @Autowired ProductRepository productRepository;
+//
+//
+//    @Test
+//    void tesstgetBestsELLINGProduct() {
+//
+//
+//        assertThat(productRepository.findBestSellerProducts().size()).isEqualTo(3);
+//    }
+//
 //
 //    @Test
 //    void testJpaTestSplice() {

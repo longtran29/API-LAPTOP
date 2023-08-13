@@ -20,8 +20,11 @@ public enum StatusResponseDTO {
     ORDER_DELIVERED_VIOLATION("500", "Đơn hàng đã được giao thành công rồi"),
     CUSTOMER_NOT_FOUND("404", "Không tồn tại người dùng này "),
     CART_NOT_EXIST("500", "Không có sản phẩm nào trong giỏ hàng"),
+    PRODUCT_EXISTING_IN_CART("500", "Sản phẩm này đang nằm trong giỏ hàng  của khách hàng"),
 
+    FIELD_IS_MISSING("500", "Please prodvide the full information !"),
 
+    PRODUCT_HAS_BEEN_LOCKED("500", "Sản phẩm đã ngừng kinh doanh"),
     INFORMATION_IS_MISSING("500", "Bạn chưa nhập đủ thông tin !"),
     BRAND_CONSTRAINT_EXCEPTION("500", "Thương hiệu đang kinh doanh sản phẩm  "),
     CATEGORY_VIOLATION_EXCEPTION("500", "Danh mục có sản phẩm đang được kinh doanh"),

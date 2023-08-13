@@ -155,10 +155,10 @@ public class ProductController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @PutMapping("/status/{productId}")
+    @PutMapping("/status/{productId}/{status}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@PathVariable("productId") Long productId,@PathVariable("status") boolean productStats ) {
+    public ResponseEntity<?> updateStatus(@PathVariable("productId") Long productId,@PathVariable("status") String productStats ) {
         return ResponseEntity.ok().body(productServiceImpl.updateStatus(productId, productStats));
     }
 

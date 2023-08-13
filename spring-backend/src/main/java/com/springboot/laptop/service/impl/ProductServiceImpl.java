@@ -36,6 +36,7 @@ public class ProductServiceImpl implements ProductService {
     private final CloudinaryService cloudinaryService;
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final CartRepository cartRepository;
 
     @Override
     public Object getOneProduct(Long productId)  {
@@ -73,9 +74,26 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Object updateStatus(Long productId, boolean productStatus) {
+    public Object updateStatus(Long productId, String productStatus) {
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        existingProduct.setEnabled(productStatus);
+        if(productStatus.equals("disabled")) {
+            boolean isProductInCart = false;
+            // check current existing cart
+            List<UserCart> listExistingCart= cartRepository.findAll();
+            for (UserCart cart: listExistingCart
+            ) {
+                for (CartDetails cartDetail: cart.getCartDetails()
+                ) {
+
+                    if(cartDetail.getProduct().getId().equals(productId)) {
+                        isProductInCart = true; break;
+                    }
+                }
+
+            }
+            if(isProductInCart) throw new CustomResponseException(StatusResponseDTO.PRODUCT_EXISTING_IN_CART);
+        }
+        existingProduct.setEnabled(productStatus.equals("enabled"));
         return productMapper.productToProductDTO(productRepository.save(existingProduct));
     }
 

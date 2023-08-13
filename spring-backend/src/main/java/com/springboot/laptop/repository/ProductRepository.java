@@ -23,8 +23,14 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     @Query(value = "SELECT * FROM products p WHERE p.name LIKE %:name%", nativeQuery = true)
     List<ProductEntity> getProductByName(String name);
 
-    @Query(value = "SELECT p.* FROM OrderDetails od INNER JOIN products p ON od.product_id = p.id AND enabled = 1  GROUP BY product_id HAVING COUNT(*) > 3 LIMIT 4", nativeQuery = true)
+    @Query(value = "SELECT products.* " +
+            "FROM products " +
+            "INNER JOIN order_detail ON products.id = order_detail.product_id " +
+            "GROUP BY products.id " +
+            "ORDER BY COUNT(order_detail.product_id) DESC " +
+            "LIMIT 6;", nativeQuery = true)
     List<ProductEntity> findBestSellerProducts();
+
 
 
     @Query(value ="select * from products inner join categories ON categories.id = products.category_id " +

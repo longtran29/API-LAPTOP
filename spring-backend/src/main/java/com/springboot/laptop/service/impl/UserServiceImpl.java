@@ -1,5 +1,6 @@
 package com.springboot.laptop.service.impl;
 
+import com.springboot.laptop.controller.ImageUploadController;
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.mapper.UserMapper;
 import com.springboot.laptop.model.Address;
@@ -35,7 +36,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -68,7 +68,10 @@ public class UserServiceImpl implements UserService {
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtility jwtUtility;
 
+    private final CloudinaryService cloudinaryService;
+
     private final UserMapper userMapper;
+
     @Value("${spring.mail.username}")
     private String emailown;
 
@@ -224,6 +227,44 @@ public class UserServiceImpl implements UserService {
         Address newAddress = Address.builder().address(requestDTO.getAddress()).city(requestDTO.getCity()).country(requestDTO.getCountry()).zipcode(requestDTO.getZipcode()).phoneNumber(requestDTO.getPhoneNumber()).user(user).build();
         userAddress.add(newAddress);
         return (userRepository.save(user));
+
+    }
+
+    @Override
+    public Object createUserForPrivilege(UserCreationDTO userCreation) throws Exception {
+
+        String uploadImgUrl = cloudinaryService.uploadFile(userCreation.getImgURL());
+
+        if(userCreation.getUsername().isBlank() || userCreation.getPassword().isBlank() || userCreation.getEmail().isBlank() || userCreation.getName().isBlank() || userCreation.getPhoneNumber().isBlank())
+            throw new CustomResponseException(StatusResponseDTO.FIELD_IS_MISSING);
+
+        UserEntity newUser = new UserEntity();
+        newUser.setUsername(userCreation.getUsername());
+        newUser.setPassword(userCreation.getPassword());
+        newUser.setEmail(userCreation.getEmail());
+        newUser.setName(userCreation.getName());
+        newUser.setPassword(passwordEncoder.encode(userCreation.getPassword()));
+        newUser.setImgURL(uploadImgUrl);
+        newUser.setEnabled(true);
+        newUser.setCreatedTimestamp(new Date());
+
+        List<UserRoleEntity> listRole = new LinkedList<>();
+//        for (UserRoleDTO userRole: userCreation.getRoles()
+//             ) {
+//            listRole.add(userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.valueOfCode(userRole.getName())));
+//        }
+
+
+        userCreation.getRoles().stream().map(userRole -> {
+            try {
+                return listRole.add(userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.valueOfCode(userRole.getName())));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        newUser.setRoles(listRole);
+        return userRepository.save(newUser);
 
     }
 

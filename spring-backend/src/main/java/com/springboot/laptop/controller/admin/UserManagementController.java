@@ -3,6 +3,7 @@ package com.springboot.laptop.controller.admin;
 
 import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.UserEntity;
+import com.springboot.laptop.model.dto.request.UserCreationDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 //import com.springboot.laptop.service.impl.UserServiceImpl;
 import com.springboot.laptop.service.UserService;
@@ -24,6 +25,12 @@ import java.util.List;
 public class UserManagementController {
 
     private final UserService userService;
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping(value = "/create-new", consumes = {   "multipart/form-data" })
+    public ResponseEntity<?> createUserForPrivilege(@RequestPart("user") UserCreationDTO userCreation) throws Exception {
+        return ResponseEntity.ok().body(userService.createUserForPrivilege(userCreation));
+    }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/list")

@@ -47,6 +47,7 @@ public class CartServiceImpl implements CartService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CUSTOMER_NOT_FOUND));
         ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+        if(!existingProduct.isEnabled()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_HAS_BEEN_LOCKED);
 
         if(quantity > existingProduct.getProductQuantity()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
 

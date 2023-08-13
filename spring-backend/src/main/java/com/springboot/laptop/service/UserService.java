@@ -15,6 +15,9 @@ import java.util.List;
 public interface UserService {
     public UserDTO register(AppClientSignUpDTO user) throws Exception;
     public boolean userExists(String username, String email);
+
+    Object createUserForPrivilege(UserCreationDTO userCreation) throws Exception;
+
     public UserEntity findUserByUserName(String username);
     public Object sendVerificationEmail(String email) throws IOException;
     public Object updatePassword(NewPasswordRequest newPasswordRequest);
@@ -31,4 +34,5 @@ public interface UserService {
 
     public Object authenticateUser(JwtRequest jwtRequest);
     public UserEntity addNewAddress(AddressDTO requestAddress);
+
 }
