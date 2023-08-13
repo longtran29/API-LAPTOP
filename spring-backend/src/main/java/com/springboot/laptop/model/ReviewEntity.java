@@ -17,15 +17,10 @@ public class ReviewEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
 
-    @Column(length = 128, nullable = false)
-    private String headline;
-
     @Column(length = 300, nullable = false)
     private String comment;
 
     private int rating;
-
-    private int votes;
 
     @Column(name="review_time",nullable = false)
     private Date reviewTime;
