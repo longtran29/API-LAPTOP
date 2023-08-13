@@ -15,7 +15,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 @SpringBootApplication
 @OpenAPIDefinition(
 		info = @Info(title = "Shop Laptop API", version = "1.0.0"),
-		servers = {@Server(url = "http://localhost:8080") },
+		servers = {@Server(url = "https://api-laptop-production.up.railway.app") },
 		tags = {@Tag(name = "Laptop", description = "Shop sells laptop.")}
 )
 //@SecurityScheme(name = "bamboo_store", scheme = "basic", type = SecuritySchemeType.HTTP, in = SecuritySchemeIn.HEADER)
