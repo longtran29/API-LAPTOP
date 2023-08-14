@@ -22,6 +22,7 @@ public enum StatusResponseDTO {
     CART_NOT_EXIST("500", "Không có sản phẩm nào trong giỏ hàng"),
     PRODUCT_EXISTING_IN_CART("500", "Sản phẩm này đang nằm trong giỏ hàng  của khách hàng"),
 
+    ORDER_HAS_NOT_BEEN_DELIVERED("500", "Đơn hàng chưa được giao thành công cho bạn "),
     FIELD_IS_MISSING("500", "Please prodvide the full information !"),
 
     PRODUCT_HAS_BEEN_LOCKED("500", "Sản phẩm đã ngừng kinh doanh"),

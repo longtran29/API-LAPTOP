@@ -5,6 +5,7 @@ import com.springboot.laptop.mapper.ReviewMapper;
 import com.springboot.laptop.model.*;
 import com.springboot.laptop.model.dto.request.ReviewRequestDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
+import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.repository.OrderRepository;
 import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.repository.ReviewRepository;
@@ -51,7 +52,9 @@ public class ReviewServiceImpl implements ReviewService {
 
             for (OrderDetails detail: order.getOrderDetails()
                  ) {
+                // check has already bought and the status of the order is delivered
                 if(detail.getProduct().getId().equals(reviewRequest.getProductId())) {
+                    if(!order.getOrderStatus().name().equals(OrderStatus.DELIVERED.getName())) throw new CustomResponseException(StatusResponseDTO.ORDER_HAS_NOT_BEEN_DELIVERED);
                     checkOrder = true;
                     break;
                 }
