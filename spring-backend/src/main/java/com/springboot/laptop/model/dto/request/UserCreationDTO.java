@@ -20,8 +20,6 @@ public class UserCreationDTO {
 
     private String phoneNumber;
 
-    private MultipartFile imgURL;
-
     private List<UserRoleDTO> roles;
 
     private Boolean enabled;

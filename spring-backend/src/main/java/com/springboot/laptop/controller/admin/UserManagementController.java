@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,8 +29,8 @@ public class UserManagementController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping(value = "/create-new", consumes = {   "multipart/form-data" })
-    public ResponseEntity<?> createUserForPrivilege(@RequestPart("user") UserCreationDTO userCreation) throws Exception {
-        return ResponseEntity.ok().body(userService.createUserForPrivilege(userCreation));
+    public ResponseEntity<?> createUserForPrivilege(@RequestPart("user") UserCreationDTO userCreation, @RequestParam(value = "imageUser", required = false) MultipartFile imgUser) throws Exception {
+        return ResponseEntity.ok().body(userService.createUserForPrivilege(userCreation, imgUser));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

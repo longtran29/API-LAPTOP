@@ -11,4 +11,6 @@ public class ReviewRequestDTO {
     private int rating;
 
     private Long productId;
+
+    private String orderCode;
 }

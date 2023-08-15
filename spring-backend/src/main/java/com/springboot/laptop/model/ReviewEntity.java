@@ -32,4 +32,6 @@ public class ReviewEntity {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private UserEntity customer;
+
+    // them truong orderCode để 1 customer có thể review product nhiều lần dựa theo mã đơn hàng
 }

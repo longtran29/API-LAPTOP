@@ -40,6 +40,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -231,9 +232,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Object createUserForPrivilege(UserCreationDTO userCreation) throws Exception {
+    public Object createUserForPrivilege(UserCreationDTO userCreation, MultipartFile imgUser) throws Exception {
 
-        String uploadImgUrl = cloudinaryService.uploadFile(userCreation.getImgURL());
+        String uploadImgUrl = cloudinaryService.uploadFile(imgUser);
 
         if(userCreation.getUsername().isBlank() || userCreation.getPassword().isBlank() || userCreation.getEmail().isBlank() || userCreation.getName().isBlank() || userCreation.getPhoneNumber().isBlank())
             throw new CustomResponseException(StatusResponseDTO.FIELD_IS_MISSING);
@@ -247,22 +248,12 @@ public class UserServiceImpl implements UserService {
         newUser.setImgURL(uploadImgUrl);
         newUser.setEnabled(true);
         newUser.setCreatedTimestamp(new Date());
-
+        newUser.setPhoneNumber(userCreation.getPhoneNumber());
         List<UserRoleEntity> listRole = new LinkedList<>();
-//        for (UserRoleDTO userRole: userCreation.getRoles()
-//             ) {
-//            listRole.add(userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.valueOfCode(userRole.getName())));
-//        }
-
-
-        userCreation.getRoles().stream().map(userRole -> {
-            try {
-                return listRole.add(userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.valueOfCode(userRole.getName())));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-
+        for (UserRoleDTO userRole: userCreation.getRoles()
+             ) {
+            listRole.add(userRoleServiceImpl.getUserRoleByEnumName(UserRoleEnum.valueOfCode(userRole.getName())));
+        }
         newUser.setRoles(listRole);
         return userRepository.save(newUser);
 

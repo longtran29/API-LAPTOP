@@ -48,20 +48,20 @@ public class ReviewServiceImpl implements ReviewService {
 
         boolean checkOrder = false;
         for (Order order: userOrders
-             ) {
+        ) {
 
             for (OrderDetails detail: order.getOrderDetails()
-                 ) {
+            ) {
                 // check has already bought and the status of the order is delivered
-                if(detail.getProduct().getId().equals(reviewRequest.getProductId())) {
-                    if(!order.getOrderStatus().name().equals(OrderStatus.DELIVERED.getName())) throw new CustomResponseException(StatusResponseDTO.ORDER_HAS_NOT_BEEN_DELIVERED);
+                if(detail.getProduct().getId().equals(reviewRequest.getProductId()) && order.getOrderStatus().toString().equals(OrderStatus.DELIVERED.toString())) {
+//                    if(!order.getOrderStatus().toString().equals(OrderStatus.DELIVERED.getName())) throw new CustomResponseException(StatusResponseDTO.ORDER_HAS_NOT_BEEN_DELIVERED);
                     checkOrder = true;
                     break;
                 }
             }
         }
 
-        if(!checkOrder) throw new RuntimeException("You have not purchase for this product");
+        if(!checkOrder) throw new CustomResponseException(StatusResponseDTO.REVIEW_REJECTION);
         ReviewEntity createdReview = new ReviewEntity();
         createdReview.setComment(reviewRequest.getComment());
         createdReview.setRating(reviewRequest.getRating());

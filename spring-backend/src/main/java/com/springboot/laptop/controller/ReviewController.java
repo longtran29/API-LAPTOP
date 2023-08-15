@@ -23,6 +23,7 @@ import java.text.ParseException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reviews")
+@SecurityRequirement(name = "bearerAuth")
 public class ReviewController {
 
     private final ReviewService reviewService;

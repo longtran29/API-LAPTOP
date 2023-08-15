@@ -6,6 +6,7 @@ import com.springboot.laptop.model.dto.AddressDTO;
 import com.springboot.laptop.model.dto.UserDTO;
 import com.springboot.laptop.model.dto.request.*;
 import com.springboot.laptop.model.jwt.JwtRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,7 +17,7 @@ public interface UserService {
     public UserDTO register(AppClientSignUpDTO user) throws Exception;
     public boolean userExists(String username, String email);
 
-    Object createUserForPrivilege(UserCreationDTO userCreation) throws Exception;
+    Object createUserForPrivilege(UserCreationDTO userCreation, MultipartFile imgUser) throws Exception;
 
     public UserEntity findUserByUserName(String username);
     public Object sendVerificationEmail(String email) throws IOException;
