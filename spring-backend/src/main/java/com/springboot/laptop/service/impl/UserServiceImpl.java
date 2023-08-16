@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
     private static final String SUBJECT = "QUÊN MẬT KHẨU";
 
     
-    private static final String DOMAIN_CLIENT =  deployFrontend + "/account/reset-password";
+    private String DOMAIN_CLIENT =  deployFrontend + "/account/reset-password";
     private static final long MINUS_TO_EXPIRED = 10;
     private final UserRepository userRepository;
     private final UserRoleService userRoleServiceImpl;
