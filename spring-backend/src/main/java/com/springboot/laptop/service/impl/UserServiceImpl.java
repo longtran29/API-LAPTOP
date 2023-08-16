@@ -55,11 +55,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+     @Value("${DEPLOY_FRONTEND}")
+    private String deployFrontend;
+
     public static final String F_DDMMYYYYHHMM = "dd/MM/yyyy HH:mm";
     private static final String RESET_PASSWORD_TEMPLATE_NAME = "reset_password.ftl";
     private static final String FROM = "Laptop Store<%s>";
     private static final String SUBJECT = "QUÊN MẬT KHẨU";
-    private static final String DOMAIN_CLIENT = "http://localhost:3000/account/reset-password";
+
+    
+    private static final String DOMAIN_CLIENT =  deployFrontend + "/account/reset-password";
     private static final long MINUS_TO_EXPIRED = 10;
     private final UserRepository userRepository;
     private final UserRoleService userRoleServiceImpl;
