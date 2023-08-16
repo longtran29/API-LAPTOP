@@ -29,7 +29,7 @@ public class CategoryDTO {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdTimestamp;
 
-//    private Collection<ProductEntity> products;
+   private Collection<ProductEntity> products;
 //
 //    private Collection<BrandEntity> brand;
 
