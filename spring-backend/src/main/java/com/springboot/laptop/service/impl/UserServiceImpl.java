@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
      @Value("${DEPLOY_FRONTEND}")
-    private String deployFrontend;
+    private static String deployFrontend;
 
     public static final String F_DDMMYYYYHHMM = "dd/MM/yyyy HH:mm";
     private static final String RESET_PASSWORD_TEMPLATE_NAME = "reset_password.ftl";
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
     private static final String SUBJECT = "QUÊN MẬT KHẨU";
 
     
-    private String DOMAIN_CLIENT =  deployFrontend + "/account/reset-password";
+    private static String DOMAIN_CLIENT =  deployFrontend + "/account/reset-password";
     private static final long MINUS_TO_EXPIRED = 10;
     private final UserRepository userRepository;
     private final UserRoleService userRoleServiceImpl;
