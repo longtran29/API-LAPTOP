@@ -32,15 +32,7 @@ public class JwtUtility implements Serializable {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
         } catch (SignatureException e){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Invalid JWT signature", e);
-        } catch (MalformedJwtException e){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Invalid format Token", e);
-        } catch (ExpiredJwtException e){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "Expired JWT token", e);
-        } catch (UnsupportedJwtException e){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT,"Unsupported JWT token", e);
-        } catch (IllegalArgumentException e){
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, "JWT claims string is empty", e);
+            return false;
         }
     }
     public String getUerNameFromToken(String token){

@@ -4,6 +4,7 @@ import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
 import com.springboot.laptop.utils.JwtUtility;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,11 +49,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
+
+            filterChain.doFilter(request,response);
+
+            SecurityContextHolder.getContext().setAuthentication(null);
         }
-        catch(Exception ex) {
-            throw new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND);
+        catch(ExpiredJwtException ex) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
-        filterChain.doFilter(request,response);
+
     }
     private String getJwt(HttpServletRequest request){
         String authHeader = request.getHeader("Authorization");

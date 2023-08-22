@@ -25,6 +25,11 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class MyServiceAdvice {
 
+    /**
+     *
+     * ControllerAdvice only handles for Controller, not handle for Service or Repository
+      */
+
     private final String DETAIL = "Detail: ";
     /*
          global exceptional handling
