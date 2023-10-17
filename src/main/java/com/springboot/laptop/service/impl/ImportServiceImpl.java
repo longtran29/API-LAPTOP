@@ -4,22 +4,14 @@ import com.springboot.laptop.exception.CustomResponseException;
 import com.springboot.laptop.model.*;
 import com.springboot.laptop.model.dto.request.ImportDetailDTO;
 import com.springboot.laptop.model.dto.request.ImportRequestDTO;
-import com.springboot.laptop.model.dto.response.ImportDetailExportDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.*;
 import com.springboot.laptop.service.ImportService;
 import com.springboot.laptop.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
 @Service
@@ -34,8 +26,6 @@ public class ImportServiceImpl implements ImportService {
     private final AccountRepository accountRepository;
     private final ProductRepository productRepository;
     private final ImportDetailRepository importDetailRepository;
-
-    private final String template_path = "/jasper/detail_import.jrxml";
 
 
     @Override
@@ -78,34 +68,34 @@ public class ImportServiceImpl implements ImportService {
     public Object getAllImport() {
         return importRepository.findAll();
     }
-
-    private JasperReport loadTemplate() throws JRException {
-//        File file = File.createTempFile("my_import", ".pdf");
-
-        InputStream inputStream = getClass().getResourceAsStream(template_path);
-        final JasperDesign jasperDesign = JRXmlLoader.load(inputStream);
-
-        return JasperCompileManager.compileReport(jasperDesign);
-
-
-    }
-    @Override
-    public void exportReport() throws JRException {
-
-//        String basePath = "D:\\edge_download";
 //
-//        List<ImportDetail> imports = importDetailRepository.getAllImports();
+//    private JasperReport loadTemplate() throws JRException {
+////        File file = File.createTempFile("my_import", ".pdf");
 //
-//        JasperReport jasperReport = loadTemplate();
+//        InputStream inputStream = getClass().getResourceAsStream(template_path);
+//        final JasperDesign jasperDesign = JRXmlLoader.load(inputStream);
 //
-//        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(imports);
+//        return JasperCompileManager.compileReport(jasperDesign);
 //
-//        Map<String, Object> parameters = new HashMap<>();
 //
-//        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+//    }
+//    @Override
+//    public void exportReport() throws JRException {
 //
-//        JasperExportManager.exportReportToPdfFile(jasperPrint, basePath + "\\employees.pdf");
-
-
-    }
+////        String basePath = "D:\\edge_download";
+////
+////        List<ImportDetail> imports = importDetailRepository.getAllImports();
+////
+////        JasperReport jasperReport = loadTemplate();
+////
+////        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(imports);
+////
+////        Map<String, Object> parameters = new HashMap<>();
+////
+////        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+////
+////        JasperExportManager.exportReportToPdfFile(jasperPrint, basePath + "\\employees.pdf");
+//
+//
+//    }
 }

@@ -10,5 +10,4 @@ public interface ImportService {
 
     Object getAllImport();
 
-    void exportReport() throws JRException;
 }
