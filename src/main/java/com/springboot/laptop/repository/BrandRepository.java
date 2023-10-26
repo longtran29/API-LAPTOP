@@ -14,7 +14,7 @@ import java.util.Optional;
 @Repository
 public interface BrandRepository extends JpaRepository<BrandEntity, Long> {
 
-    Optional<BrandEntity> findByName(String brandName);
+    Optional<BrandEntity> findByNameIgnoreCase(String brandName);
 
     @Query("SELECT b.categories FROM BrandEntity b WHERE b.id = :brandId")
     List<CategoryEntity> findCategoriesByBrandId(@Param("brandId") Long brandId);

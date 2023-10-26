@@ -14,6 +14,6 @@ public class PayPalCaptureDTO {
     @JsonProperty("address_id")
     private Long addressID;
 
-    @JsonProperty("payment_method")
-    private PaymentMethod paymentMethod;
+//    @JsonProperty("payment_method")
+//    private PaymentMethod paymentMethod;
 }

@@ -1,14 +1,13 @@
 package com.springboot.laptop.model.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
 public class UpdateInformationDTO {
-
-    private String username;
-    private String email;
+    @JsonProperty("name")
     private String name;
-    private String phoneNumber;
 
-    private String imgURL;
+    @JsonProperty("phone_number")
+    private String phoneNumber;
 }

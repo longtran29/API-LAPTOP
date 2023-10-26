@@ -35,6 +35,7 @@ public class Account extends AppUser {
     protected List<UserRoleEntity> roles = new ArrayList<>();
 
 
+    @JsonBackReference
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> order = new ArrayList<>();
 }

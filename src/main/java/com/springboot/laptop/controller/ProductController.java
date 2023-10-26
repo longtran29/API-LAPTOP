@@ -50,7 +50,7 @@ public class ProductController {
             })
     @PostMapping(consumes = {   "multipart/form-data" })
     @SecurityRequirement(name = "bearerAuth")
-    public Object createProduct(@RequestPart("product")  @Valid ProductDTO product,
+    public Object createProduct(@RequestPart("product") ProductDTO product,
         @RequestParam(value = "primaryImage", required = false) MultipartFile mainImageMultipart,
         @RequestParam(value = "extraImage", required = false) MultipartFile[] extraImageMultiparts
                                 ) throws ParseException {

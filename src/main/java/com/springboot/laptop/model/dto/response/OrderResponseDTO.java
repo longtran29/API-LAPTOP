@@ -5,6 +5,7 @@ import com.springboot.laptop.model.dto.OrderDetailsDTO;
 import com.springboot.laptop.model.dto.UserDTO;
 import com.springboot.laptop.model.enums.OrderStatus;
 import com.springboot.laptop.model.enums.PaymentMethod;
+import com.springboot.laptop.model.enums.PaymentStatus;
 import lombok.*;
 
 import java.util.Date;
@@ -20,7 +21,7 @@ public class OrderResponseDTO {
 
     private String id;
 
-    private UserDTO user;
+    private UserDTO customer;
 
     private List<OrderDetailsDTO> orderDetails;
 
@@ -28,19 +29,17 @@ public class OrderResponseDTO {
 
     private float total;
 
-
-//    // trạng thái đơn hàng hiện tại
-//    private Object status;
-//    private Object statusName;
-
     private Date createdTimestamp;
 
     private OrderStatus orderStatus;
 
-
     private PaymentMethod methodPayment;
 
     private AddressDTO address;
+
+    private AccountResponseDTO account;
+
+    private PaymentStatus payment_status;
 
 
 }

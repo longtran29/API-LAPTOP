@@ -12,5 +12,5 @@ public interface PayPalService {
 
     OrderedResponseDTO createOrder(OrderDTO orderDTO) throws IOException, InterruptedException;
 
-    Object confirmOrder(String orderId, Long addressId, PaymentMethod paymentMethod) throws IOException, InterruptedException;
+    Object confirmOrder(String orderId, Long addressId) throws IOException, InterruptedException;
 }

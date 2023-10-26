@@ -6,17 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.context.request.WebRequest;
 
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import javax.xml.bind.ValidationException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -38,6 +31,7 @@ public class MyServiceAdvice {
     public ResponseEntity<String> noSuchElement() {
         return new ResponseEntity<String>("Không tìm thấy, vui lòng kiểm tra lại ",HttpStatus.NOT_FOUND);
     }
+
 
     @ExceptionHandler({ConstraintViolationException.class})
     public ResponseEntity<Object> handleConstraintViolation(

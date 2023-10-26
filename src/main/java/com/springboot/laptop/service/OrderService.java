@@ -33,6 +33,4 @@ public interface OrderService {
     public Object getOrderDetails(String orderId) ;
 
     Object checkoutPaypal(PaypalCheckoutDTO paypalCheckout) throws IOException, InterruptedException;
-
-    Object checkoutVnpay(HttpServletRequest req) throws UnsupportedEncodingException;
 }

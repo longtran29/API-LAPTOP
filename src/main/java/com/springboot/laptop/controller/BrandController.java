@@ -90,7 +90,7 @@ public class BrandController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public Object createBrand(@RequestBody BrandRequestDTO newBrand) {
+    public Object createBrand(@RequestBody BrandRequestDTO newBrand) throws Exception {
         return brandServiceImpl.createOne(newBrand);
     }
 
@@ -129,7 +129,7 @@ public class BrandController {
     @PutMapping("/{brandId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateBrand(@PathVariable Long brandId, @RequestBody BrandRequestDTO updateBrand ){
+    public ResponseEntity<?> updateBrand(@PathVariable Long brandId, @RequestBody BrandRequestDTO updateBrand ) throws Exception {
         return ResponseEntity.ok().body(brandServiceImpl.updateOne(brandId, updateBrand));
     }
 

@@ -11,9 +11,9 @@ import java.util.List;
 public interface BrandService {
     public Object findById(Long brandId);
     public List<BrandDTO> getAllBrand();
-    public Object createOne(BrandRequestDTO createBrand) ;
+    public Object createOne(BrandRequestDTO createBrand) throws Exception;
     public Object deleteOne(Long brandId);
-    public Object updateOne(Long brandId, BrandRequestDTO updateBrand);
+    public Object updateOne(Long brandId, BrandRequestDTO updateBrand) throws Exception;
     public List<CategoryDTO> getAllCateFromBrand(Long brandId);
 
     Object getProductsById(Long brandId);

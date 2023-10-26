@@ -1,6 +1,7 @@
 package com.springboot.laptop.model.dto;
 
 
+import com.springboot.laptop.model.dto.response.OrderResponseDTO;
 import com.springboot.laptop.model.dto.response.ProductResponseDTO;
 import lombok.Data;
 
@@ -28,6 +29,6 @@ public class ReviewDTO {
     private ProductResponseDTO product;
 
 
-    private UserDTO customer;
+    private OrderResponseDTO order;
 
 }

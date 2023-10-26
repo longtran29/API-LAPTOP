@@ -19,14 +19,13 @@ public interface AppUserService {
     public Customer findUserByUserName(String username);
     public Object sendVerificationEmail(String email) throws IOException;
     public Object updatePassword(NewPasswordRequest newPasswordRequest);
-    public Customer updateInformation(UpdateInformationDTO userRequestDTO) throws Exception;
+    public Customer updateInformation(UpdateInformationDTO userRequestDTO, MultipartFile image) throws Exception;
     public Object resetPassword(ResetPasswordDTO payload) throws Exception;
     public Object updateStatus(Long customerId, String status);
     public Object deleteCustomer(Long customerId);
-
-//    public List<UserDTO> getAll();
-
     public Object getUserInformation();
+
+    public Object getUserOrders();
 
     public Object logoutUser(HttpServletRequest request, HttpServletResponse response);
 

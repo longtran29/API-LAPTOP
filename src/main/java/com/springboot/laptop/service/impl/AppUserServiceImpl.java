@@ -12,9 +12,11 @@ import com.springboot.laptop.model.enums.UserRoleEnum;
 import com.springboot.laptop.model.jwt.JwtRequest;
 import com.springboot.laptop.model.jwt.JwtResponse;
 import com.springboot.laptop.repository.AccountRepository;
+import com.springboot.laptop.repository.OrderRepository;
 import com.springboot.laptop.repository.ResetTokenRepository;
 import com.springboot.laptop.repository.CustomerRepository;
 import com.springboot.laptop.security.services.UserDetailServiceImpl;
+import com.springboot.laptop.service.AmazonS3Service;
 import com.springboot.laptop.service.MailService;
 import com.springboot.laptop.service.UserRoleService;
 import com.springboot.laptop.service.AppUserService;
@@ -62,7 +64,7 @@ public class AppUserServiceImpl implements AppUserService {
     private static final String SUBJECT = "QUÊN MẬT KHẨU";
 
 
-    private static String DOMAIN_CLIENT = deployFrontend + "/account/reset-password";
+    private static String DOMAIN_CLIENT = deployFrontend != null ? deployFrontend : "http://localhost:3000" + "/account/reset-password";
     private static final long MINUS_TO_EXPIRED = 10;
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
@@ -71,6 +73,8 @@ public class AppUserServiceImpl implements AppUserService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailServiceImpl userDetailService;
     private final JwtUtility jwtUtility;
+
+    private final AmazonS3Service amazonS3Service;
 
     private final UserMapper userMapper;
 
@@ -82,6 +86,7 @@ public class AppUserServiceImpl implements AppUserService {
     private final JavaMailSender mailSender;
 
     BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final OrderRepository orderRepository;
 
 
     public static String toStr(Date date, String format) {
@@ -152,11 +157,9 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public Object register(AppClientSignUpDTO user) throws Exception {
 
-        if(!StringUtils.hasText(user.getPassword().trim())) throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_PROVIDED);
+        if(user.getPassword().length() <6) throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MEET_REQUIREMENT);
 
-        if(user.getPassword().length() <= 6) throw new CustomResponseException(StatusResponseDTO.PASSWORD_NOT_MEET_REQUIREMENT);
-
-        if (customerRepository.existsByUsername(user.getUsername()))
+        if (customerRepository.existsByUsername(user.getUsername()) || accountRepository.findByUsernameIgnoreCase(user.getUsername()).isPresent())
             throw new CustomResponseException(StatusResponseDTO.USERNAME_IN_USE);
 
         if (customerRepository.existsByEmail(user.getEmail()))
@@ -213,7 +216,7 @@ public class AppUserServiceImpl implements AppUserService {
 
     // use modelMapper instead - update later
     @Override
-    public Customer updateInformation(UpdateInformationDTO userRequest) throws Exception {
+    public Customer updateInformation(UpdateInformationDTO userRequest, MultipartFile image) throws Exception {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer user = customerRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
 
@@ -224,8 +227,8 @@ public class AppUserServiceImpl implements AppUserService {
 
             user.setPhoneNumber(userRequest.getPhoneNumber());
         }
-        if (!Objects.isNull(userRequest.getImgURL())) {
-            user.setImgURL(userRequest.getImgURL());
+        if(image != null) {
+            user.setImgURL(amazonS3Service.uploadImage(image));
         }
         try {
             return customerRepository.save(user);
@@ -322,6 +325,13 @@ public class AppUserServiceImpl implements AppUserService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer user = customerRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         return userMapper.userToUserDTO(user);
+    }
+
+    @Override
+    public Object getUserOrders() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Customer user = customerRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+        return orderRepository.findByCustomer(user);
     }
 
     @Override

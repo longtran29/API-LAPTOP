@@ -82,7 +82,7 @@ public class PayPalServiceImpl implements PayPalService {
     }
 
     @Override
-    public Object confirmOrder(String orderId, Long addressId, PaymentMethod paymentMethod) throws IOException, InterruptedException {
+    public Object confirmOrder(String orderId, Long addressId) throws IOException, InterruptedException {
         var accessTokenDto = getAccessToken();
         var request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api-m.sandbox.paypal.com/v2/checkout/orders/"+orderId+"/capture"))
@@ -92,7 +92,7 @@ public class PayPalServiceImpl implements PayPalService {
                 .build();
         var response  = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         String content = response.body();
-        orderService.saveOrder(addressId, paymentMethod);
+        orderService.saveOrder(addressId, PaymentMethod.PAY_PAL);
         return objectMapper.readValue(content, PaymentResponseDTO.class);
     }
 }

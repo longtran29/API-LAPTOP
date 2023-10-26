@@ -7,10 +7,12 @@ import com.springboot.laptop.mapper.ProductMapper;
 import com.springboot.laptop.model.CategoryEntity;
 import com.springboot.laptop.model.dto.CategoryDTO;
 import com.springboot.laptop.model.dto.request.CategoryRequestDTO;
+import com.springboot.laptop.model.dto.response.ResponseObject;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.service.AmazonS3Service;
 import com.springboot.laptop.service.CategoryService;
+import com.springboot.laptop.utils.StringUtility;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -19,6 +21,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.ServletOutputStream;
@@ -39,16 +42,20 @@ public class CategoryServiceImpl implements CategoryService {
     private final ProductMapper productMapper;
     private final AmazonS3Service amazonS3Service;
 
+    private final StringUtility stringUtility = new StringUtility();
+
     static String[] HEADERs = { "Id", "Name", "Enabled", "Image" };
     static String SHEET = "Category_List";
 
     @Override
-    public Object createOne(CategoryRequestDTO category, MultipartFile multipartFile) {
-        if (categoryRepository.findByName(category.getName().replaceAll("\\s+", " ")).isPresent())
-            throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
+    public Object createOne(CategoryRequestDTO category, MultipartFile multipartFile) throws Exception {
+        if(!StringUtils.hasText(category.getName())) throw new RuntimeException(String.valueOf(StatusResponseDTO.CATEGORY_NAME_MUST_PROVIDED));
+        if(multipartFile.isEmpty()) throw new RuntimeException(String.valueOf(StatusResponseDTO.IMAGE_MUST_PROVIDED));
+        if (categoryRepository.findByName(stringUtility.removeExtraSpace(category.getName())).isPresent())
+            throw new CustomResponseException(StatusResponseDTO.CATEGORY_CONFLICT_NAME);
         CategoryDTO saveCate = new CategoryDTO();
         saveCate.setEnabled(true);
-        saveCate.setName(category.getName());
+        saveCate.setName(stringUtility.removeExtraSpace(category.getName()));
         saveCate.setImageUrl(amazonS3Service.uploadImage(multipartFile));
         saveCate.setCreatedTimestamp(new Date());
         return categoryRepository.save(categoryMapper.dtoCateToEntity(saveCate));
@@ -56,29 +63,30 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDTO findById(Long categoryId) {
-        categoryRepository.findById(categoryId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
-        return categoryMapper.cateEntityToDTO(categoryRepository.findById(categoryId).get());
+        CategoryEntity existingCate = categoryRepository.findById(categoryId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
+        return categoryMapper.cateEntityToDTO(existingCate);
     }
 
     @Override
     public List<CategoryDTO> getAll() {
-        List<CategoryDTO> returnedCates = new ArrayList<>();
-        categoryRepository.findAll().forEach(cate -> returnedCates.add(categoryMapper.cateEntityToDTO(cate)));
-        return returnedCates;
+        List<CategoryDTO> listCate = new ArrayList<>();
+        categoryRepository.findAll().forEach(cate -> listCate.add(categoryMapper.cateEntityToDTO(cate)));
+        return listCate;
     }
 
     @Override
-    public Object updateOne(Long cateId, CategoryRequestDTO updateCategory, MultipartFile multipartFile) {
-
-        categoryRepository.findById(cateId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
-        Optional<CategoryEntity> existingCategory = categoryRepository.findByName(updateCategory.getName().replaceAll("\\s+", " "));
+    public Object updateOne(Long cateId, CategoryRequestDTO updateCategory, MultipartFile multipartFile) throws Exception {
+        if(!StringUtils.hasText(updateCategory.getName())) throw new RuntimeException(String.valueOf(StatusResponseDTO.CATEGORY_NAME_MUST_PROVIDED));
+        Optional<CategoryEntity> existingCategory = categoryRepository.findByName(stringUtility.removeExtraSpace(updateCategory.getName()));
         if (existingCategory.isPresent() && !Objects.equals(existingCategory.get().getId(), cateId)) {
-            throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
+            throw new CustomResponseException(StatusResponseDTO.CATEGORY_CONFLICT_NAME);
         } else {
-            CategoryEntity cateUpdate = categoryRepository.findById(cateId).get();
+            CategoryEntity cateUpdate = categoryRepository.findById(cateId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
 
-            if(!multipartFile.isEmpty()) cateUpdate.setImageUrl(amazonS3Service.uploadImage(multipartFile));
-            cateUpdate.setName(updateCategory.getName());
+            if(multipartFile != null) {
+                cateUpdate.setImageUrl(amazonS3Service.uploadImage(multipartFile));
+            }
+            cateUpdate.setName(stringUtility.removeExtraSpace(updateCategory.getName()));
             cateUpdate.setEnabled(updateCategory.getEnabled());
             cateUpdate.setModifiedTimestamp(new Date());
             return categoryRepository.save(cateUpdate);
@@ -106,7 +114,8 @@ public class CategoryServiceImpl implements CategoryService {
         if (existingCategory.getBrands().size() > 0)
             throw new CustomResponseException(StatusResponseDTO.CATEGORY_CONFLICT_BRAND);
         categoryRepository.delete(existingCategory);
-        return "Delete successfully";
+
+        return new ResponseObject("Delete successfully");
     }
 
     @Override

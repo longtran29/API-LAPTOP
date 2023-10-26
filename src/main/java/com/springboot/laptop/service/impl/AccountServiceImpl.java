@@ -57,7 +57,6 @@ public class AccountServiceImpl implements AccountService {
 
         Account newUser = new Account();
         newUser.setUsername(userCreation.getUsername());
-        newUser.setPassword(userCreation.getPassword());
         newUser.setEmail(userCreation.getEmail());
         newUser.setName(userCreation.getName());
         newUser.setPassword(passwordEncoder.encode(userCreation.getPassword()));
@@ -74,9 +73,36 @@ public class AccountServiceImpl implements AccountService {
         }).collect(Collectors.toList());
         newUser.setRoles(listRole);
         return accountRepository.save(newUser);
+    }
 
+    @Override
+    public Object updateAccount(Long accountId, UserCreationDTO updateUser, MultipartFile image) {
+        Account existingAccount = accountRepository.findById(accountId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
+
+        existingAccount.setUsername(updateUser.getUsername());
+        if(!updateUser.getPassword().isEmpty()) {
+            existingAccount.setPassword(passwordEncoder.encode(updateUser.getPassword()));
+        } else {
+            existingAccount.setPassword(existingAccount.getPassword());
+        }
+        existingAccount.setEmail(updateUser.getEmail());
+        existingAccount.setName(updateUser.getName());
+        existingAccount.setImgURL(amazonS3Service.uploadImage(image));
+        existingAccount.setEnabled(updateUser.getEnabled());
+        existingAccount.setModifiedTimestamp(new Date());
+        existingAccount.setPhoneNumber(updateUser.getPhoneNumber());
+        var listRole = updateUser.getRoles().stream().map(role -> {
+            try {
+                return userRoleService.getUserRoleByEnumName(UserRoleEnum.valueOfCode(role.getName()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
+        existingAccount.setRoles(listRole);
+        return accountMapper.convertEntityToDTO(accountRepository.save(existingAccount));
 
     }
+
 
     @Override
     public Object updateStatus(Long customerId, String status) {

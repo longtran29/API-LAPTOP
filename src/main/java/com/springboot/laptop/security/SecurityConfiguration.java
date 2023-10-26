@@ -38,6 +38,9 @@ public class SecurityConfiguration {
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
+    @Autowired
+    private AccessDeniedHandlerJwt accessDeniedHandlerJwt;
+
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
@@ -100,11 +103,12 @@ public class SecurityConfiguration {
                 .csrf()
                 .disable()
                 .authorizeRequests()
-                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**","/**/categories/download/**",  "/**/list-all/**" ,"/**/brands/**", "/**/uploadImage","/**/image-upload/**", "/**/forgot_password/**", "/**/reset_password", "/**/register", "/**/orders/create-payment-intent/**", "/**/upload/**", "/**/success/**", "/**/create_order/**").permitAll()
+                .antMatchers("/**/authenticate", "/**/products/**", "/**/categories/**","/**/categories/download/**",  "/**/list-all/**" ,"/**/brands/**", "/**/uploadImage","/**/image-upload/**", "/**/forgot-password/**", "/**/reset-password", "/**/register", "/**/orders/create-payment-intent/**", "/**/upload/**", "/**/success/**", "/**/create_order/**").permitAll()
 
                 .anyRequest().authenticated()
                 .and().exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .and().exceptionHandling().accessDeniedHandler(accessDeniedHandlerJwt)
                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // each request must include necessary information to authenticate the user - postman testing
         http.httpBasic(Customizer.withDefaults());
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

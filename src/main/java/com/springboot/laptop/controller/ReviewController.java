@@ -28,8 +28,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_CUSTOMER')")
     @PostMapping
     public Object postReview(@RequestBody ReviewRequestDTO reviewRequest) {
         return ResponseEntity.ok().body(reviewService.postReview(reviewRequest));

@@ -26,8 +26,7 @@ public class AccountResponseDTO {
 
     private String username;
 
-    
-    private String password;
+
 
     private String email;
 
@@ -42,9 +41,9 @@ public class AccountResponseDTO {
 
     private Boolean enabled;
 
-    private List<Import> imports;
+
 
     private List<UserRoleEntity> roles;
 
-    private List<Order> order;
+
 }

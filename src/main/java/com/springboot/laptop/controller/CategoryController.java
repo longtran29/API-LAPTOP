@@ -65,7 +65,7 @@ public class CategoryController {
     @PostMapping(consumes = {   "multipart/form-data" })
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public Object createCategory(@RequestPart("category")  CategoryRequestDTO categoryDto, @RequestParam(value = "image", required = false) MultipartFile imageMultipart) {
+    public Object createCategory(@RequestPart("category")  CategoryRequestDTO categoryDto, @RequestPart(value = "image", required = false) MultipartFile imageMultipart) throws Exception {
         return ResponseEntity.ok().body(categoryServiceImpl.createOne(categoryDto, imageMultipart));
     }
 
@@ -97,10 +97,11 @@ public class CategoryController {
                     @ApiResponse(description = "Forbidden", responseCode = "403", content = @Content),
                     @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content)
             })
-    @PutMapping("/{cateId}")
+
+    @PutMapping(path = "/{cateId}",consumes = {   "multipart/form-data" })
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public Object updateCate(@PathVariable Long cateId, @RequestParam("category") CategoryRequestDTO category, @RequestParam(value = "image", required = false) MultipartFile imageMultipart)  {
+    public Object updateCate(@PathVariable Long cateId, @RequestPart("category") CategoryRequestDTO category, @RequestParam(value = "image", required = false) MultipartFile imageMultipart) throws Exception {
         return categoryServiceImpl.updateOne(cateId, category, imageMultipart );
     }
 

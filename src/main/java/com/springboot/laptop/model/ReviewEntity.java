@@ -37,13 +37,8 @@ public class ReviewEntity {
     @JoinColumn(name = "product_id")
     private ProductEntity product;
 
-//    @ManyToOne
-//    @JoinColumn(name = "customer_id")
-//    private Customer customer;
-
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
 
-    // them truong orderCode để 1 customer có thể review product nhiều lần dựa theo mã đơn hàng
 }

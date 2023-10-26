@@ -1,5 +1,5 @@
 package com.springboot.laptop.service;
 
-public interface CustomerService {
+public interface CustomerService extends AppUser {
     Object getAllCustomer();
 }

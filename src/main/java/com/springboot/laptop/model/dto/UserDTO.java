@@ -34,6 +34,4 @@ public class UserDTO {
     private List<AddressDTO> addresses ;
 
     private List<Order> orders ;
-
-    private List<UserRoleEntity> roles;
 }

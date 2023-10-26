@@ -14,10 +14,10 @@ import java.util.List;
 
 public interface CategoryService {
 
-    public Object createOne(CategoryRequestDTO category, MultipartFile multipartFile) ;
+    public Object createOne(CategoryRequestDTO category, MultipartFile multipartFile) throws Exception;
     public CategoryDTO findById(Long categoryId);
     public List<CategoryDTO> getAll();
-    Object updateOne(Long cateId, CategoryRequestDTO updateCategory,MultipartFile multipartFile);
+    Object updateOne(Long cateId, CategoryRequestDTO updateCategory,MultipartFile multipartFile) throws Exception;
     public Object updateStatus(Long cateId, Boolean status);
     public Object deleteOne(Long cateId) throws DataIntegrityViolationException;
 

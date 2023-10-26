@@ -12,8 +12,8 @@ import com.springboot.laptop.model.dto.response.CartResponseDTO;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.CartDetailRepository;
 import com.springboot.laptop.repository.CartRepository;
-import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.repository.CustomerRepository;
+import com.springboot.laptop.repository.ProductRepository;
 import com.springboot.laptop.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,22 +44,18 @@ public class CartServiceImpl implements CartService {
     public UserCartDTO addToCart(Long productId, Long quantity) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CUSTOMER_NOT_FOUND));
-        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
-        if(!existingProduct.isEnabled()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_HAS_BEEN_LOCKED);
+        ProductEntity existingProduct = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+        if (!existingProduct.isEnabled()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_HAS_BEEN_LOCKED);
 
-        if(quantity > existingProduct.getProductQuantity()) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
+        if (quantity > existingProduct.getProductQuantity())
+            throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
 
         UserCart userCart;
         CartDetails cartDetail = null;
-        if(user.getCart() != null) {
+        if (user.getCart() != null) {
             userCart = user.getCart();
-            cartDetail = userCart.getCartDetails()
-                    .stream()
-                    .filter(cd -> cd.getProduct().getId().equals(productId))
-                    .findFirst()
-                    .orElse(null);
-        }
-        else {
+            cartDetail = userCart.getCartDetails().stream().filter(cd -> cd.getProduct().getId().equals(productId)).findFirst().orElse(null);
+        } else {
             userCart = new UserCart();
             userCart.setCreatedTimestamp(new Date());
             userCart.setCustomer(user);
@@ -80,16 +76,16 @@ public class CartServiceImpl implements CartService {
 
         long remainingStock = existingProduct.getProductQuantity() - quantity;
         existingProduct.setProductQuantity(remainingStock);
-        if(remainingStock == 0) existingProduct.setInStock(false);
+        if (remainingStock == 0) existingProduct.setInStock(false);
         try {
             productRepository.save(existingProduct);
             return cartMapper.cartToDTO(cartRepository.save(userCart));
 
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
-}
+    }
 
 
     @Override
@@ -114,15 +110,14 @@ public class CartServiceImpl implements CartService {
         Customer user = userRepository.findByUsernameIgnoreCase(username).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
         UserCart userCart = user.getCart();
-        if(userCart != null) {
+        if (userCart != null) {
             Optional<CartDetails> removeItem = userCart.getCartDetails().stream().filter(item -> item.getProduct().getId() == productId).findFirst();
 
-            if(removeItem.isPresent()) {
+            if (removeItem.isPresent()) {
                 userCart.getCartDetails().remove(removeItem.get());
                 cartDetailRepository.delete(removeItem.get());
             }
-        }
-        else {
+        } else {
             throw new NoSuchElementException();
         }
         return "Xóa thành công";
@@ -130,35 +125,42 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public UserCartDTO updateQuantityItem(Long productId, String type) {
-        Customer user = userRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND) );
+        Customer user = userRepository.findByUsernameIgnoreCase(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.USER_NOT_FOUND));
         ProductEntity product = productRepository.findById(productId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.PRODUCT_NOT_FOUND));
+
+        if (type.equals("increase") && product.getProductQuantity() == 0)
+            throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
+
+
         try {
             UserCart userCart = user.getCart();
-            if(userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
+            if (userCart == null) throw new CustomResponseException(StatusResponseDTO.CART_NOT_FOUND);
             List<CartDetails> listCart = userCart.getCartDetails();
-            for (CartDetails cartDetail: listCart
-            ) {
 
-                if(Objects.equals(cartDetail.getProduct().getId(), productId)) {
-                    if(type.equals("increase")) {
-                        if(product.getProductQuantity() ==  0) throw new CustomResponseException(StatusResponseDTO.PRODUCT_OUT_STOCK);
-                        cartDetail.setQuantity(cartDetail.getQuantity() +1);
-                        product.setProductQuantity(product.getProductQuantity() -1);
-                        if(product.getProductQuantity() -1 == 0 ) product.setInStock(false);
+            for (CartDetails cartDetail : listCart) {
+                if (Objects.equals(cartDetail.getProduct().getId(), productId)) {
+                    if (type.equals("increase")) {
+                        cartDetail.setQuantity(cartDetail.getQuantity() + 1);
+                        product.setProductQuantity(product.getProductQuantity() - 1);
+                        if (product.getProductQuantity() - 1 == 0) product.setInStock(false);
                     } else {
-                        if(cartDetail.getQuantity() == 1) {
+                        if (cartDetail.getQuantity() == 1) {
                             removeCartItem(productId);
                         } else {
-                            cartDetail.setQuantity(cartDetail.getQuantity()-1);
-                            product.setProductQuantity(product.getProductQuantity() +1);
+                            cartDetail.setQuantity(cartDetail.getQuantity() - 1);
+                            product.setProductQuantity(product.getProductQuantity() + 1);
+                            if(!product.isInStock()) product.setInStock(true);
                         }
                     }
                     cartDetail.setModifiedTimestamp(new Date());
+                    break; // avoid continue when found cart item
                 }
+
             }
             productRepository.save(product);
             return cartMapper.cartToDTO(cartRepository.save(userCart));
-        } catch(NotFoundException ex) {
+        } catch (NotFoundException ex) {
+            ex.printStackTrace();
             throw ex;
         }
     }

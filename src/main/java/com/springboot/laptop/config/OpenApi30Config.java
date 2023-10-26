@@ -12,12 +12,6 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         info = @Info(title = "Giskard API", version = "v2"),
         security = @SecurityRequirement(name = "Bearer"))
-//@SecurityScheme(
-//        name = "Bearer",
-//        type = SecuritySchemeType.HTTP,
-//        bearerFormat = "JWT",
-//        scheme = "bearer"
-//)
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
 public class OpenApi30Config {
 

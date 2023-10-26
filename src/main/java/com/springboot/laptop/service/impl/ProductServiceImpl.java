@@ -7,6 +7,7 @@ import com.springboot.laptop.model.*;
 import com.springboot.laptop.model.dto.ProductDTO;
 import com.springboot.laptop.model.dto.request.ProductDetailDTO;
 import com.springboot.laptop.model.dto.response.ProductResponseDTO;
+import com.springboot.laptop.model.dto.response.ResponseObject;
 import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.*;
 import com.springboot.laptop.service.AmazonS3Service;
@@ -68,11 +69,13 @@ public class ProductServiceImpl implements ProductService {
         List<ProductDetailDTO> updateDetail = product.getDetails();;
 
         convertEntity.setDetails(new ArrayList<>());
-        for (ProductDetailDTO productDetailDTO : updateDetail) {
+        if(updateDetail != null) {
+            for (ProductDetailDTO productDetailDTO : updateDetail) {
 
-            ProductDetail newDetail = new ProductDetail(productDetailDTO.getName(), productDetailDTO.getValue());
-            newDetail.setProduct(convertEntity);
-            convertEntity.getDetails().add(newDetail);
+                ProductDetail newDetail = new ProductDetail(productDetailDTO.getName(), productDetailDTO.getValue());
+                newDetail.setProduct(convertEntity);
+                convertEntity.getDetails().add(newDetail);
+            }
         }
 
 
@@ -234,7 +237,7 @@ public class ProductServiceImpl implements ProductService {
         if(isProductInUse) throw new RuntimeException("Sản phẩm đang được kinh doanh");
         productRepository.delete(existingProduct);
 
-        return "Delete successfully!";
+        return new ResponseObject("Delete successfully!");
     }
 }
 

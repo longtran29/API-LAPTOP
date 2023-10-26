@@ -34,22 +34,15 @@ public class OrderController {
 
 
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
-    @PostMapping("/create_order")
+    @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDTO) throws IOException, InterruptedException {
         return ResponseEntity.ok().body(payPalService.createOrder(orderDTO));
     }
 
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
-    @PostMapping(value = "/confirm_payment_paypal")
+    @PostMapping(value = "/confirm-payment")
     public ResponseEntity<?> success(@RequestBody PayPalCaptureDTO successDTO) throws IOException, InterruptedException {
-        return ResponseEntity.ok().body(payPalService.confirmOrder(successDTO.getOrderID(), successDTO.getAddressID(), successDTO.getPaymentMethod()));
-    }
-
-    @Operation(summary = "API thanh toán")
-    @PreAuthorize("hasAnyRole('ROLE_CUSTOMER')")
-    @PostMapping("/checkout/vnPay")
-    public ResponseEntity<?> checkoutVnPay(HttpServletRequest req) throws UnsupportedEncodingException {
-        return ResponseEntity.ok().body(orderService.checkoutVnpay(req));
+        return ResponseEntity.ok().body(payPalService.confirmOrder(successDTO.getOrderID(), successDTO.getAddressID()));
     }
 
     @Operation(summary = "API thanh toán")
@@ -68,21 +61,21 @@ public class OrderController {
 
     @Operation(summary = "API hủy đơn hàng")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_CUSTOMER')")
-    @PutMapping("/cancel_order/{orderId}")
+    @PutMapping("/cancel-order/{orderId}")
     public Object cancelOrders(@PathVariable String orderId) {
        return ResponseEntity.ok().body(orderService.cancelOrders(orderId));
     }
 
     @Operation(summary = "API lấy các đơn hàng")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_USER')")
-    @GetMapping("/users/get_order")
+    @GetMapping("/users/get-order")
     public ResponseEntity<?> viewOrders() {
         return ResponseEntity.ok().body(orderService.getUserOrders());
     }
 
 
     @Operation(summary = "API gủi mail thông báo đơn hàng")
-    @PostMapping("/send_order_detail")
+    @PostMapping("/send-order-detail")
     public ResponseEntity<?> getOrderDetail(@RequestBody OrderCompleted order) {
         return ResponseEntity.ok().body(orderService.sendMail4Order(order));
     }

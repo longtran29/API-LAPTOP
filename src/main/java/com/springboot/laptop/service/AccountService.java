@@ -6,11 +6,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-public interface AccountService {
+public interface AccountService extends AppUser {
 
     List<AccountResponseDTO> getAllAccount();
 
     Object createUserForPrivilege(UserCreationDTO userCreation, MultipartFile imgUser);
 
-    Object updateStatus(Long customerId, String status);
+
+    Object updateAccount(Long customerId, UserCreationDTO userCreation, MultipartFile imageUser);
 }

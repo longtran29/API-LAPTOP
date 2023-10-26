@@ -1,30 +1,19 @@
 //package com.springboot.laptop;
 //
-//import com.springboot.laptop.config.VnPayConfig;
 //import com.springboot.laptop.model.*;
-//import com.springboot.laptop.model.dto.response.CreatePaymentResponse;
-//import com.springboot.laptop.model.enums.PaymentMethod;
 //import com.springboot.laptop.model.enums.UserRoleEnum;
 //import com.springboot.laptop.repository.*;
 //import com.springboot.laptop.service.AmazonS3Service;
 //import com.springboot.laptop.service.CategoryService;
 //import com.springboot.laptop.service.ImportService;
-//import com.stripe.Stripe;
-//import com.stripe.exception.*;
-//import com.stripe.model.PaymentIntent;
-//import net.sf.jasperreports.engine.JRException;
-//import org.junit.Assert;
+//
 //import org.junit.jupiter.api.Assertions;
 //import org.junit.jupiter.api.Test;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.context.SpringBootTest;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 //import org.springframework.test.annotation.Rollback;
-//import com.stripe.param.PaymentIntentCreateParams;
 //
-//import java.io.IOException;
-//import java.math.BigInteger;
-//import java.text.SimpleDateFormat;
 //import java.util.*;
 ////
 ////@DataJpaTest
@@ -62,9 +51,7 @@
 //
 //	@Autowired
 //			CustomerRepository customerRepository;
-//
-//	@Autowired
-//	private VnPayConfig vnPayConfig;
+
 //
 //	BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 //	@Autowired
@@ -135,6 +122,14 @@
 //		accountRepository.save(appClient);
 //	}
 //
+//    @Test
+//    public void updateUser() {
+//        Account account  = accountRepository.findByUsernameIgnoreCase("admin").get();
+//
+//        account.setPassword(passwordEncoder.encode("12345678"));
+//        accountRepository.save(account);
+//    }
+//
 //
 //	@Test
 //	public void addNewCustomer() {
@@ -150,17 +145,6 @@
 //		appClient.setEnabled(true);
 //		appClient.setPassword(passwordEncoder.encode("123456"));
 //		customerRepository.save(appClient);
-//	}
-//
-//	@Test
-//	public void testExportReport() throws JRException {
-//		importService.exportReport();
-//	}
-//
-//	@Test
-//	public void lengthImport() throws JRException {
-//		importRepository.getAllImports();
-//		Assertions.assertEquals(importRepository.getAllImports().size(), 3);
 //	}
 //
 //

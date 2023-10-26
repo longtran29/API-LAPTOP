@@ -13,5 +13,4 @@ public class CategoryRequestDTO {
 
     private Boolean enabled = true;
 
-//    private MultipartFile imageCategory;
 }

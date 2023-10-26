@@ -19,14 +19,14 @@ public class AdminOrderController {
 
     @Operation(summary = "API lấy tất cả đơn hàng cho quản trị viên")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/get_all_order")
+    @GetMapping("/get-all-order")
     public ResponseEntity<?> manageOrder() {
         return ResponseEntity.ok().body(orderService.getOrders());
     }
 
     @Operation(summary = "API cập nhật trang thái đơn hàng - chỉ cho quản trị viên")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PutMapping("/update_status")
+    @PutMapping("/update-status")
     public ResponseEntity<?> updateStatusOrder(@RequestBody ChangeStatusDTO changeStatusDTO) {
         return ResponseEntity.ok().body(orderService.changeStatus(changeStatusDTO));
     }

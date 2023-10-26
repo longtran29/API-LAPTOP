@@ -14,11 +14,14 @@ import com.springboot.laptop.model.dto.response.StatusResponseDTO;
 import com.springboot.laptop.repository.BrandRepository;
 import com.springboot.laptop.repository.CategoryRepository;
 import com.springboot.laptop.service.BrandService;
+import com.springboot.laptop.utils.StringUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +32,7 @@ public class BrandServiceImpl implements BrandService {
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
     private final BrandMapper brandMapper;
+    private final StringUtility stringUtility = new StringUtility();
 
     @Override
     public Object findById(Long brandId) {
@@ -42,17 +46,20 @@ public class BrandServiceImpl implements BrandService {
 
 
     @Override
-    public Object createOne(BrandRequestDTO newbrand)  {
-        if(brandRepository.findByName(newbrand.getBrandName()).isPresent())
-            throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
-        if(newbrand.getBrandName().isEmpty() || newbrand.getCateIds().size() <1) throw new CustomResponseException(StatusResponseDTO.DATA_EMPTY);
+    public Object createOne(BrandRequestDTO newbrand) throws Exception {
+        if(!StringUtils.hasText(newbrand.getBrandName())) throw new RuntimeException(String.valueOf(StatusResponseDTO.BRAND_NAME_MUST_PROVIDED));
+        if(brandRepository.findByNameIgnoreCase(stringUtility.removeExtraSpace(newbrand.getBrandName())).isPresent())
+            throw new CustomResponseException(StatusResponseDTO.BRAND_CONFLICT_NAME);
+        if(newbrand.getBrandName().isEmpty() || newbrand.getCateIds().size() < 1) throw new CustomResponseException(StatusResponseDTO.DATA_EMPTY);
 
         BrandEntity brand = new BrandEntity();
-        brand.setName(newbrand.getBrandName());
-        for(Long i : newbrand.getCateIds()) {
-            CategoryEntity setCategory = categoryRepository.findById(i).get();
+        brand.setName(stringUtility.removeExtraSpace(newbrand.getBrandName()));
+
+
+        newbrand.getCateIds().forEach(i -> {
+            CategoryEntity setCategory = categoryRepository.findById(i).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND));
             brand.getCategories().add(setCategory);
-        }
+        });
         brand.setCreatedTimestamp(new Date());
         return brandMapper.entityToDTO(brandRepository.save(brand));
     }
@@ -70,31 +77,30 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public Object updateOne(Long brandId, BrandRequestDTO updateBrand) {
+    public Object updateOne(Long brandId, BrandRequestDTO updateBrand) throws Exception {
+        if(!StringUtils.hasText(updateBrand.getBrandName())) throw new RuntimeException(String.valueOf(StatusResponseDTO.BRAND_NAME_MUST_PROVIDED));
         BrandEntity brand = brandRepository.findById(brandId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
-        BrandEntity existedBrand = null;
-        if( brandRepository.findByName(updateBrand.getBrandName()).isPresent())
+        BrandEntity existedBrand ;
+        if( brandRepository.findByNameIgnoreCase(stringUtility.removeExtraSpace(updateBrand.getBrandName())).isPresent())
         {
-            existedBrand =  brandRepository.findByName(updateBrand.getBrandName()).get();
-            if(existedBrand.getId() != brandId)
-                throw new CustomResponseException(StatusResponseDTO.DUPLICATED_DATA);
-        }brand.setCategories(updateBrand.getCateIds().stream().map(cateId -> categoryRepository.findById(cateId).get()).collect(Collectors.toList()));
-        brand.setName(updateBrand.getBrandName());
+            existedBrand =  brandRepository.findByNameIgnoreCase(updateBrand.getBrandName().replaceAll("\\s{2,}", " ").toLowerCase().trim()).get();
+            if(!Objects.equals(existedBrand.getId(), brandId))
+                throw new CustomResponseException(StatusResponseDTO.BRAND_CONFLICT_NAME);
+        }brand.setCategories(updateBrand.getCateIds().stream().map(cateId -> categoryRepository.findById(cateId).orElseThrow(()-> new CustomResponseException(StatusResponseDTO.CATEGORY_NOT_FOUND))).collect(Collectors.toList()));
+        brand.setName(stringUtility.removeExtraSpace(updateBrand.getBrandName()));
         brand.setModifiedTimestamp(new Date());
         return brandMapper.entityToDTO(brandRepository.saveAndFlush(brand));
     }
 
     @Override
     public List<CategoryDTO> getAllCateFromBrand(Long brandId) {
-        brandRepository.findById(brandId).orElseThrow(() ->  new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
-        return brandRepository.findById(brandId).get().getCategories().stream().map(categoryMapper::cateEntityToDTO).collect(Collectors.toList());
+        BrandEntity existingBrand = brandRepository.findById(brandId).orElseThrow(() ->  new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
+        return existingBrand.getCategories().stream().map(categoryMapper::cateEntityToDTO).collect(Collectors.toList());
     }
 
     @Override
     public Object getProductsById(Long brandId) {
-        // return the value if present
         BrandEntity brand = brandRepository.findById(brandId).orElseThrow(() -> new CustomResponseException(StatusResponseDTO.BRAND_NOT_FOUND));
-        // using stream() before call forEach() / map() methods to loop through list -> execute add() method
         return brand.getProducts().stream().map(productMapper::productToProductDTO).collect(Collectors.toList());
     }
 

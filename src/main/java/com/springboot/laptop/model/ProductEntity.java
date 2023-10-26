@@ -57,8 +57,6 @@ public class ProductEntity extends  BaseEntity  {
     private CategoryEntity category;
 
     @NotNull(message = "Product must have quantity")
-    @Positive
-    @Min(1)
     @Column(name ="product_qty")
     private Long productQuantity;
 

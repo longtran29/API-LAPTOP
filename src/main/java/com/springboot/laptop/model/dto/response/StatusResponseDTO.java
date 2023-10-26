@@ -4,6 +4,16 @@ public enum StatusResponseDTO {
     EMAIL_NOT_BLANK("400", "Email không được để trống"),
     INTERNAL_SERVER("500", "Hệ thống đang bị gián đoạn! Xin vui lòng thử lại sau"),
     CATEGORY_CONFLICT_BRAND("500", "Danh mục này đang được nhãn hàng kinh doanh"),
+
+    ORDER_PROCESS_HANDLED_ERROR("500", "Đơn hàng này đã được giao xử lý cho tài khoản kha "),
+
+    BRAND_NAME_MUST_PROVIDED("500", "Bạn phải cung cấp tên thương hiệu"),
+
+    IMAGE_MUST_PROVIDED("500", "Bạn phải cung cấp ảnh đại diện"),
+    CATEGORY_NAME_MUST_PROVIDED("500", "Bạn phải cung cấp tên danh mục"),
+    CATEGORY_CONFLICT_NAME("500", "Tên danh mục đã tồn tại, vui lòng chọn tên khác"),
+
+    BRAND_CONFLICT_NAME("500", "Tên thương hiệu đã tồn tại, vui lòng chọn tên khác"),
     CATEGORY_CONFLICT_PRODUCTS("500", "Sản phẩm thuộc danh mục này đang được kinh doanh"),
     PASSWORD_NOT_MATCH("500", "Hai mật khẩu không trùng nhau"),
 
@@ -24,12 +34,13 @@ public enum StatusResponseDTO {
     CART_NOT_EXIST("500", "Không có sản phẩm nào trong giỏ hàng"),
     PRODUCT_EXISTING_IN_CART("500", "Sản phẩm này đang nằm trong giỏ hàng  của khách hàng"),
 
+    PRODUCT_NOT_EXISTS("500", "This product do not exist in the system"),
     REVIEW_REJECTION("500", "You have not purchase for this product or order has not been delivered to you !"),
     ORDER_HAS_NOT_BEEN_DELIVERED("500", "Đơn hàng chưa được giao thành công cho bạn "),
     FIELD_IS_MISSING("500", "Please prodvide the full information !"),
 
     USER_ALREADY_EXISTS("500", "Userna"),
-    PASSWORD_NOT_MEET_REQUIREMENT("500", "Mật khẩu ít nhất 6 ký tự !"),
+    PASSWORD_NOT_MEET_REQUIREMENT("500", "Mật khẩu tối thiểu 6 ký tự !"),
 
 
 
